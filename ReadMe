@@ -1,0 +1,23 @@
+Koala is modern programming language.
+
+00:
+	1. type system
+		only support integer
+	2. arithmetic expression
+		+, -, *, /
+	3. scanner & parser
+		lex & yacc
+01:
+	1. support variable
+	
+	2. support ()
+
+02:
+	1. statement ends with ;
+	2. save expression value to '_' var;
+
+03:
+	1. negative support
+
+	
+
