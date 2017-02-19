@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int yylex (void);
+int yyerror(const char *str);
+
 struct type_pair
 {
   char name[20];
@@ -300,7 +303,7 @@ expr_list
 
 extern char *yytext;
 
-int yyerror(const char const *str)
+int yyerror(const char *str)
 {
   fprintf(stderr, "%s\n", str);
   return 0;
