@@ -9,7 +9,7 @@ Koala is modern programming language.
 		lex & yacc
 01:
 	1. support variable
-	
+
 	2. support ()
 
 02:
@@ -18,6 +18,29 @@ Koala is modern programming language.
 
 03:
 	1. negative support
+04:
+  0. program: pkg-statement [import-statement]* [statement]+
+  1. statements : statement
+    | statements statement
+  2. statement: if-statement | pkg-statement | import-statement | var-statement
+    | function-statement | arithmetic-expression | logic-expression | bit-expression
+    | call-statement | assign-statement | type-define-statement
 
-	
+  3. type-statement : type ID [type-name] {
+    [ID var-type-name;]+
+    }
 
+    type_declaration
+      : type ID type_specifier ';'
+
+    type_specifier
+      : struct '{' struct_declaration_list '}'
+      | interface '{' function_declaration_list '}'
+      | function_declaration
+      | TYPE_ID
+      ;
+
+    struct_declaration_list
+      : ID TYPE_ID ';'
+      | struct_declaration_list ID TYPE_ID ';'
+      ;

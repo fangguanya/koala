@@ -117,6 +117,9 @@ factor: NUMBER {
   | LBRACE expr RBRACE {
     $$ = $2;
   }
+  | SUB factor {
+    $$ = -$2;
+  }
   ;
 
 %%
