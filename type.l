@@ -3,26 +3,30 @@
 
 #include "type.tab.h"
 
+void my_printf(char *str);
+
+int lineno;
+
 %}
 
 %%
 
-";"           {return ';';}
-"{"           {return '{';}
-"}"           {return '}';}
-"="           {return '=';}
-","           {return ',';}
-"("           {return '(';}
-")"           {return ')';}
-"."           {return '.';}
-">"           {return '>';}
-"<"           {return '<';}
+
+[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)] {return yytext[0];}
+
+##ddd
+
 "=="          {return EQ;}
-"+"           {return '+';}
-"-"           {return '-';}
-"*"           {return '*';}
-"/"           {return '/';}
-"%"           {return '%';}
+"uint32"      {return UINT32;}
+"int32"       {return INT32;}
+"string"      {return STRING;}
+"uint"        {return UINT;}
+"int"         {return UINT;}
+[0-9]+        {return NUMBER;}
+(\"(\\.|[^"\\])*\")   {printf(">>>>>>>>%s\n", yytext);}
+"//"[^\n]*              {printf("comment:%s\n", yytext);}
+"/*"([^\*]|(\*)*[^\*/])*(\*)*"*/" {printf("multi-line-comment:%s\n", yytext);}
+
 [A-Za-z][a-zA-Z0-9]* {
                 //printf("token: %s\n", yytext);
                 if (!strcmp(yytext, "while"))
@@ -48,8 +52,9 @@
                 else if (!strcmp(yytext, "interface"))
                   return INTERFACE;
                 else {
-                  //printf("token:%s\n", yytext);
                   yylval.text = strdup(yytext);
+                  printf(">>token:%s\n", yylval.text);
+                  //my_printf(yylval.text);
                   return ID;
                 }
               }
@@ -61,4 +66,9 @@
 int yywrap()
 {
 	return 1;
+}
+
+void my_printf(char *str)
+{
+  printf("%s\n", str);
 }

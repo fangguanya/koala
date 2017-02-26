@@ -1,0 +1,8 @@
+//this is a comment\n
+
+/*
+this is a multi-line-comment
+*/
+
+var abc, def, abc123 = 100, 200
+var i, j, k = 1000, 2000;

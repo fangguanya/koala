@@ -44,3 +44,8 @@ Koala is modern programming language.
       : ID TYPE_ID ';'
       | struct_declaration_list ID TYPE_ID ';'
       ;
+
+QA：
+  Q1: 函数调用参数传递，函数栈桢会从上一个函数栈桢中拷贝参数到本地栈桢中吗？
+  A1：X86，GCC编译出来的代码是直接使用上一个函数传递过来的参数，没有再拷贝一次；也就是说
+  参数是跨栈桢的。X86，GO编译出来的代码也是如此(PLAN9格式)。

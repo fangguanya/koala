@@ -52,6 +52,12 @@ void list_node_print(struct list_node *node)
 }
 %}
 
+%token NEWLINE
+%token <text> STRING
+%token UINT
+%token INT32
+%token UINT32
+%token DO
 %token IF
 %token <number> NUMBER
 %token FUNC
@@ -79,6 +85,12 @@ void list_node_print(struct list_node *node)
 %start program
 
 %%
+/*-------------
+input
+  : %empty
+  | input program
+  ;
+*/
 
 program
   : package_declaration
@@ -91,7 +103,9 @@ program
   | program while_stmt
   | program method_declaration
   | program func_declaration2
+  | program do_while_stmt
   ;
+
 
 import_list
   : import
@@ -99,11 +113,11 @@ import_list
   ;
 
 import
-  : IMPORT ID ';'  {printf("import:%s\n", $2);}
+  : IMPORT ID ';' {printf("import:%s\n", $2);}
   ;
 
 package_declaration
-  : PACKAGE ID ';'    {printf("package:%s\n", $2);}
+  : PACKAGE ID ';' {printf("package:%s\n", $2);}
   ;
 
 var_declaration
@@ -132,7 +146,19 @@ id_list
   ;
 
 var_type
-  : ID
+  : array_type
+  ;
+
+array_type
+  : '[' NUMBER ']' array_type
+  | base_type
+  ;
+
+base_type
+  : UINT32
+  | INT32
+  | UINT
+  | STRING
   ;
 
 func_declaration2
@@ -159,8 +185,8 @@ para_list
   ;
 
 para_list2
-  : ID
-  | para_list2 ',' ID
+  : base_type
+  | para_list2 ',' base_type
   ;
 
 return_list2
@@ -169,9 +195,9 @@ return_list2
   ;
 
 return_list
-  : ID
-  | '(' ID ')'
-  | '(' return_list ',' ID ')'
+  : base_type
+  | '(' base_type ')'
+  | '(' return_list ',' base_type ')'
   ;
 
 code_block
@@ -195,6 +221,12 @@ statement
 
 while_stmt
   : WHILE '(' logic_expr ')' code_block
+  | WHILE logic_expr code_block
+  ;
+
+do_while_stmt
+  : DO code_block WHILE logic_expr;
+  | DO code_block WHILE '(' logic_expr ')';
   ;
 
 assign_statement
@@ -207,8 +239,10 @@ expr_list2
   ;
 
 if_statement
-  : IF '(' ')' code_block               {printf("if-true\n");}
+  : IF code_block                       {printf("if-true-empty");}
+  | IF '(' ')' code_block               {printf("if-true\n");}
   | IF '(' if_condition ')' code_block  {printf("if-condition\n");}
+  | IF if_condition code_block          {printf("if-condition-empty");}
   ;
 
 if_condition
@@ -257,6 +291,8 @@ argument_list
 
 type_declaration
   : TYPE ID type_specifier ';' {
+      printf(">>>>>>>%s\n", $2);
+      printf(">>>>>>>\n");
       struct type_define type_define = {
         .type_name = (char *)$2,
         .number = gindex,
@@ -281,11 +317,11 @@ struct_declaration_list
   ;
 
 struct_declaration
-  : ID ID {
+  : ID base_type {
             //printf("%s -> %s\n", $1, $2);
             struct type_pair *pair = &gparis[gindex++];
             strcpy(pair->name, $1);
-            strcpy(pair->type, $2);
+            //strcpy(pair->type, $2);
           }
   ;
 
@@ -313,6 +349,6 @@ extern FILE *yyin;
 
 int main()
 {
-  yyin = stdin;
+  yyin = fopen("./test.in", "r");
   yyparse();
 }
