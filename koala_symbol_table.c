@@ -6,6 +6,13 @@
 
 #include "koala_symbol_table.h"
 
+struct symbol_table symbol_table;
+
+void koala_symbol_table_init()
+{
+    symbol_table_init(&symbol_table);
+}
+
 struct symbol *new_symbol(char *name, int type, void *value)
 {
   struct symbol *sym = malloc(sizeof(*sym));

@@ -5,11 +5,10 @@
 #include "koala_list.h"
 #include "koala_stack.h"
 #include "koala_symbol_table.h"
-#include "koala_var_decl_stmt.h"
+#include "koala_var_decl.h"
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 
-void add_stmt(struct stmt *stmt);
 void koala_compiler_init();
 
 END_DECLS /* 兼容C++编译宏 */

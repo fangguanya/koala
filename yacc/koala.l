@@ -13,20 +13,31 @@ L   [a-zA-Z_]
 
 %%
 
-[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)] {return yytext[0];}
+[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)^] {return yytext[0];}
 
 "=="                      {return EQ;}
-"!="                      {return NEQ;}
+"!="                      {return NE;}
 ">="                      {return GE;}
 "<="                      {return LE;}
 "&&"                      {return AND;}
 "||"                      {return OR;}
+">>"                      {return SHIFT_LEFT;}
+"<<"                      {return SHIFT_RIGHT;}
+"++"                      {return INC;}
+"--"                      {return DEC;}
+"+="                      {return ADD_ASSIGN;}
+"-="                      {return SUB_ASSIGN;}
+"*="                      {return MUL_ASSIGN;}
+"/="                      {return DIV_ASSIGN;}
+"%="                      {return MOD_ASSIGN;}
+"&="                      {return AND_ASSIGN;}
+"|="                      {return OR_ASSIGN;}
+"^="                      {return XOR_ASSIGN;}
+">>="                     {return RIGHT_ASSIGN;}
+"<<="                     {return LEFT_ASSIGN;}
 "..."                     {return ELLIPSIS;}
 
-"and"                     {return AND;}
-"or"                      {return OR;}
-"true"                    {return TRUE;}
-"false"                   {return FALSE;}
+
 "if"                      {return IF;}
 "else"                    {return ELSE;}
 "while"                   {return WHILE;}
@@ -60,6 +71,11 @@ L   [a-zA-Z_]
 "float64"                 {return FLOAT64;}
 "bool"                    {return BOOL;}
 "string"                  {return STRING;}
+
+"this"                    {return TOKEN_THIS;}
+"true"                    {return TOKEN_TRUE;}
+"false"                   {return TOKEN_FALSE;}
+"null"                    {return TOKEN_NULL;}
 
 ([1-9][0-9]*|[0])         {
                             echo();
