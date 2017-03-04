@@ -143,6 +143,8 @@ type_name_list
 type_name
   : primitive_type
   | qualified_name
+  | function_type
+  | interface_root_type
   ;
 
 primitive_type
@@ -158,6 +160,17 @@ primitive_type
   | FLOAT64
   | BOOL
   | STRING
+  ;
+
+function_type
+  : FUNC '(' ')'
+  | FUNC '(' ')' return_type_list
+  | FUNC '(' parameter_type_list ')'
+  | FUNC '(' parameter_type_list ')' return_type_list
+  ;
+
+interface_root_type
+  : INTERFACE '{' '}'
   ;
 
 field_name
@@ -247,25 +260,6 @@ parameter_list
   | parameter_list ',' ID type_name
   ;
 
-/*
-type_specifier
-  : primitive_type
-  | FUNC '(' para_type_list ')' return_type_list
-  | ID    // user defined type
-  ;
-
-para_type_list
-  : type_specifier
-  | para_type_list ',' type_specifier
-  ;
-
-return_type_list
-  : %empty
-  | type_specifier
-  | '(' type_specifier ')'
-  | '(' return_type_list ',' type_specifier ')'
-  ;
-*/
 /*--------------------------------------------------------------------------*/
 /*
 function_declaration

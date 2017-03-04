@@ -188,6 +188,16 @@ type say interface {
   func replyHello() string;
 }
 
+type NewSay say;
+
+type say_prototype func(string, Person) string;
+
+//func sayError(string, Person); //不允许函数原型声明
+
+a = func(msg string, to Person) string {
+
+}
+
 //数组初始化
 //接口初始化
 //匿名函数
