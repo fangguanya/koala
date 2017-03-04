@@ -202,8 +202,19 @@ a = func(msg string, to Person, from interface{}) string {
 
 };
 
+//函数定义
+func calc(a int32, b int32) int32 {
+
+}
+
+//方法定义
+func Person.calc(a int32, b int32) int32 {
+
+}
 
 //数组初始化
+a = [10][20]int32{{1,2,3}, {1,2,3}};
+
 //接口初始化
 //匿名函数
 //类型：內建类型，type定义类型

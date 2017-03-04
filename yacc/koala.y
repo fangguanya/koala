@@ -211,8 +211,8 @@ declarations
   //| declarations var_declaration
   | function_declaration
   | declarations function_declaration
-  //| method_declaration
-  //| declarations method_declaration
+  | method_declaration
+  | declarations method_declaration
   | expression_statement
   | declarations expression_statement
   ;
@@ -278,16 +278,23 @@ anonymous_function_declaration
   | FUNC '(' parameter_list ')' return_type_list code_block
   ;
 
+/*--------------------------------------------------------------------------*/
+
+method_declaration
+  : FUNC method_name '(' ')' code_block
+  | FUNC method_name '(' ')' return_type_list code_block
+  | FUNC method_name '(' parameter_list ')' code_block
+  | FUNC method_name '(' parameter_list ')' return_type_list code_block
+  ;
+
+method_name
+  : ID '.' ID
+  ;
+
 code_block
   : '{' '}'
   ;
 
-/*--------------------------------------------------------------------------*/
-/*
-method_declaration
-  : FUNC ID '.' ID '(' para_list ')' return_type_list code_block
-  ;
-*/
 /*--------------------------------------------------------------------------*/
 /*
 var_declaration
