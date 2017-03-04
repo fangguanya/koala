@@ -135,6 +135,11 @@ qualified_name
   | qualified_name '.' ID
   ;
 
+type_name_list
+  : type_name
+  | type_name_list ',' type_name
+  ;
+
 type_name
   : primitive_type
   | qualified_name
@@ -186,24 +191,22 @@ import_statement
 /*--------------------------------------------------------------------------*/
 
 declarations
-  //: type_declaration
-  //| declarations type_declaration
+  : type_declaration
+  | declarations type_declaration
   //| var_declaration
   //| declarations var_declaration
   //| function_declaration
   //| declarations function_declaration
   //| method_declaration
   //| declarations method_declaration
-  : expression ';' {printf("expression\n");}
-  | declarations expression ';' {printf("expressions\n");}
-  | assignment_expression ';'
-  | declarations assignment_expression ';'
+  | expression_statement
+  | declarations expression_statement
   ;
-/*
+
 type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
-  | TYPE ID INTERFACE '{' interface_method_declarations '}'
-  | TYPE ID type_specifier semicolons
+  | TYPE ID INTERFACE '{' interface_function_declarations '}'
+  | TYPE ID type_name semicolons
   ;
 
 field_declarations
@@ -212,18 +215,39 @@ field_declarations
   ;
 
 field_declaration
-  : ID type_specifier semicolons
+  : ID type_name semicolons
   ;
 
-interface_method_declarations
-  : interface_method_declaration
-  | interface_method_declarations interface_method_declaration
+interface_function_declarations
+  : interface_function_declaration
+  | interface_function_declarations interface_function_declaration
   ;
 
-interface_method_declaration
-  : FUNC ID '(' para_type_list ')' semicolons
+interface_function_declaration
+  : FUNC ID '(' ')' semicolons
+  | FUNC ID '(' ')' return_type_list semicolons
+  | FUNC ID '(' parameter_type_list ')' semicolons
+  | FUNC ID '(' parameter_type_list ')' return_type_list semicolons
+  | FUNC ID '(' parameter_list ')' semicolons
+  | FUNC ID '(' parameter_list ')' return_type_list semicolons
   ;
 
+return_type_list
+  : type_name
+  | '(' type_name_list ')'
+  ;
+
+parameter_type_list
+  : type_name
+  | parameter_type_list ',' type_name
+  ;
+
+parameter_list
+  : ID type_name
+  | parameter_list ',' ID type_name
+  ;
+
+/*
 type_specifier
   : primitive_type
   | FUNC '(' para_type_list ')' return_type_list
@@ -570,6 +594,11 @@ compound_assignment_operator
   | XOR_ASSIGN
   | RIGHT_ASSIGN
   | LEFT_ASSIGN
+  ;
+
+expression_statement
+  : expression semicolons
+  | assignment_expression semicolons
   ;
 
 /*--------------------------------------------------------------------------*/

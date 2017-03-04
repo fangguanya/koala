@@ -164,6 +164,30 @@ bool{true};
 
 a = Person{1,{1,2}, {1,2,{3}}, 4, a + 3};
 
+//类型定义
+/*
+type Person struct {
+  //不能为空
+}
+*/
+type Name struct {
+  FirstName string;
+  FamilyName string;
+}
+
+type Person struct {
+  name Name;
+  age int32;
+}
+
+type UINT32 uint32;
+type Person2 system.Person; //再定义
+
+type say interface {
+  func sayHello(message string);
+  func replyHello() string;
+}
+
 //数组初始化
 //接口初始化
 //匿名函数
