@@ -1,0 +1,6 @@
+*.output
+*.out
+koala
+koala_lex.c
+koala_yacc.c
+koala_yacc.h
