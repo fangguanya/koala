@@ -192,6 +192,8 @@ type say interface {
   func replyHello(p interface{}) string;
 }
 
+var call say = say{sayHello: calc, replyHello: calc};
+
 type NewSay say;
 
 type say_prototype func(string, Person, [2][3]interface{}) string;
@@ -232,11 +234,11 @@ var a, b Person;
 var a, b interface{} = null, 0;
 
 //数组定义
-var a [2][3]uint32;
+var a [2][3]uint32 = {{1,2,3}, {4,5,6}};
 var a [2][3] interface{};
 var a [2]Person;
 
-var bb [2]func(string, Person, interface{}) string;
+//var bb [2]func(string, Person, interface{}) string;
 
 //类型：內建类型，type定义类型
 //unicode
