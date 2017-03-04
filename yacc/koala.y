@@ -207,8 +207,8 @@ import_statement
 declarations
   : type_declaration
   | declarations type_declaration
-  //| var_declaration
-  //| declarations var_declaration
+  | variable_declaration
+  | declarations variable_declaration
   | function_declaration
   | declarations function_declaration
   | method_declaration
@@ -296,6 +296,22 @@ code_block
   ;
 
 /*--------------------------------------------------------------------------*/
+variable_declaration
+  : VAR variable_list variable_type semicolons
+  | VAR variable_list '=' expression_list semicolons
+  | VAR variable_list variable_type '=' expression_list semicolons
+  ;
+
+variable_list
+  : ID
+  | variable_list ',' ID
+  ;
+
+variable_type
+  : type_name
+  | function_type
+  ;
+
 /*
 var_declaration
   : VAR var_list type_specifier semicolons

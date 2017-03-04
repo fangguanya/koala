@@ -198,9 +198,6 @@ type say_prototype func(string, Person, [2][3]interface{}) string;
 
 //func sayError(string, Person); //不允许函数原型声明
 
-a = func(msg string, to Person, from interface{}) string {
-
-};
 
 //函数定义
 func calc(a int32, b int32) int32 {
@@ -216,6 +213,30 @@ func Person.calc(a int32, b int32) int32 {
 a = [10][20]int32{{1,2,3}, {1,2,3}};
 
 //接口初始化
+
 //匿名函数
+a = func(msg string, to Person, from interface{}) string {
+
+};
+
+//变量定义
+var a = 100;
+var a, b, c = 1+23*4, (2+3), func(msg string, to Person, from interface{}) string {
+
+};
+
+var a int32;
+var a, b int32;
+var a, b, c, d func(string, Person, interface{});
+var a, b Person;
+var a, b interface{} = null, 0;
+
+//数组定义
+var a [2][3]uint32;
+var a [2][3] interface{};
+var a [2]Person;
+
+var bb [2]func(string, Person, interface{}) string;
+
 //类型：內建类型，type定义类型
 //unicode
