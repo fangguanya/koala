@@ -200,7 +200,7 @@ type say_prototype func(string, Person, [2][3]interface{}) string;
 
 a = func(msg string, to Person, from interface{}) string {
 
-}
+};
 
 
 //数组初始化

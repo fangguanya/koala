@@ -98,6 +98,7 @@ int yylex(void);
 
 %nonassoc IFX
 %nonassoc ELSE
+%nonassoc NO_CODE_BLOCK
 
 /*
 %right '='
@@ -143,7 +144,6 @@ type_name_list
 type_name
   : primitive_type
   | qualified_name
-  | function_type
   | array_type
   ;
 
@@ -209,8 +209,8 @@ declarations
   | declarations type_declaration
   //| var_declaration
   //| declarations var_declaration
-  //| function_declaration
-  //| declarations function_declaration
+  | function_declaration
+  | declarations function_declaration
   //| method_declaration
   //| declarations method_declaration
   | expression_statement
@@ -221,6 +221,7 @@ type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
   | TYPE ID INTERFACE '{' interface_function_declarations '}'
   | TYPE ID type_name semicolons
+  | TYPE ID function_type semicolons
   ;
 
 field_declarations
@@ -262,20 +263,25 @@ parameter_list
   ;
 
 /*--------------------------------------------------------------------------*/
-/*
+
 function_declaration
-  : FUNC ID '(' para_list ')' return_type_list code_block
+  : FUNC ID '(' ')' code_block
+  | FUNC ID '(' ')' return_type_list code_block
+  | FUNC ID '(' parameter_list ')' code_block
+  | FUNC ID '(' parameter_list ')' return_type_list code_block
   ;
 
-para_list
-  : ID type_specifier
-  | para_list ',' ID type_specifier
+anonymous_function_declaration
+  : FUNC '(' ')' code_block
+  | FUNC '(' ')' return_type_list code_block
+  | FUNC '(' parameter_list ')' code_block
+  | FUNC '(' parameter_list ')' return_type_list code_block
   ;
 
 code_block
   : '{' '}'
   ;
-*/
+
 /*--------------------------------------------------------------------------*/
 /*
 method_declaration
@@ -442,6 +448,7 @@ method_access
 
 initializer_expression
   : struct_initializer
+  | anonymous_function_declaration
   //| interface_initializer
   ;
 
