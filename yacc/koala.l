@@ -37,6 +37,7 @@ L   [a-zA-Z_]
 "<<="                     {return LEFT_ASSIGN;}
 "..."                     {return ELLIPSIS;}
 
+"interface{}"             {return ANY_TYPE;}
 
 "if"                      {return IF;}
 "else"                    {return ELSE;}

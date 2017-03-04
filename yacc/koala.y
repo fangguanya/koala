@@ -80,7 +80,7 @@ int yylex(void);
 %token FLOAT64
 %token BOOL
 %token STRING
-
+%token ANY_TYPE
 %token TOKEN_NULL
 
 %token TOKEN_TRUE
@@ -144,7 +144,7 @@ type_name
   : primitive_type
   | qualified_name
   | function_type
-  | interface_root_type
+  | array_type
   ;
 
 primitive_type
@@ -160,6 +160,7 @@ primitive_type
   | FLOAT64
   | BOOL
   | STRING
+  | ANY_TYPE
   ;
 
 function_type
@@ -169,8 +170,8 @@ function_type
   | FUNC '(' parameter_type_list ')' return_type_list
   ;
 
-interface_root_type
-  : INTERFACE '{' '}'
+array_type
+  : '[' INTEGER ']' type_name
   ;
 
 field_name

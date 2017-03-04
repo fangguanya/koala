@@ -100,16 +100,17 @@ extern int yydebug;
     FLOAT64 = 310,
     BOOL = 311,
     STRING = 312,
-    TOKEN_NULL = 313,
-    TOKEN_TRUE = 314,
-    TOKEN_FALSE = 315,
-    INTEGER = 316,
-    HEX = 317,
-    OCT = 318,
-    FLOAT = 319,
-    STRING_LITERAL = 320,
-    ID = 321,
-    IFX = 322
+    ANY_TYPE = 313,
+    TOKEN_NULL = 314,
+    TOKEN_TRUE = 315,
+    TOKEN_FALSE = 316,
+    INTEGER = 317,
+    HEX = 318,
+    OCT = 319,
+    FLOAT = 320,
+    STRING_LITERAL = 321,
+    ID = 322,
+    IFX = 323
   };
 #endif
 
@@ -127,7 +128,7 @@ union YYSTYPE
   struct value *value;
   struct list_head *list;
 
-#line 131 "koala_yacc.h" /* yacc.c:1909  */
+#line 132 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
