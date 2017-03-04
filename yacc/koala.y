@@ -213,8 +213,6 @@ declarations
   | declarations function_declaration
   | method_declaration
   | declarations method_declaration
-  | expression_statement
-  | declarations expression_statement
   ;
 
 type_declaration
@@ -292,14 +290,78 @@ method_name
   ;
 
 code_block
-  : '{' '}'
+  : '{' local_variable_declaration_statements '}'
+  | '{' '}'
+  ;
+
+/*--------------------------------------------------------------------------*/
+local_variable_declaration_statements
+  : local_variable_declaration_statement
+  | local_variable_declaration_statements local_variable_declaration_statement
+  ;
+
+local_variable_declaration_statement
+  : variable_declaration
+  | statemnet
+  ;
+
+statemnet
+  : expression_statement ';'
+  | selection_statement
+  | iteration_statemnet
+  | jump_statement
+  ;
+
+selection_statement
+  : if_statement
+  | switch_statement
+  ;
+
+if_statement
+  : IF '(' expression ')' code_block
+  | IF '(' expression ')' code_block ELSE else_statemnet
+  ;
+
+else_statemnet
+  : if_statement
+  | code_block
+  ;
+
+switch_statement
+  : SWITCH '(' expression ')' code_block
+  ;
+
+iteration_statemnet
+  : WHILE '(' expression ')' code_block
+  | DO code_block WHILE '(' expression ')' ';'
+  | FOR '(' for_init for_expr for_incr ')' code_block
+  ;
+
+for_init
+  : expression_statement ';'
+  | variable_declaration
+  | ';'
+  ;
+
+for_expr
+  : expression ';'
+  | ';'
+  ;
+
+for_incr
+  : expression_statement
+  ;
+
+jump_statement
+  : RETURN ';'
+  | RETURN expression_list ';'
   ;
 
 /*--------------------------------------------------------------------------*/
 variable_declaration
-  : VAR variable_list variable_type semicolons
-  | VAR variable_list '=' expression_list semicolons
-  | VAR variable_list variable_type '=' expression_list semicolons
+  : VAR variable_list variable_type ';'
+  | VAR variable_list '=' expression_list ';'
+  | VAR variable_list variable_type '=' expression_list ';'
   ;
 
 variable_list
@@ -622,8 +684,8 @@ compound_assignment_operator
   ;
 
 expression_statement
-  : expression semicolons
-  | assignment_expression semicolons
+  : expression
+  | assignment_expression
   ;
 
 /*--------------------------------------------------------------------------*/

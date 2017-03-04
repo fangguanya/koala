@@ -4,6 +4,9 @@
 this is a multi-line-comment
 */
 
+func global() {
+/*
+*/
 //数组成员为基本类型
 a[0];
 a[1][2];
@@ -174,6 +177,8 @@ type Person struct {
   //不能为空
 }
 */
+}
+
 type Name struct {
   FirstName string;
   FamilyName string;
@@ -208,9 +213,12 @@ func calc(a int32, b int32) int32 {
 
 //方法定义
 func Person.calc(a int32, b int32) int32 {
-
+  this.name = 10;
+  this.age = 30;
+  return a + b, a * b;
 }
 
+func two() string {
 //数组初始化
 a = [10][20]int32{{1,2,3}, {1,2,3}};
 
@@ -238,6 +246,48 @@ var a [2][3]uint32 = {{1,2,3}, {4,5,6}};
 var a [2][3] interface{};
 var a [2]Person;
 
+}
+
+
+//语句
+func main(argc int, argv [10]string) {
+  var def = 100;
+
+  if (a > b && a > 10) {
+    a += 10;
+  }
+  else if (a < b) {
+    b += 20;
+    var ok = "ab";
+  }
+  else {
+    if (a == b) {
+      a = 0; b = 0;
+    } else {
+      var ab int32;
+    }
+  }
+
+  if (true) {
+    a = 1;
+    return a;
+  }
+  else {
+    return b;
+  }
+
+  for (var a = 0; a < 10; a++) {
+    system.print("hello, world");
+  }
+
+  do {
+    if (a > b) {return true;} else {return false;}
+  } while (0);
+
+  while (true) {
+    return ok;
+  }
+}
 //var bb [2]func(string, Person, interface{}) string;
 
 //类型：內建类型，type定义类型
