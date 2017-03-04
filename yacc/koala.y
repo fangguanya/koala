@@ -135,6 +135,30 @@ qualified_name
   | qualified_name '.' ID
   ;
 
+type_name
+  : primitive_type
+  | qualified_name
+  ;
+
+primitive_type
+  : UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | INT8
+  | INT16
+  | INT32
+  | INT64
+  | FLOAT32
+  | FLOAT64
+  | BOOL
+  | STRING
+  ;
+
+field_name
+  : ID
+  ;
+
 program
   : package_statement import_statements declarations
   | package_statement import_statements
@@ -344,6 +368,7 @@ primary_expression
 
 just_not_name
   : TOKEN_THIS
+  | initializer_expression
   | complex_primary
   ;
 
@@ -392,6 +417,31 @@ method_call
 method_access
   : complex_primary_no_parenthesis
   | qualified_name
+  ;
+
+/*-------------------------------------------------------------------------*/
+
+initializer_expression
+  : struct_initializer
+  //| interface_initializer
+  ;
+
+struct_initializer
+  : '{' '}'
+  | '{' expression_list '}'
+  | '{' field_initializer_list '}'
+  | type_name '{' '}'
+  | type_name '{' expression_list '}'
+  | type_name '{' field_initializer_list '}'
+  ;
+
+field_initializer_list
+  : field_initializer
+  | field_initializer_list ',' field_initializer
+  ;
+
+field_initializer
+  : field_name ':' expression
   ;
 
 /*-------------------------------------------------------------------------*/
