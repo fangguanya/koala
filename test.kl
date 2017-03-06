@@ -1,0 +1,7 @@
+#!/media/psf/Home/Projects/koala/koala
+
+func main()
+{
+  !false;
+  2+3;
+}

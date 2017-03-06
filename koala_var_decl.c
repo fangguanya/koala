@@ -77,3 +77,54 @@ struct value *new_value()
   INIT_LIST_HEAD(&val->val_node);
   return val;
 }
+
+struct expr_node *new_expr_node(int type)
+{
+  struct expr_node *node = malloc(sizeof(*node));
+  node->type = type;
+  node->left = node->right = null;
+  node->i = 0;
+  return node;
+}
+
+void show_node_type(struct expr_node *node)
+{
+
+}
+
+void expr_node_print(struct expr_node *node)
+{
+  printf("type:%d\n", node->type);
+  switch (node->type)
+  {
+    case ID:
+    {
+      printf("value:%s(ID)\n", STRING_GET(node->s));
+      break;
+    }
+    case INTEGER:
+    {
+      printf("value:%lld(INT)\n", node->i);
+      break;
+    }
+    case OP:
+    {
+      printf("value:ADD(OP)\n");
+      break;
+    }
+    default:
+    {
+      printf("Unknown type(%d)\n", node->type);
+      break;
+    }
+  }
+}
+void expr_tree_print(struct expr_node *tree)
+{
+  if (tree == null)
+    return;
+
+  expr_tree_print(tree->left);
+  expr_node_print(tree);
+  expr_tree_print(tree->right);
+}

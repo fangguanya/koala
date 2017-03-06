@@ -12,12 +12,14 @@ int yylex(void);
 %}
 
 %union {
+  char unary_op;
   char *ident;
-  uint64 ival;
-  double fval;
+  int64 ival;
+  float64 fval;
   char *str_val;
   struct value *value;
   struct list_head *list;
+  struct expr_node *expr_node;
 }
 
 %token ELLIPSIS
@@ -93,6 +95,7 @@ int yylex(void);
 
 %token <str_val> STRING_LITERAL
 %token <ident> ID
+%token OP
 
 /*--------------------------------------------------------------------------*/
 
@@ -118,9 +121,28 @@ int yylex(void);
 */
 
 /*--------------------------------------------------------------------------*/
-  //%type <list> var_list
-  //%type <list> var_init_list
-  //%type <value> base_value
+%type <expr_node> qualified_name
+%type <expr_node> literal_name
+%type <expr_node> complex_primary_no_parenthesis
+%type <expr_node> complex_primary
+%type <expr_node> just_not_name
+%type <expr_node> primary_expression
+%type <expr_node> postfix_expression
+%type <expr_node> unary_expression
+%type <expr_node> multiplicative_expression
+%type <expr_node> additive_expression
+%type <expr_node> shift_expression
+%type <expr_node> relational_expression
+%type <expr_node> equality_expression
+%type <expr_node> and_expression
+%type <expr_node> exclusive_or_expression
+%type <expr_node> inclusive_or_expression
+%type <expr_node> logical_and_expression
+%type <expr_node> logical_or_expression
+%type <expr_node> expression
+%type <expr_node> expression_statement
+
+%type <unary_op> unary_operator
 
 %start program
 
@@ -128,11 +150,14 @@ int yylex(void);
 
 semicolons
   : ';'
-  | semicolons ';'
   ;
 
 qualified_name
-  : ID
+  : ID {
+    struct expr_node *node = new_expr_node(ID);
+    STRING_SET(node->s, $1);
+    $$ = node;
+  }
   | qualified_name '.' ID
   ;
 
@@ -306,7 +331,9 @@ local_variable_declaration_statement
   ;
 
 statemnet
-  : expression_statement ';'
+  : expression_statement ';' {
+    expr_tree_print($1);
+  }
   | selection_statement
   | iteration_statemnet
   | jump_statement
@@ -472,35 +499,79 @@ field_init
 /*-------------------------------------------------------------------------*/
 
 primary_expression
-  : qualified_name
-  | just_not_name
+  : qualified_name {
+    $$ = $1;
+  }
+  | just_not_name {
+    $$ = $1;
+  }
   ;
 
 just_not_name
-  : TOKEN_THIS
-  | initializer_expression
-  | complex_primary
+  : TOKEN_THIS {
+
+  }
+  | initializer_expression {
+
+  }
+  | complex_primary {
+    $$ = $1;
+  }
   ;
 
 complex_primary
-  : '(' expression ')'
-  | complex_primary_no_parenthesis
+  : '(' expression ')' {
+
+  }
+  | complex_primary_no_parenthesis {
+    $$ = $1;
+  }
   ;
 
 complex_primary_no_parenthesis
-  : literal_name
-  | array_access
-  | field_access
-  | method_call
+  : literal_name {
+    $$ = $1;
+  }
+  | array_access {
+
+  }
+  | field_access {
+
+  }
+  | method_call {
+
+  }
   ;
 
 literal_name  //常量允许访问成员变量和成员方法，不允许数组操作
-  : INTEGER   {printf("%llu\n", $1);}
-  | FLOAT
-  | STRING_LITERAL
-  | TOKEN_NULL
-  | TOKEN_TRUE
-  | TOKEN_FALSE
+  : INTEGER {
+    struct expr_node *node = new_expr_node(INTEGER);
+    node->i = $1;
+    $$ = node;
+  }
+  | FLOAT {
+
+  }
+  | STRING_LITERAL {
+    struct expr_node *node = new_expr_node(STRING_LITERAL);
+    STRING_SET(node->s, $1);
+    $$ = node;
+  }
+  | TOKEN_NULL {
+    struct expr_node *node = new_expr_node(TOKEN_NULL);
+    node->f = 0.0;
+    $$ = node;
+  }
+  | TOKEN_TRUE {
+    struct expr_node *node = new_expr_node(BOOL);
+    node->b = 1;
+    $$ = node;
+  }
+  | TOKEN_FALSE {
+    struct expr_node *node = new_expr_node(BOOL);
+    node->b = 0;
+    $$ = node;
+  }
   ;
 
 array_complex_primary
@@ -558,8 +629,12 @@ field_initializer
 /*-------------------------------------------------------------------------*/
 
 postfix_expression
-  : primary_expression
-  | real_postfix_expression
+  : primary_expression {
+    $$ = $1;
+  }
+  | real_postfix_expression {
+
+  }
   ;
 
 real_postfix_expression
@@ -572,40 +647,92 @@ argument_list
 	;
 
 unary_expression
-  : postfix_expression
-  | INC unary_expression
-  | DEC unary_expression
-  | unary_operator unary_expression
+  : postfix_expression {
+    $$ = $1;
+  }
+  | INC unary_expression {
+
+  }
+  | DEC unary_expression {
+
+  }
+  | unary_operator unary_expression {
+    if ($1 == '+') {
+      $$ = $2;
+    } else if ($1 == '-') {
+      $2->i = - $2->i;
+      $$ = $2;
+    } else if ($1 == '~') {
+      $2->i = ~$2->i;
+      $$ = $2;
+    } else {
+      if ($2->type == BOOL) {
+        $2->b = !$2->b;
+        $$ = $2;
+      } else {
+        yyerror("not a bool type, cannot NOT operation\n");
+        exit(-1);
+      }
+    }
+  }
   ;
 
 unary_operator
-  : '+'
-  | '-'
-	| '~'
-	| '!'
+  : '+' {
+    $$ = '+';
+  }
+  | '-' {
+    $$ = '-';
+  }
+	| '~' {
+    $$ = '~';
+  }
+	| '!' {
+    $$ = '!';
+  }
 	;
 
 multiplicative_expression
-	: unary_expression {}
-	| multiplicative_expression '*' unary_expression {}
-	| multiplicative_expression '/' unary_expression {}
-	| multiplicative_expression '%' unary_expression {}
+	: unary_expression {
+    $$ = $1;
+  }
+	| multiplicative_expression '*' unary_expression {
+
+  }
+	| multiplicative_expression '/' unary_expression {
+
+  }
+	| multiplicative_expression '%' unary_expression {
+
+  }
 	;
 
 additive_expression
-	: multiplicative_expression {}
-	| additive_expression '+' multiplicative_expression {}
+	: multiplicative_expression {
+    $$ = $1;
+  }
+	| additive_expression '+' multiplicative_expression {
+    struct expr_node *node = new_expr_node(OP);
+    node->op = '+';
+    node->left = $1;
+    node->right = $3;
+    $$ = node;
+  }
 	| additive_expression '-' multiplicative_expression {}
 	;
 
 shift_expression
-	: additive_expression {}
+	: additive_expression {
+    $$ = $1;
+  }
 	| shift_expression SHIFT_LEFT additive_expression {}
 	| shift_expression SHIFT_RIGHT additive_expression {}
 	;
 
 relational_expression
-	: shift_expression {}
+	: shift_expression {
+    $$ = $1;
+  }
 	| relational_expression '<' shift_expression {}
 	| relational_expression '>' shift_expression {}
 	| relational_expression LE  shift_expression {}
@@ -613,38 +740,52 @@ relational_expression
 	;
 
 equality_expression
-	: relational_expression {}
+	: relational_expression {
+    $$ = $1;
+  }
 	| equality_expression EQ relational_expression {}
 	| equality_expression NE relational_expression {}
 	;
 
 and_expression
-	: equality_expression {}
+	: equality_expression {
+    $$ = $1;
+  }
 	| and_expression '&' equality_expression {}
 	;
 
 exclusive_or_expression
-	: and_expression {}
+	: and_expression {
+    $$ = $1;
+  }
 	| exclusive_or_expression '^' and_expression {}
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression {}
+	: exclusive_or_expression {
+    $$ = $1;
+  }
 	| inclusive_or_expression '|' exclusive_or_expression {}
 	;
 
 logical_and_expression
-  : inclusive_or_expression {}
+  : inclusive_or_expression {
+    $$ = $1;
+  }
   | logical_and_expression AND inclusive_or_expression {}
   ;
 
 logical_or_expression
-  : logical_and_expression {}
+  : logical_and_expression {
+    $$ = $1;
+  }
   | logical_or_expression OR logical_and_expression {}
   ;
 
 expression
-  : logical_or_expression
+  : logical_or_expression {
+    $$ = $1;
+  }
   ;
 
 expression_list
@@ -684,8 +825,12 @@ compound_assignment_operator
   ;
 
 expression_statement
-  : expression
-  | assignment_expression
+  : expression {
+    $$ = $1;
+  }
+  | assignment_expression {
+
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -752,9 +897,16 @@ void yyecho(char *str)
 
 extern FILE *yyin;
 
-int main()
+int main(int argc, char *argv[])
 {
+  int i;
+  printf("%d\n", argc);
+  for (i = 0; i < argc; i++)
+  {
+    printf("%s\n", argv[i]);
+  }
+
   koala_compiler_init();
-  yyin = fopen("./test.koala", "r");
+  yyin = fopen(argv[1], "r");
   yyparse();
 }

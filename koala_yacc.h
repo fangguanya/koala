@@ -110,8 +110,9 @@ extern int yydebug;
     FLOAT = 320,
     STRING_LITERAL = 321,
     ID = 322,
-    IFX = 323,
-    NO_CODE_BLOCK = 324
+    OP = 323,
+    IFX = 324,
+    NO_CODE_BLOCK = 325
   };
 #endif
 
@@ -122,14 +123,16 @@ union YYSTYPE
 {
 #line 14 "yacc/koala.y" /* yacc.c:1909  */
 
+  char unary_op;
   char *ident;
-  uint64 ival;
-  double fval;
+  int64 ival;
+  float64 fval;
   char *str_val;
   struct value *value;
   struct list_head *list;
+  struct expr_node *expr_node;
 
-#line 133 "koala_yacc.h" /* yacc.c:1909  */
+#line 136 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

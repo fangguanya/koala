@@ -14,9 +14,19 @@ typedef signed   int        int32;
 typedef unsigned int        uint32;
 typedef signed   long long  int64;
 typedef unsigned long long  uint64;
+typedef float               float32;
+typedef double              float64;
+typedef int                 bool;
+
 typedef struct string {
   char *val;
 } string;
+
+#define STRING_SET(string, str) do {  \
+  (string).val = (str);               \
+} while (0)
+
+#define STRING_GET(string) ((string).val)
 
 #define KOALA_TYPE_UINT8    1
 #define KOALA_TYPE_UINT16   2
