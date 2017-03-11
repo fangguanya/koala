@@ -37,8 +37,6 @@ L   [a-zA-Z_]
 "<<="                     {return LEFT_ASSIGN;}
 "..."                     {return ELLIPSIS;}
 
-"interface{}"             {return ANY_TYPE;}
-
 "if"                      {return IF;}
 "else"                    {return ELSE;}
 "while"                   {return WHILE;}
@@ -76,7 +74,8 @@ L   [a-zA-Z_]
 "this"                    {return TOKEN_THIS;}
 "true"                    {return TOKEN_TRUE;}
 "false"                   {return TOKEN_FALSE;}
-"null"                    {return TOKEN_NULL;}
+"nil"                     {return TOKEN_NIL;}
+"null"                    {return TOKEN_NIL;}
 
 ([1-9][0-9]*|[0])         {
                             echo();

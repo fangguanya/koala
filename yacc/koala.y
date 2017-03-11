@@ -82,8 +82,7 @@ int yylex(void);
 %token FLOAT64
 %token BOOL
 %token STRING
-%token ANY_TYPE
-%token TOKEN_NULL
+%token TOKEN_NIL
 
 %token TOKEN_TRUE
 %token TOKEN_FALSE
@@ -103,27 +102,9 @@ int yylex(void);
 %nonassoc ELSE
 %nonassoc NO_CODE_BLOCK
 
-/*
-%right '='
-%left OR
-%left AND
-%left '|'
-%left '^'
-%left '&'
-%left EQ NE
-%left '>' '<' GE LE
-%left SHIFT_LEFT SHIFT_RIGHT
-%left '+' '-'
-%left '*' '/' '%'
-%left NEG
-%right '~' '!' INC DEC
-%left '.'
-*/
-
 /*--------------------------------------------------------------------------*/
 %type <expr_node> qualified_name
 %type <expr_node> literal_name
-%type <expr_node> complex_primary_no_parenthesis
 %type <expr_node> complex_primary
 %type <expr_node> just_not_name
 %type <expr_node> primary_expression
@@ -185,7 +166,7 @@ primitive_type
   | FLOAT64
   | BOOL
   | STRING
-  | ANY_TYPE
+  | INTERFACE '{' '}'
   ;
 
 function_type
@@ -243,8 +224,7 @@ declarations
 type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
   | TYPE ID INTERFACE '{' interface_function_declarations '}'
-  | TYPE ID type_name semicolons
-  | TYPE ID function_type semicolons
+  | TYPE ID variable_type semicolons
   ;
 
 field_declarations
@@ -262,12 +242,12 @@ interface_function_declarations
   ;
 
 interface_function_declaration
-  : FUNC ID '(' ')' semicolons
-  | FUNC ID '(' ')' return_type_list semicolons
-  | FUNC ID '(' parameter_type_list ')' semicolons
-  | FUNC ID '(' parameter_type_list ')' return_type_list semicolons
-  | FUNC ID '(' parameter_list ')' semicolons
-  | FUNC ID '(' parameter_list ')' return_type_list semicolons
+  : ID '(' ')' semicolons
+  | ID '(' ')' return_type_list semicolons
+  | ID '(' parameter_type_list ')' semicolons
+  | ID '(' parameter_type_list ')' return_type_list semicolons
+  | ID '(' parameter_list ')' semicolons
+  | ID '(' parameter_list ')' return_type_list semicolons
   ;
 
 return_type_list
@@ -401,106 +381,14 @@ variable_type
   | function_type
   ;
 
-/*
-var_declaration
-  : VAR var_list type_specifier semicolons
-  | VAR var_list '=' var_init_list semicolons {
-    printf("VAR\n");
-    struct var_decl_stmt *stmt = new_var_decl_stmt();
-    stmt->ident_list = $2;
-    stmt->value_list = $4;
-    add_stmt(&stmt->stmt);
-    show_var_decl(stmt);
-  }
-  | VAR var_list type_specifier '=' var_init_list semicolons
-  // | VAR error
-  ;
-
-var_list
-  : ID {
-    $$ = new_list();
-    struct variable *var = new_variable($1);
-    LIST_ADD_TAIL($$, &var->var_node);
-    printf("ID\n");
-  }
-  | var_list ',' ID {
-    struct variable *var = new_variable($3);
-    LIST_ADD_TAIL($1, &var->var_node);
-    $$ = $1;
-    printf("ID-LIST\n");
-  }
-  ;
-
-var_init_list
-  : base_value {
-    $$ = new_list();
-    LIST_ADD_TAIL($$, &$1->val_node);
-  }
-  | var_init_list ',' base_value {
-    LIST_ADD_TAIL($1, &$3->val_node);
-    $$ = $1;
-    printf("VAR-INIT-LIST\n");
-  }
-  ;
-
-base_value
-  : INTEGER {
-    struct value *val = new_value();
-    val->type = KOALA_TYPE_UINT64;
-    val->i = $1;
-    $$ = val;
-    printf("INTEGER:%llu\n", $1);
-  }
-  | FLOAT {
-
-  }
-  | STRING_LITERAL {
-
-  }
-  | TRUE {
-    struct value *val = new_value();
-    val->type = KOALA_TYPE_BOOL;
-    val->b = 1;
-    $$ = val;
-    printf("BOOL:true\n");
-  }
-  | FALSE {
-    struct value *val = new_value();
-    val->type = KOALA_TYPE_BOOL;
-    val->b = 0;
-    $$ = val;
-    printf("BOOL:false\n");
-  }
-  | ID {  // FUNCTION
-
-  }
-  | ID '{' field_init_list '}' { // STRUCT INTERFACE
-
-  }
-  | '{' field_init_list '}' {
-
-  }
-  ;
-*/
-
-/*
-field_init_list
-  : %empty
-  | field_init
-  | field_init_list ',' field_init
-  ;
-
-field_init
-  : base_value
-  | ID ':' base_value
-  ;
-*/
-
 /*-------------------------------------------------------------------------*/
 
 primary_expression
   : qualified_name {
     $$ = $1;
+  }
+  | literal_name {
+
   }
   | just_not_name {
     $$ = $1;
@@ -511,7 +399,7 @@ just_not_name
   : TOKEN_THIS {
 
   }
-  | initializer_expression {
+  | '(' expression ')' {
 
   }
   | complex_primary {
@@ -520,19 +408,7 @@ just_not_name
   ;
 
 complex_primary
-  : '(' expression ')' {
-
-  }
-  | complex_primary_no_parenthesis {
-    $$ = $1;
-  }
-  ;
-
-complex_primary_no_parenthesis
-  : literal_name {
-    $$ = $1;
-  }
-  | array_access {
+  : array_access {
 
   }
   | field_access {
@@ -557,8 +433,8 @@ literal_name  //常量允许访问成员变量和成员方法，不允许数组�
     STRING_SET(node->s, $1);
     $$ = node;
   }
-  | TOKEN_NULL {
-    struct expr_node *node = new_expr_node(TOKEN_NULL);
+  | TOKEN_NIL {
+    struct expr_node *node = new_expr_node(TOKEN_NIL);
     node->f = 0.0;
     $$ = node;
   }
@@ -596,7 +472,7 @@ method_call
   ;
 
 method_access
-  : complex_primary_no_parenthesis
+  : complex_primary
   | qualified_name
   ;
 
@@ -788,9 +664,14 @@ expression
   }
   ;
 
-expression_list
+expressions
   : expression
-  | expression_list ',' expression
+  | initializer_expression
+  ;
+
+expression_list
+  : expressions
+  | expression_list ',' expressions
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -834,51 +715,6 @@ expression_statement
   ;
 
 /*--------------------------------------------------------------------------*/
-
-/*
-assignment_expression
-  //: logical_or_expression
-  //| unary_expression assignment_operator assignment_expression
-  : var_list assignment_operator logical_or_expression
-  ;
-
-assignment_operator
-  : '='
-  ;
-
-expression
-  : assignment_expression
-  | expression {printf("expression\n");}
-  ;
-*/
-
-/*
-array_type
-  : '[' ']' type_specifier
-  | '[' INTEGER ']' type_specifier
-  | array_type '[' ']' type_specifier
-  | array_type '[' INTEGER ']' type_specifier
-  ;
-*/
-
-/*
-primitive_type
-  : UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-  | INT8
-  | INT16
-  | INT32
-  | INT64
-  | FLOAT32
-  | FLOAT64
-  | BOOL
-  | STRING
-  | INTERFACE '{' '}'
-  // | array_type
-  ;
-*/
 
 %%
 
