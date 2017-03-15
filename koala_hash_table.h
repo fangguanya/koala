@@ -3,18 +3,21 @@
 #define _KOALA_HASH_TABLE_H_
 
 #include "koala_hlist.h"
+#include "koala_list.h"
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 
 #define HT_LOAD_FACTOR  0.65
 
 struct hash_node {
+    struct list_head node;      /* linked list's node */
     struct hlist_node link;     /* conflict list */
     void *key;                  /* hash key */
     uint32 hash_value;          /* hash value */
 };
 
 #define HASH_NODE_INIT(hnode, _key) do {    \
+    INIT_LIST_HEAD(&(hnode)->node);         \
     INIT_HLIST_NODE(&(hnode)->link);        \
     (hnode)->key = _key;                    \
     (hnode)->hash_value = 0;                \
@@ -30,6 +33,7 @@ struct hash_table {
     uint32 prime_idx;           /* prime array index, internal used */
     uint32 num_nodes;           /* number of nodes in hash table */
     struct hlist_head *entries; /* conflict list array */
+    struct list_head list;      /* inserted order list */
     ht_hash_fn hash_fn;         /* hash function */
     ht_equal_fn equal_fn;       /* equal function */
     ht_free_fn free_fn;         /* free hash node function */
@@ -64,22 +68,13 @@ void hash_table_remove(struct hash_table *table, struct hash_node *node);
 
 /* Insert a node to the hash table */
 int hash_table_insert(struct hash_table *table, struct hash_node *node);
+int hash_table_insert_unique(struct hash_table *table, struct hash_node *node);
 
-/* Hash table iterator */
-struct ht_iterator {
-    struct hlist_head *entries;
-    uint32 nr_slots;
-    uint32 index;
-    struct hash_node *next;
-};
-/*
- * ht_iterator_init(table, &iter);
- * while ((node = ht_iterator_next(iter)) != NULL) {
- *     doSomethingWith(node);
- * }
- */
-int ht_iterator_init(struct hash_table *table, struct ht_iterator *iter);
-struct hash_node *ht_iterator_next(struct ht_iterator *iter);
+/* Get linked list */
+struct list_head *hash_table_get_list(struct hash_table *table);
+
+void hash_table_show(struct hash_table *table,
+                     void (*show)(struct hlist_node *));
 
 /* Hash Functions: */
 

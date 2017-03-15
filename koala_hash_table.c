@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "koala_hash_table.h"
@@ -98,6 +99,8 @@ static int __hash_table_init(struct hash_table *table,
     table->equal_fn     = equal_fn;
     table->free_fn      = free_fn;
 
+    INIT_LIST_HEAD(&table->list);
+
     return 0;
 }
 
@@ -127,16 +130,16 @@ struct hash_table *hash_table_new(ht_hash_fn hash_fn,
 
 void hash_table_fini(struct hash_table *table)
 {
-    struct hlist_node *var;
-    struct hlist_node *tvar;
+    struct list_head *var;
+    struct list_head *nxt;
+    struct hlist_node *hnode;
     uint32 i;
 
-    for (i = 0; i < HASH_TABLE_NR_SLOTS(table); i++) {
-        HLIST_FOR_EACH_SAFE(var, tvar, &table->entries[i]) {
-            HLIST_REMOVE(var);
-            if (table->free_fn)
-                table->free_fn((struct hash_node *)var);
-        }
+    LIST_FOR_EACH_SAFE(var, nxt, &table->list) {
+        LIST_DEL(var);
+        hnode = &PARENT_STRUCT(var, struct hash_node, node)->link;
+        HLIST_REMOVE(hnode);
+        if (table->free_fn) table->free_fn((struct hash_node *)var);
     }
 
     __free_entries(table->entries);
@@ -181,6 +184,7 @@ void hash_table_remove(struct hash_table *table, struct hash_node *node)
     if (!hash_table_lookup(table, node->key))
         return;
 
+    LIST_DEL(&node->node);
     HLIST_REMOVE(&node->link);
     --table->num_nodes;
 }
@@ -192,9 +196,9 @@ static int __hash_table_insert(struct hash_table *table,
 static void __hash_table_expand(struct hash_table *table, uint32 new_prime_idx)
 {
     struct hash_table new_table;
-    struct hlist_node *var;
-    struct hlist_node *tvar;
-    struct hash_node *node;
+    struct list_head *var;
+    struct list_head *nxt;
+    struct hlist_node *hnode;
     int res;
     uint32 i;
 
@@ -205,12 +209,12 @@ static void __hash_table_expand(struct hash_table *table, uint32 new_prime_idx)
                           table->free_fn))
         return;
 
-    for (i = 0; i < HASH_TABLE_NR_SLOTS(table); i++) {
-        HLIST_FOR_EACH_SAFE(var, tvar, &table->entries[i]) {
-            HLIST_REMOVE(var);
-            res = __hash_table_insert(&new_table, (struct hash_node *)var, 0);
-            assert(!res);
-        }
+    LIST_FOR_EACH_SAFE(var, nxt, &table->list) {
+        LIST_DEL(var);
+        hnode = &PARENT_STRUCT(var, struct hash_node, node)->link;
+        HLIST_REMOVE(hnode);
+        res = __hash_table_insert(&new_table, (struct hash_node *)var, 0);
+        assert(!res);
     }
 
     __free_entries(table->entries);
@@ -244,10 +248,11 @@ static int __hash_table_insert(struct hash_table *table,
     if (!HASH_NODE_UNHASHED(node))
         return -1;
 
-    if (option)
+    if (option & 1)
         node->hash_value = table->hash_fn(node->key);
 
-    if (__hash_table_lookup(table, node->key, node->hash_value))
+    if ((option & 2) &&
+        __hash_table_lookup(table, node->key, node->hash_value))
         return -1;
 
     __hash_table_maybe_expand(table);
@@ -256,6 +261,7 @@ static int __hash_table_insert(struct hash_table *table,
 
     HLIST_ADD(table->entries + idx, &node->link);
     ++table->num_nodes;
+    LIST_ADD_TAIL(&table->list, &node->node);
 
     return 0;
 }
@@ -265,46 +271,33 @@ int hash_table_insert(struct hash_table *table, struct hash_node *node)
     return __hash_table_insert(table, node, 1);
 }
 
-int ht_iterator_init(struct hash_table *table, struct ht_iterator *iter)
+int hash_table_insert_unique(struct hash_table *table, struct hash_node *node)
 {
-    iter->entries  = table->entries;
-    iter->nr_slots = HASH_TABLE_NR_SLOTS(table);
-    iter->index    = 0;
-    iter->next     = null;
-
-    return 0;
+    return __hash_table_insert(table, node, 3);
 }
 
-#define HASH_LIST_FIRST(head) \
-    (struct hash_node *)HLIST_FIRST(head)
-#define HASH_LIST_NEXT(node) \
-    (struct hash_node *)HLIST_NEXT(node)
-
-struct hash_node *ht_iterator_next(struct ht_iterator *iter)
+struct list_head *hash_table_get_list(struct hash_table *table)
 {
-    struct hash_node *current;
+    return &table->list;
+}
 
-    while (iter->index < iter->nr_slots) {
-        if (!iter->next) {
-            if (HLIST_EMPTY(iter->entries + iter->index)) {
-                ++iter->index;
-            } else {
-                current = HASH_LIST_FIRST(iter->entries + iter->index);
-                iter->next = HASH_LIST_NEXT(&current->link);
-                if (!iter->next)
-                    ++iter->index;
-                return current;
-            }
-        } else {
-            current = iter->next;
-            iter->next = HASH_LIST_NEXT(&iter->next->link);
-            if (!iter->next)
-                ++iter->index;
-            return current;
+void hash_table_show(struct hash_table *table,
+                     void (*show)(struct hlist_node *))
+{
+    int i;
+    int nr_slots = HASH_TABLE_NR_SLOTS(table);
+    struct hlist_node *var;
+
+    for (i = 0; i < nr_slots; i++)
+    {
+        printf("[%d]:\t", i);
+        HLIST_FOR_EACH(var, table->entries + i)
+        {
+            if (show != null) show(var);
+            else printf("%p\t", var);
         }
+        printf("\n");
     }
-
-    return null;
 }
 
 /* BKDR */

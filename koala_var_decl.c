@@ -5,6 +5,8 @@
 #include <stdio.h>
 
 #include "koala_var_decl.h"
+#include "koala_yacc.h"
+#include "koala_symbol.h"
 
 static int var_decl_stmt_parser(struct stmt *stmt)
 {
@@ -30,12 +32,12 @@ struct variable *new_variable(char *name)
 static void print_value(struct value *val)
 {
   switch (val->type) {
-    case KOALA_TYPE_UINT64 : {
+    case SYMBOL_TYPE_UINT64 : {
       printf("%llu ", val->i);
       break;
     }
 
-    case KOALA_TYPE_BOOL : {
+    case SYMBOL_TYPE_BOOL : {
       if (val->b)
         printf("true ");
       else

@@ -4,7 +4,7 @@
 
 #include "koala_list.h"
 #include "koala_stmt.h"
-#include "koala_yacc.h"
+#include "koala_string.h"
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 

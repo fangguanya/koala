@@ -32,6 +32,7 @@ static inline struct list_head *__stack_pop(struct stack *stack)
 }
 
 #define STACK_POP(stack)          __stack_pop(stack)
+#define STACK_PEEK(stack)         LIST_FIRST(&(stack)->base)
 
 END_DECLS /* 兼容C++编译宏 */
 

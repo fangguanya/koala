@@ -718,8 +718,6 @@ expression_statement
 
 %%
 
-extern char *yytext;
-
 int yyerror(const char *str)
 {
   fprintf(stderr, "%s\n", str);
@@ -729,20 +727,4 @@ int yyerror(const char *str)
 void yyecho(char *str)
 {
   fprintf(stdout, "%s\n", str);
-}
-
-extern FILE *yyin;
-
-int main(int argc, char *argv[])
-{
-  int i;
-  printf("%d\n", argc);
-  for (i = 0; i < argc; i++)
-  {
-    printf("%s\n", argv[i]);
-  }
-
-  koala_compiler_init();
-  yyin = fopen(argv[1], "r");
-  yyparse();
 }

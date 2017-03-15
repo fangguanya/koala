@@ -4,7 +4,7 @@
 
 #include "koala_list.h"
 #include "koala_stack.h"
-#include "koala_symbol_table.h"
+#include "koala_symbol.h"
 #include "koala_var_decl.h"
 
 BEGIN_DECLS /* 兼容C++编译宏 */
