@@ -41,7 +41,7 @@ struct binder *new_binder(struct symbol *sym)
   struct binder *binder = malloc(sizeof(*binder));
   assert(binder);
   binder->symbol = sym;
-  HASH_NODE_INIT(&binder->hnode, binder);
+  HASH_NODE_INIT(&binder->hnode, &binder->symbol->name);
   return binder;
 }
 
@@ -53,17 +53,16 @@ void free_binder(struct binder *binder)
 
 static uint32 binder_hash(void *key)
 {
-  struct binder *binder = key;
-  return string_hash(STRING_GET(binder->symbol->name));
+  string str = *(string *)key;
+  return string_hash(STRING_GET(str));
 }
 
 static int binder_equal(void *k1, void *k2)
 {
-  struct binder *b1 = k1;
-  struct binder *b2 = k2;
+  string s1 = *(string *)k1;
+  string s2 = *(string *)k2;
 
-  return strcmp(STRING_GET(b1->symbol->name),
-                STRING_GET(b2->symbol->name)) == 0;
+  return strcmp(STRING_GET(s1), STRING_GET(s2)) == 0;
 }
 
 static void binder_free(struct hash_node *hnode)

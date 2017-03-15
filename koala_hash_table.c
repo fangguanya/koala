@@ -163,7 +163,7 @@ static struct hash_node *__hash_table_lookup(struct hash_table *table,
     struct hash_node *hnode;
 
     HLIST_FOR_EACH(var, table->entries + idx) {
-        hnode = (struct hash_node *)var;
+        hnode = PARENT_STRUCT(var, struct hash_node, link);
         if (table->equal_fn(hnode->key, key))
             return hnode;
     }

@@ -6,7 +6,18 @@ struct symbol_table var_sym_tbl;
 
 void koala_compiler_init()
 {
+}
+
+void koala_symbol_table_test()
+{
+  string name = {"name"};
   symbol_table_init(&var_sym_tbl);
+
+  symbol_table_begin_scope(&var_sym_tbl);
+  symbol_table_add(&var_sym_tbl, name, SYMBOL_TYPE_STRING);
+  symbol_table_begin_scope(&var_sym_tbl);
+  symbol_table_add(&var_sym_tbl, name, SYMBOL_TYPE_STRING);
+  symbol_table_end_scope(&var_sym_tbl);
 }
 
 int main(int argc, char *argv[])
@@ -24,4 +35,6 @@ int main(int argc, char *argv[])
   koala_compiler_init();
   yyin = fopen(argv[1], "r");
   yyparse();
+  // test
+  koala_symbol_table_test();
 }
