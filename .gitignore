@@ -1,7 +1,8 @@
-#*.output
-#*.out
-#koala
+*.output
+*.out
+koala
 #koala_lex.c
 #koala_yacc.c
 #koala_yacc.h
 #git rm --cached
+*.7z
