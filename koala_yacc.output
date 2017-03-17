@@ -165,12 +165,12 @@ Grammar
   107 jump_statement: RETURN ';'
   108               | RETURN expression_list ';'
 
-  109 variable_declaration: VAR variable_list variable_type ';'
-  110                     | VAR variable_list '=' expression_list ';'
-  111                     | VAR variable_list variable_type '=' expression_list ';'
+  109 variable_declaration: VAR var_list variable_type ';'
+  110                     | VAR var_list '=' expression_list ';'
+  111                     | VAR var_list variable_type '=' expression_list ';'
 
-  112 variable_list: ID
-  113              | variable_list ',' ID
+  112 var_list: ID
+  113         | var_list ',' ID
 
   114 variable_type: type_name
   115              | function_type
@@ -498,7 +498,7 @@ jump_statement (131)
     on left: 107 108, on right: 90
 variable_declaration (132)
     on left: 109 110 111, on right: 42 43 85 102
-variable_list (133)
+var_list (133)
     on left: 112 113, on right: 109 110 111 113
 variable_type (134)
     on left: 114 115, on right: 50 109 111
@@ -601,13 +601,13 @@ State 0
 
 State 1
 
-  109 variable_declaration: VAR . variable_list variable_type ';'
-  110                     | VAR . variable_list '=' expression_list ';'
-  111                     | VAR . variable_list variable_type '=' expression_list ';'
+  109 variable_declaration: VAR . var_list variable_type ';'
+  110                     | VAR . var_list '=' expression_list ';'
+  111                     | VAR . var_list variable_type '=' expression_list ';'
 
     ID  shift, and go to state 15
 
-    variable_list  go to state 16
+    var_list  go to state 16
 
 
 State 2
@@ -762,17 +762,17 @@ State 14
 
 State 15
 
-  112 variable_list: ID .
+  112 var_list: ID .
 
-    $default  reduce using rule 112 (variable_list)
+    $default  reduce using rule 112 (var_list)
 
 
 State 16
 
-  109 variable_declaration: VAR variable_list . variable_type ';'
-  110                     | VAR variable_list . '=' expression_list ';'
-  111                     | VAR variable_list . variable_type '=' expression_list ';'
-  113 variable_list: variable_list . ',' ID
+  109 variable_declaration: VAR var_list . variable_type ';'
+  110                     | VAR var_list . '=' expression_list ';'
+  111                     | VAR var_list . variable_type '=' expression_list ';'
+  113 var_list: var_list . ',' ID
 
     FUNC       shift, and go to state 32
     INTERFACE  shift, and go to state 33
@@ -1091,7 +1091,7 @@ State 45
 
 State 46
 
-  113 variable_list: variable_list ',' . ID
+  113 var_list: var_list ',' . ID
 
     ID  shift, and go to state 69
 
@@ -1105,7 +1105,7 @@ State 47
 
 State 48
 
-  110 variable_declaration: VAR variable_list '=' . expression_list ';'
+  110 variable_declaration: VAR var_list '=' . expression_list ';'
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -1214,8 +1214,8 @@ State 53
 
 State 54
 
-  109 variable_declaration: VAR variable_list variable_type . ';'
-  111                     | VAR variable_list variable_type . '=' expression_list ';'
+  109 variable_declaration: VAR var_list variable_type . ';'
+  111                     | VAR var_list variable_type . '=' expression_list ';'
 
     ';'  shift, and go to state 118
     '='  shift, and go to state 119
@@ -1375,9 +1375,9 @@ State 68
 
 State 69
 
-  113 variable_list: variable_list ',' ID .
+  113 var_list: var_list ',' ID .
 
-    $default  reduce using rule 113 (variable_list)
+    $default  reduce using rule 113 (var_list)
 
 
 State 70
@@ -1986,7 +1986,7 @@ State 116
 
 State 117
 
-  110 variable_declaration: VAR variable_list '=' expression_list . ';'
+  110 variable_declaration: VAR var_list '=' expression_list . ';'
   198 expression_list: expression_list . ',' expressions
 
     ';'  shift, and go to state 173
@@ -1995,14 +1995,14 @@ State 117
 
 State 118
 
-  109 variable_declaration: VAR variable_list variable_type ';' .
+  109 variable_declaration: VAR var_list variable_type ';' .
 
     $default  reduce using rule 109 (variable_declaration)
 
 
 State 119
 
-  111 variable_declaration: VAR variable_list variable_type '=' . expression_list ';'
+  111 variable_declaration: VAR var_list variable_type '=' . expression_list ';'
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -3393,7 +3393,7 @@ State 172
 
 State 173
 
-  110 variable_declaration: VAR variable_list '=' expression_list ';' .
+  110 variable_declaration: VAR var_list '=' expression_list ';' .
 
     $default  reduce using rule 110 (variable_declaration)
 
@@ -3470,7 +3470,7 @@ State 174
 
 State 175
 
-  111 variable_declaration: VAR variable_list variable_type '=' expression_list . ';'
+  111 variable_declaration: VAR var_list variable_type '=' expression_list . ';'
   198 expression_list: expression_list . ',' expressions
 
     ';'  shift, and go to state 233
@@ -4245,7 +4245,7 @@ State 232
 
 State 233
 
-  111 variable_declaration: VAR variable_list variable_type '=' expression_list ';' .
+  111 variable_declaration: VAR var_list variable_type '=' expression_list ';' .
 
     $default  reduce using rule 111 (variable_declaration)
 

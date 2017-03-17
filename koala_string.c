@@ -1,0 +1,144 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#include "koala_hash_table.h"
+#include "koala_string.h"
+
+static struct hash_table string_hash_table;
+
+struct string_hash_node
+{
+  struct hash_node hnode;
+  string val;
+};
+
+int string_cache_exist(string str)
+{
+  struct string_hash_node *string_node;
+  struct hash_node *hnode = hash_table_lookup(&string_hash_table, &str);
+  if (hnode)
+  {
+    string_node = PARENT_STRUCT(hnode, struct string_hash_node, hnode);
+    str = string_node->val;
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void string_cache_add(string str)
+{
+  struct string_hash_node *string_node = malloc(sizeof(*string_node));
+  assert(string_node);
+  HASH_NODE_INIT(&string_node->hnode, &string_node->val);
+  string_node->val = str;
+  hash_table_insert_unique(&string_hash_table, &string_node->hnode);
+}
+
+#define STRING_BLOCK_SIZE   1024
+
+struct string_block
+{
+  struct list_head node;
+  int left;
+  char *page;
+};
+
+static LIST_HEAD(string_block_list);
+
+struct string_block *new_string_block()
+{
+  struct string_block *block = malloc(sizeof(*block) + STRING_BLOCK_SIZE);
+  assert(block);
+  INIT_LIST_HEAD(&block->node);
+  block->left = STRING_BLOCK_SIZE;
+  block->page = (char *)(block + 1);
+
+  LIST_ADD_TAIL(&string_block_list, &block->node);
+  return block;
+}
+
+static struct string_block *get_avail_block()
+{
+  struct list_head *tail = LIST_LAST(&string_block_list);
+  if (tail != null)
+  {
+    return PARENT_STRUCT(tail, struct string_block, node);
+  }
+  else
+  {
+    return new_string_block();
+  }
+}
+
+string new_string(char *str)
+{
+  string string;
+  int len = strlen(str) + 1;
+  assert(len <= STRING_BLOCK_SIZE);
+  string.val = str;
+  string.len = len;
+
+  if (string_cache_exist(string))
+  {
+    return string;
+  }
+
+  struct string_block *block = get_avail_block();
+  if (block->left < len)
+  {
+    block = new_string_block();
+  }
+
+  char *data = block->page + STRING_BLOCK_SIZE - block->left;
+  block->left -= len;
+  assert(block->left >= 0);
+
+  memcpy(data, str, len);
+  string.val = data;
+  string.len = len - 1;
+  string_cache_add(string);
+
+  return string;
+}
+
+static uint32 str_hash_fn(void *key)
+{
+  string *str = (string *)key;
+  return nstring_hash(str->val, str->len);
+}
+
+static int str_eq_fn(void *k1, void *k2)
+{
+  string *s1 = (string *)k1;
+  string *s2 = (string *)k2;
+  int min = MIN(s1->len, s2->len);
+  if (strncmp(s1->val, s2->val, min) != 0)
+  {
+    return 0;
+  }
+
+  if (min != s1->len || min != s2->len)
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+static void str_free_fn(struct hash_node *node)
+{
+  struct string_hash_node *string_node = (struct string_hash_node *)node;
+  free(string_node);
+}
+
+void init_string_system()
+{
+  int failed = hash_table_init(&string_hash_table,
+                               str_hash_fn, str_eq_fn, str_free_fn);
+  assert(!failed);
+}

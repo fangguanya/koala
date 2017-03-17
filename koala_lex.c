@@ -1217,7 +1217,7 @@ YY_RULE_SETUP
 #line 99 "yacc/koala.l"
 {
                             echo();
-                            yylval.ident = strdup(yytext);
+                            yylval.var = new_var(new_string(yytext));
                             return ID;
                           }
 	YY_BREAK

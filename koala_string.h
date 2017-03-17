@@ -6,13 +6,11 @@ BEGIN_DECLS /* 兼容C++编译宏 */
 
 typedef struct string {
   char *val;
+  int len;
 } string;
 
-#define STRING_SET(str, value) do {  \
-  (str).val = (value);               \
-} while (0)
-
-#define STRING_GET(str) ((str).val)
+string new_string(char *str);
+void init_string_system();
 
 END_DECLS /* 兼容C++编译宏 */
 

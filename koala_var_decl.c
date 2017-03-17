@@ -8,16 +8,79 @@
 #include "koala_yacc.h"
 #include "koala_symbol.h"
 
-static int var_decl_stmt_parser(struct stmt *stmt)
+var_t *new_var(string name)
 {
-  return 0;
+  var_t *var = malloc(sizeof(*var));
+  assert(var);
+  INIT_LIST_HEAD(&var->node);
+  var->name = name;
+  return var;
 }
 
-struct var_decl_stmt *new_var_decl_stmt()
+var_list_t *new_var_list()
 {
-  struct var_decl_stmt *stmt = malloc(sizeof(*stmt));
-  init_stmt(&stmt->stmt, var_decl_stmt_parser);
+  var_list_t *var_list = malloc(sizeof(*var_list));
+  assert(var_list);
+  INIT_LIST_HEAD(&var_list->list);
+  var_list->count = 0;
+  return var_list;
+}
+
+stmt_t *new_var_decl_stmt()
+{
+  var_decl_stmt_t *var_decl_stmt;
+  stmt_t *stmt = malloc(sizeof(*stmt) + sizeof(var_decl_stmt_t));
+  assert(stmt);
+  INIT_STMT(stmt, STMT_TYPE_VAR_DECL);
+  var_decl_stmt = (var_decl_stmt_t *)(stmt + 1);
+  var_decl_stmt->var_list = null;
+  var_decl_stmt->type = 0;
+  var_decl_stmt->expr_list = null;
   return stmt;
+}
+
+void var_list_add(var_list_t *list, var_t *var)
+{
+  LIST_ADD_TAIL(&list->list, &var->node);
+  list->count++;
+}
+
+static void show_var_decl_stmt(var_decl_stmt_t *stmt);
+
+int var_decl_stmt_parser(stmt_t *stmt)
+{
+  var_decl_stmt_t *var_decl_stmt = (var_decl_stmt_t *)(stmt + 1);
+  show_var_decl_stmt(var_decl_stmt);
+}
+
+static void show_var_decl_stmt(var_decl_stmt_t *stmt)
+{
+  var_t *var;
+  struct list_head *pos;
+
+  printf("-----------------------------\n");
+  printf("statement: VAR_DECL_STMT\nvar_count:%d\n", stmt->var_list->count);
+
+  LIST_FOR_EACH(pos, &stmt->var_list->list)
+  {
+    var = PARENT_STRUCT(pos, var_t, node);
+    printf("id:%s\n", var->name.val);
+  }
+
+  printf("type:%d\n", stmt->type);
+
+  if (stmt->expr_list != null)
+  {
+    printf("\nval_count: %d\n", stmt->expr_list->count);
+
+    LIST_FOR_EACH(pos, &stmt->expr_list->list)
+    {
+      //val = PARENT_STRUCT(pos, struct value, val_node);
+      //print_value(val);
+    }
+  }
+
+  printf("-----------------------------\n");
 }
 
 struct variable *new_variable(char *name)
@@ -32,12 +95,12 @@ struct variable *new_variable(char *name)
 static void print_value(struct value *val)
 {
   switch (val->type) {
-    case SYMBOL_TYPE_UINT64 : {
+    case TYPE_UINT64 : {
       printf("%llu ", val->i);
       break;
     }
 
-    case SYMBOL_TYPE_BOOL : {
+    case TYPE_BOOL : {
       if (val->b)
         printf("true ");
       else
@@ -49,28 +112,6 @@ static void print_value(struct value *val)
       break;
     }
   }
-}
-
-void show_var_decl(struct var_decl_stmt *stmt)
-{
-  struct variable *var;
-  struct value *val;
-  struct list_head *pos;
-  LIST_FOR_EACH(pos, stmt->ident_list)
-  {
-    var = PARENT_STRUCT(pos, struct variable, var_node);
-    printf("%s ", var->var_name);
-  }
-
-  printf(" = ");
-
-  LIST_FOR_EACH(pos, stmt->value_list)
-  {
-    val = PARENT_STRUCT(pos, struct value, val_node);
-    print_value(val);
-  }
-
-  printf("\n");
 }
 
 struct value *new_value()
@@ -101,7 +142,7 @@ void expr_node_print(struct expr_node *node)
   {
     case ID:
     {
-      printf("value:%s(ID)\n", STRING_GET(node->s));
+      printf("value:%s(ID)\n", node->s.val);
       break;
     }
     case INTEGER:

@@ -98,7 +98,7 @@ L   [a-zA-Z_]
 
 {L}({L}|{D})*             {
                             echo();
-                            yylval.ident = strdup(yytext);
+                            yylval.var = new_var(new_string(yytext));
                             return ID;
                           }
 

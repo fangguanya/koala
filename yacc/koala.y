@@ -12,6 +12,10 @@ int yylex(void);
 %}
 
 %union {
+  string string;
+  var_t *var;
+  var_list_t *var_list;
+  int type;
   char unary_op;
   char *ident;
   int64 ival;
@@ -72,7 +76,7 @@ int yylex(void);
 
 %token INT8
 %token INT16
-%token INT32
+%token <type> INT32
 %token INT64
 %token UINT8
 %token UINT16
@@ -93,7 +97,7 @@ int yylex(void);
 %token <fval> FLOAT
 
 %token <str_val> STRING_LITERAL
-%token <ident> ID
+%token <var> ID
 %token OP
 
 /*--------------------------------------------------------------------------*/
@@ -103,6 +107,11 @@ int yylex(void);
 %nonassoc NO_CODE_BLOCK
 
 /*--------------------------------------------------------------------------*/
+%type <var_list> var_list
+%type <type> primitive_type
+%type <type> type_name
+%type <type> variable_type
+
 %type <expr_node> qualified_name
 %type <expr_node> literal_name
 %type <expr_node> complex_primary
@@ -136,7 +145,7 @@ semicolons
 qualified_name
   : ID {
     struct expr_node *node = new_expr_node(ID);
-    STRING_SET(node->s, $1);
+    //node->s = $1;
     $$ = node;
   }
   | qualified_name '.' ID
@@ -148,25 +157,58 @@ type_name_list
   ;
 
 type_name
-  : primitive_type
-  | qualified_name
-  | array_type
+  : primitive_type {
+    $$ = $1;
+  }
+  | qualified_name {
+    $$ = TYPE_STRUCT;
+  }
+  | array_type {
+    $$ = TYPE_ARRAY;
+  }
   ;
 
 primitive_type
-  : UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-  | INT8
-  | INT16
-  | INT32
-  | INT64
-  | FLOAT32
-  | FLOAT64
-  | BOOL
-  | STRING
-  | INTERFACE '{' '}'
+  : UINT8 {
+    $$ = TYPE_UINT8;
+  }
+  | UINT16 {
+    $$ = TYPE_UINT16;
+  }
+  | UINT32 {
+    $$ = TYPE_UINT32;
+  }
+  | UINT64 {
+    $$ = TYPE_UINT64;
+  }
+  | INT8 {
+    $$ = TYPE_INT8;
+  }
+  | INT16 {
+    $$ = TYPE_INT16;
+  }
+  | INT32 {
+    printf("SYMBOL_TYPE_INT32\n");
+    $$ = TYPE_INT32;
+  }
+  | INT64 {
+    $$ = TYPE_INT64;
+  }
+  | FLOAT32 {
+    $$ = TYPE_FLOAT32;
+  }
+  | FLOAT64 {
+    $$ = TYPE_FLOAT64;
+  }
+  | BOOL {
+    $$ = TYPE_BOOL;
+  }
+  | STRING {
+    $$ = TYPE_STRING;
+  }
+  | INTERFACE '{' '}' {
+    $$ = TYPE_INTF;
+  }
   ;
 
 function_type
@@ -366,19 +408,40 @@ jump_statement
 
 /*--------------------------------------------------------------------------*/
 variable_declaration
-  : VAR variable_list variable_type ';'
-  | VAR variable_list '=' expression_list ';'
-  | VAR variable_list variable_type '=' expression_list ';'
+  : VAR var_list variable_type ';' {
+    stmt_t *stmt = new_var_decl_stmt();
+    var_decl_stmt_t *var_decl_stmt = (var_decl_stmt_t *)(stmt + 1);
+    var_decl_stmt->var_list = $2;
+    var_decl_stmt->type = $3;
+    add_stmt(stmt);
+  }
+  | VAR var_list '=' expression_list ';' {
+
+  }
+  | VAR var_list variable_type '=' expression_list ';' {
+
+  }
   ;
 
-variable_list
-  : ID
-  | variable_list ',' ID
+var_list
+  : ID {
+    printf("ID: %s\n", $1->name.val);
+    $$ = new_var_list();
+    var_list_add($$, $1);
+  }
+  | var_list ',' ID {
+    $$ = $1;
+    var_list_add($$, $3);
+  }
   ;
 
 variable_type
-  : type_name
-  | function_type
+  : type_name {
+    $$ = $1;
+  }
+  | function_type {
+
+  }
   ;
 
 /*-------------------------------------------------------------------------*/
@@ -430,7 +493,7 @@ literal_name  //常量允许访问成员变量和成员方法，不允许数组�
   }
   | STRING_LITERAL {
     struct expr_node *node = new_expr_node(STRING_LITERAL);
-    STRING_SET(node->s, $1);
+    node->s.val = $1;
     $$ = node;
   }
   | TOKEN_NIL {

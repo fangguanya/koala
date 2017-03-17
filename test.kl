@@ -1,5 +1,9 @@
 #!/media/psf/Home/Projects/koala/koala
 
+var age, abc, def int32;
+
+var age, abc, def string;
+
 func main()
 {
   !false;

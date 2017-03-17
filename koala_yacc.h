@@ -122,6 +122,10 @@ union YYSTYPE
 {
 #line 14 "yacc/koala.y" /* yacc.c:1909  */
 
+  string string;
+  var_t *var;
+  var_list_t *var_list;
+  int type;
   char unary_op;
   char *ident;
   int64 ival;
@@ -131,7 +135,7 @@ union YYSTYPE
   struct list_head *list;
   struct expr_node *expr_node;
 
-#line 135 "koala_yacc.h" /* yacc.c:1909  */
+#line 139 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

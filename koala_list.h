@@ -58,6 +58,10 @@ static inline void __list_del(struct list_head *prev, struct list_head *next)
   for (pos = (head)->next, n = pos->next; \
        pos != (head); pos = n, n = pos->next)
 
+#define LIST_FOR_EACH_PREV_SAFE(pos, n, head) \
+ for (pos = (head)->prev, n = pos->prev; \
+      pos != (head); pos = n, n = pos->prev)
+
 #define LIST_FOR_EACH_ENTRY(pos, head, member) \
   for (pos = LIST_ENTRY((head)->next, typeof(*pos), member); \
        &pos->member != (head); \

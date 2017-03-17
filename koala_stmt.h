@@ -6,13 +6,22 @@
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 
+#define STMT_TYPE_VAR_DECL  1
+
+typedef struct stmt stmt_t;
+
 struct stmt {
   struct list_head stmt_node;
-  int (*stmt_parser)(struct stmt *);
+  int stmt_type;
 };
 
-void add_stmt(struct stmt *stmt);
-void init_stmt(struct stmt *stmt, int (*stmt_parser)(struct stmt *));
+#define INIT_STMT(stmt, type) do {    \
+  INIT_LIST_HEAD(&(stmt)->stmt_node); \
+  (stmt)->stmt_type = type;           \
+} while (0)
+
+void add_stmt(stmt_t *stmt);
+void handle_statements();
 
 END_DECLS /* 兼容C++编译宏 */
 

@@ -51,21 +51,32 @@ void free_binder(struct binder *binder)
   free(binder);
 }
 
-static uint32 binder_hash(void *key)
+static uint32 binder_hash_fn(void *key)
 {
-  string str = *(string *)key;
-  return string_hash(STRING_GET(str));
+  string *str = (string *)key;
+  return nstring_hash(str->val, str->len);
 }
 
-static int binder_equal(void *k1, void *k2)
+static int binder_equal_fn(void *k1, void *k2)
 {
-  string s1 = *(string *)k1;
-  string s2 = *(string *)k2;
+  string *s1 = (string *)k1;
+  string *s2 = (string *)k2;
 
-  return strcmp(STRING_GET(s1), STRING_GET(s2)) == 0;
+  int min = MIN(s1->len, s2->len);
+  if (strncmp(s1->val, s2->val, min) != 0)
+  {
+    return 0;
+  }
+
+  if (min != s1->len || min != s2->len)
+  {
+    return 0;
+  }
+
+  return 1;
 }
 
-static void binder_free(struct hash_node *hnode)
+static void binder_free_fn(struct hash_node *hnode)
 {
   struct binder *binder = PARENT_STRUCT(hnode, struct binder, hnode);
   free_binder(binder);
@@ -74,7 +85,9 @@ static void binder_free(struct hash_node *hnode)
 void symbol_table_init(struct symbol_table *table)
 {
   int failed = hash_table_init(&table->table,
-                               binder_hash, binder_equal, binder_free);
+                               binder_hash_fn,
+                               binder_equal_fn,
+                               binder_free_fn);
   assert(!failed);
   table->current_scope = 0;
 }
@@ -93,7 +106,7 @@ int symbol_table_add(struct symbol_table *table, string name, int type)
     binder = PARENT_STRUCT(hnode, struct binder, hnode);
     if (binder->scope >= table->current_scope) {
       printf("duplicated symblol,(%d,%d,%s)\n", table->current_scope,
-            binder->scope, STRING_GET(name));
+            binder->scope, name.val);
       return -1;
     }
   }
@@ -103,7 +116,7 @@ int symbol_table_add(struct symbol_table *table, string name, int type)
 
   int res = hash_table_insert(&table->table, &binder->hnode);
   if (res) {
-    printf("insert symbol error: %s\n", STRING_GET(name));
+    printf("insert symbol error: %s\n", name.val);
     free_binder(binder);
     return -1;
   }

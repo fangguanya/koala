@@ -8,14 +8,38 @@
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 
-struct var_decl_stmt {
-  struct stmt stmt;
-  struct list_head *ident_list;
-  int id_count;
+typedef struct {
+  struct list_head node;
+  string name;
+} var_t;
+
+typedef struct {
+  struct list_head list;
+  int count;
+} var_list_t, expr_list_t;
+
+typedef struct  {
+  var_list_t *var_list;
   int type;
-  struct list_head *value_list;
-  int val_count;
-};
+  expr_list_t *expr_list;
+} var_decl_stmt_t;
+
+var_t *new_var(string name);
+
+var_list_t *new_var_list();
+
+void var_list_add(var_list_t *list, var_t *var);
+
+static inline expr_list_t *new_expr_list()
+{
+  return new_var_list();
+}
+
+stmt_t *new_var_decl_stmt();
+
+int var_decl_stmt_parser(stmt_t *stmt);
+
+/*-------------------------------------------------------------------------*/
 
 struct variable {
   struct list_head var_node;
@@ -33,10 +57,7 @@ struct value {
   };
 };
 
-struct var_decl_stmt *new_var_decl_stmt();
 struct variable *new_variable(char *name);
-void show_var_decl(struct var_decl_stmt *stmt);
-
 struct value *new_value();
 
 struct expr_node {

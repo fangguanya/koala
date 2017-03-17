@@ -4,6 +4,7 @@
 
 #include "koala_list.h"
 #include "koala_stack.h"
+#include "koala_string.h"
 #include "koala_symbol.h"
 #include "koala_var_decl.h"
 
