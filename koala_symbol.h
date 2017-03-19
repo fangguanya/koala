@@ -1,6 +1,6 @@
 
-#ifndef _KOALA_AST_H_
-#define _KOALA_AST_H_
+#ifndef _KOALA_SYMBOL_H_
+#define _KOALA_SYMBOL_H_
 
 #include "koala_list.h"
 #include "koala_stack.h"

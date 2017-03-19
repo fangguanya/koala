@@ -1,6 +1,6 @@
 
-#ifndef _KOALA_AST_H_
-#define _KOALA_AST_H_
+#ifndef _KOALA_ABSTRACT_SYNTAX_TREE_H_
+#define _KOALA_ABSTRACT_SYNTAX_TREE_H_
 
 #include "koala_common.h"
 #include "koala_list.h"
@@ -56,7 +56,7 @@ struct expr {
     // expression sequence
     //seq_exp,
     // assignment
-    assign_list_exp,
+    assign_list_exp
     // multi assignment operation
     //multi_assign_exp,
   } kind;
@@ -143,9 +143,11 @@ struct func_decl {
 };
 
 struct type_decl {
+  /*
   enum {
     invalid_decl, struct_decl, intf_decl, func_proto_decl, name_decl
   } kind;
+  */
 };
 
 /* function prototype */

@@ -41,4 +41,6 @@ int main(int argc, char *argv[])
   koala_symbol_table_test();
 
   handle_statements();
+
+  return 0;
 }

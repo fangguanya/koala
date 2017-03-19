@@ -133,7 +133,6 @@ void hash_table_fini(struct hash_table *table)
     struct list_head *var;
     struct list_head *nxt;
     struct hlist_node *hnode;
-    uint32 i;
 
     LIST_FOR_EACH_SAFE(var, nxt, &table->list) {
         LIST_DEL(var);
@@ -200,7 +199,6 @@ static void __hash_table_expand(struct hash_table *table, uint32 new_prime_idx)
     struct list_head *nxt;
     struct hlist_node *hnode;
     int res;
-    uint32 i;
 
     if (__hash_table_init(&new_table,
                           new_prime_idx,

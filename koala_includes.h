@@ -7,6 +7,8 @@
 #include "koala_stack.h"
 #include "koala_string.h"
 #include "koala_symbol.h"
+#include "koala_stmt.h"
+#include "koala_ast.h"
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 

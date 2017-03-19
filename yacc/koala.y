@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "koala_includes.h"
-#include "koala_ast.h"
 
 int yyerror(const char *str);
 int yylex(void);
@@ -20,10 +19,8 @@ int yylex(void);
   int64 ival;
   float64 fval;
   char *str_val;
-  struct value *value;
-  struct list_head *list;
-  struct expr_node *expr_node;
   linked_list_t *linked_list;
+  type_info_t type_info;
 }
 
 %token ELLIPSIS
@@ -110,27 +107,7 @@ int yylex(void);
 %type <linked_list> var_list
 %type <type> primitive_type
 %type <type> type_name
-%type <type> type
-
-%type <expr_node> qualified_name
-%type <expr_node> literal_name
-%type <expr_node> complex_primary
-%type <expr_node> just_not_name
-%type <expr_node> primary_expression
-%type <expr_node> postfix_expression
-%type <expr_node> unary_expression
-%type <expr_node> multiplicative_expression
-%type <expr_node> additive_expression
-%type <expr_node> shift_expression
-%type <expr_node> relational_expression
-%type <expr_node> equality_expression
-%type <expr_node> and_expression
-%type <expr_node> exclusive_or_expression
-%type <expr_node> inclusive_or_expression
-%type <expr_node> logical_and_expression
-%type <expr_node> logical_or_expression
-%type <expr_node> expression
-%type <expr_node> expression_statement
+%type <type_info> type_info
 
 %type <unary_op> unary_operator
 
@@ -266,7 +243,7 @@ declarations
 type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
   | TYPE ID INTERFACE '{' interface_function_declarations '}'
-  | TYPE ID type semicolons
+  | TYPE ID type_info semicolons
   ;
 
 field_declarations
@@ -408,13 +385,13 @@ jump_statement
 
 /*--------------------------------------------------------------------------*/
 variable_declaration
-  : VAR var_list type ';' {
+  : VAR var_list type_info ';' {
     new_var_decl($2, $3, null);
   }
   | VAR var_list '=' expression_list ';' {
 
   }
-  | VAR var_list type '=' expression_list ';' {
+  | VAR var_list type_info '=' expression_list ';' {
 
   }
   ;
@@ -423,19 +400,21 @@ var_list
   : ID {
     printf("ID: %s\n", $1.val);
     $$ = linked_list_new();
-    var_t *var = new_simple_var($1);
+    struct var *var = new_simple_var($1);
     linked_list_add_tail($$, linked_node_new(var));
   }
   | var_list ',' ID {
     printf("ID: %s\n", $3.val);
     $$ = $1;
-    linked_list_add_tail($$, linked_node_new(new_simple_var($3)));
+    struct var *var = new_simple_var($3);
+    linked_list_add_tail($$, linked_node_new(var));
   }
   ;
 
-type
+type_info
   : type_name {
-    $$ = $1;
+    $$.kind = $1;
+    $$.attr = null;
   }
   | function_type {
 
@@ -446,13 +425,13 @@ type
 
 primary_expression
   : qualified_name {
-    $$ = $1;
+    //$$ = $1;
   }
   | literal_name {
 
   }
   | just_not_name {
-    $$ = $1;
+    //$$ = $1;
   }
   ;
 
@@ -464,7 +443,7 @@ just_not_name
 
   }
   | complex_primary {
-    $$ = $1;
+    //$$ = $1;
   }
   ;
 
@@ -482,32 +461,21 @@ complex_primary
 
 literal_name  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
-    //struct expr_node *node = new_expr_node(INTEGER);
-    //node->i = $1;
-    //$$ = node;
   }
   | FLOAT {
 
   }
   | STRING_LITERAL {
-    //struct expr_node *node = new_expr_node(STRING_LITERAL);
-    //node->s.val = $1;
-    //$$ = node;
+
   }
   | TOKEN_NIL {
-    //struct expr_node *node = new_expr_node(TOKEN_NIL);
-    //node->f = 0.0;
-    //$$ = node;
+
   }
   | TOKEN_TRUE {
-    //struct expr_node *node = new_expr_node(BOOL);
-    //node->b = 1;
-    //$$ = node;
+
   }
   | TOKEN_FALSE {
-    //struct expr_node *node = new_expr_node(BOOL);
-    //node->b = 0;
-    //$$ = node;
+
   }
   ;
 
@@ -567,7 +535,7 @@ field_initializer
 
 postfix_expression
   : primary_expression {
-    $$ = $1;
+    //$$ = $1;
   }
   | real_postfix_expression {
 
@@ -585,7 +553,7 @@ argument_list
 
 unary_expression
   : postfix_expression {
-    $$ = $1;
+    //$$ = $1;
   }
   | INC unary_expression {
 
@@ -594,46 +562,24 @@ unary_expression
 
   }
   | unary_operator unary_expression {
-    /*
-    if ($1 == '+') {
-      $$ = $2;
-    } else if ($1 == '-') {
-      $2->i = - $2->i;
-      $$ = $2;
-    } else if ($1 == '~') {
-      $2->i = ~$2->i;
-      $$ = $2;
-    } else {
-      if ($2->type == BOOL) {
-        $2->b = !$2->b;
-        $$ = $2;
-      } else {
-        yyerror("not a bool type, cannot NOT operation\n");
-        exit(-1);
-      }
-    }
-    */
+
   }
   ;
 
 unary_operator
   : '+' {
-    //$$ = '+';
   }
   | '-' {
-    //$$ = '-';
   }
 	| '~' {
-    //$$ = '~';
   }
 	| '!' {
-    //$$ = '!';
   }
 	;
 
 multiplicative_expression
 	: unary_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| multiplicative_expression '*' unary_expression {
 
@@ -648,21 +594,17 @@ multiplicative_expression
 
 additive_expression
 	: multiplicative_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| additive_expression '+' multiplicative_expression {
-    //truct expr_node *node = new_expr_node(OP);
-    //node->op = '+';
-    //node->left = $1;
-    //node->right = $3;
-    //$$ = node;
+
   }
 	| additive_expression '-' multiplicative_expression {}
 	;
 
 shift_expression
 	: additive_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| shift_expression SHIFT_LEFT additive_expression {}
 	| shift_expression SHIFT_RIGHT additive_expression {}
@@ -670,7 +612,7 @@ shift_expression
 
 relational_expression
 	: shift_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| relational_expression '<' shift_expression {}
 	| relational_expression '>' shift_expression {}
@@ -680,7 +622,7 @@ relational_expression
 
 equality_expression
 	: relational_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| equality_expression EQ relational_expression {}
 	| equality_expression NE relational_expression {}
@@ -688,42 +630,42 @@ equality_expression
 
 and_expression
 	: equality_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| and_expression '&' equality_expression {}
 	;
 
 exclusive_or_expression
 	: and_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| exclusive_or_expression '^' and_expression {}
 	;
 
 inclusive_or_expression
 	: exclusive_or_expression {
-    $$ = $1;
+    //$$ = $1;
   }
 	| inclusive_or_expression '|' exclusive_or_expression {}
 	;
 
 logical_and_expression
   : inclusive_or_expression {
-    $$ = $1;
+    //$$ = $1;
   }
   | logical_and_expression AND inclusive_or_expression {}
   ;
 
 logical_or_expression
   : logical_and_expression {
-    $$ = $1;
+    //$$ = $1;
   }
   | logical_or_expression OR logical_and_expression {}
   ;
 
 expression
   : logical_or_expression {
-    $$ = $1;
+    //$$ = $1;
   }
   ;
 
@@ -770,7 +712,7 @@ compound_assignment_operator
 
 expression_statement
   : expression {
-    $$ = $1;
+    //$$ = $1;
   }
   | assignment_expression {
 
