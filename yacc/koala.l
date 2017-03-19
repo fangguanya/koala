@@ -98,7 +98,7 @@ L   [a-zA-Z_]
 
 {L}({L}|{D})*             {
                             echo();
-                            yylval.var = new_var(new_string(yytext));
+                            yylval.id = new_string(yytext);
                             return ID;
                           }
 
@@ -113,7 +113,7 @@ L   [a-zA-Z_]
 %%
 
 static void echo() {
-  fprintf(stdout, ">>>%s\n", yytext);
+  //fprintf(stdout, ">>>%s\n", yytext);
 }
 
 int yywrap() {

@@ -1,11 +1,9 @@
 
 #include "koala_stmt.h"
-#include "koala_var_decl.h"
 
 static LIST_HEAD(stmt_list);
 static int (*stmt_parser[])(stmt_t *) = {
   null,
-  var_decl_stmt_parser
 };
 
 void add_stmt(stmt_t *stmt)

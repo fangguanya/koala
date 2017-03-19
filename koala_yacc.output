@@ -81,7 +81,7 @@ Grammar
 
    48 type_declaration: TYPE ID STRUCT '{' field_declarations '}'
    49                 | TYPE ID INTERFACE '{' interface_function_declarations '}'
-   50                 | TYPE ID variable_type semicolons
+   50                 | TYPE ID type semicolons
 
    51 field_declarations: field_declaration
    52                   | field_declarations field_declaration
@@ -165,15 +165,15 @@ Grammar
   107 jump_statement: RETURN ';'
   108               | RETURN expression_list ';'
 
-  109 variable_declaration: VAR var_list variable_type ';'
+  109 variable_declaration: VAR var_list type ';'
   110                     | VAR var_list '=' expression_list ';'
-  111                     | VAR var_list variable_type '=' expression_list ';'
+  111                     | VAR var_list type '=' expression_list ';'
 
   112 var_list: ID
   113         | var_list ',' ID
 
-  114 variable_type: type_name
-  115              | function_type
+  114 type: type_name
+  115     | function_type
 
   116 primary_expression: qualified_name
   117                   | literal_name
@@ -500,7 +500,7 @@ variable_declaration (132)
     on left: 109 110 111, on right: 42 43 85 102
 var_list (133)
     on left: 112 113, on right: 109 110 111 113
-variable_type (134)
+type (134)
     on left: 114 115, on right: 50 109 111
 primary_expression (135)
     on left: 116 117 118, on right: 153
@@ -601,9 +601,9 @@ State 0
 
 State 1
 
-  109 variable_declaration: VAR . var_list variable_type ';'
+  109 variable_declaration: VAR . var_list type ';'
   110                     | VAR . var_list '=' expression_list ';'
-  111                     | VAR . var_list variable_type '=' expression_list ';'
+  111                     | VAR . var_list type '=' expression_list ';'
 
     ID  shift, and go to state 15
 
@@ -630,7 +630,7 @@ State 3
 
    48 type_declaration: TYPE . ID STRUCT '{' field_declarations '}'
    49                 | TYPE . ID INTERFACE '{' interface_function_declarations '}'
-   50                 | TYPE . ID variable_type semicolons
+   50                 | TYPE . ID type semicolons
 
     ID  shift, and go to state 19
 
@@ -769,9 +769,9 @@ State 15
 
 State 16
 
-  109 variable_declaration: VAR var_list . variable_type ';'
+  109 variable_declaration: VAR var_list . type ';'
   110                     | VAR var_list . '=' expression_list ';'
-  111                     | VAR var_list . variable_type '=' expression_list ';'
+  111                     | VAR var_list . type '=' expression_list ';'
   113 var_list: var_list . ',' ID
 
     FUNC       shift, and go to state 32
@@ -798,7 +798,7 @@ State 16
     primitive_type  go to state 51
     function_type   go to state 52
     array_type      go to state 53
-    variable_type   go to state 54
+    type            go to state 54
 
 
 State 17
@@ -827,7 +827,7 @@ State 19
 
    48 type_declaration: TYPE ID . STRUCT '{' field_declarations '}'
    49                 | TYPE ID . INTERFACE '{' interface_function_declarations '}'
-   50                 | TYPE ID . variable_type semicolons
+   50                 | TYPE ID . type semicolons
 
     FUNC       shift, and go to state 32
     STRUCT     shift, and go to state 58
@@ -852,7 +852,7 @@ State 19
     primitive_type  go to state 51
     function_type   go to state 52
     array_type      go to state 53
-    variable_type   go to state 60
+    type            go to state 60
 
 
 State 20
@@ -1186,9 +1186,9 @@ State 49
 
 State 50
 
-  114 variable_type: type_name .
+  114 type: type_name .
 
-    $default  reduce using rule 114 (variable_type)
+    $default  reduce using rule 114 (type)
 
 
 State 51
@@ -1200,9 +1200,9 @@ State 51
 
 State 52
 
-  115 variable_type: function_type .
+  115 type: function_type .
 
-    $default  reduce using rule 115 (variable_type)
+    $default  reduce using rule 115 (type)
 
 
 State 53
@@ -1214,8 +1214,8 @@ State 53
 
 State 54
 
-  109 variable_declaration: VAR var_list variable_type . ';'
-  111                     | VAR var_list variable_type . '=' expression_list ';'
+  109 variable_declaration: VAR var_list type . ';'
+  111                     | VAR var_list type . '=' expression_list ';'
 
     ';'  shift, and go to state 118
     '='  shift, and go to state 119
@@ -1271,7 +1271,7 @@ State 59
 
 State 60
 
-   50 type_declaration: TYPE ID variable_type . semicolons
+   50 type_declaration: TYPE ID type . semicolons
 
     ';'  shift, and go to state 61
 
@@ -1995,14 +1995,14 @@ State 117
 
 State 118
 
-  109 variable_declaration: VAR var_list variable_type ';' .
+  109 variable_declaration: VAR var_list type ';' .
 
     $default  reduce using rule 109 (variable_declaration)
 
 
 State 119
 
-  111 variable_declaration: VAR var_list variable_type '=' . expression_list ';'
+  111 variable_declaration: VAR var_list type '=' . expression_list ';'
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -2210,7 +2210,7 @@ State 127
 
 State 128
 
-   50 type_declaration: TYPE ID variable_type semicolons .
+   50 type_declaration: TYPE ID type semicolons .
 
     $default  reduce using rule 50 (type_declaration)
 
@@ -3470,7 +3470,7 @@ State 174
 
 State 175
 
-  111 variable_declaration: VAR var_list variable_type '=' expression_list . ';'
+  111 variable_declaration: VAR var_list type '=' expression_list . ';'
   198 expression_list: expression_list . ',' expressions
 
     ';'  shift, and go to state 233
@@ -4245,7 +4245,7 @@ State 232
 
 State 233
 
-  111 variable_declaration: VAR var_list variable_type '=' expression_list ';' .
+  111 variable_declaration: VAR var_list type '=' expression_list ';' .
 
     $default  reduce using rule 111 (variable_declaration)
 

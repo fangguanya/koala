@@ -2,6 +2,8 @@
 #ifndef _KOALA_STRING_H_
 #define _KOALA_STRING_H_
 
+#include "koala_common.h"
+
 BEGIN_DECLS /* 兼容C++编译宏 */
 
 typedef struct string {

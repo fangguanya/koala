@@ -120,11 +120,9 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 14 "yacc/koala.y" /* yacc.c:1909  */
+#line 15 "yacc/koala.y" /* yacc.c:1909  */
 
-  string string;
-  var_t *var;
-  var_list_t *var_list;
+  string id;
   int type;
   char unary_op;
   char *ident;
@@ -134,8 +132,9 @@ union YYSTYPE
   struct value *value;
   struct list_head *list;
   struct expr_node *expr_node;
+  linked_list_t *linked_list;
 
-#line 139 "koala_yacc.h" /* yacc.c:1909  */
+#line 138 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

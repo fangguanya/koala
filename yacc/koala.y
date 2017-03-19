@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "koala_includes.h"
+#include "koala_ast.h"
 
 int yyerror(const char *str);
 int yylex(void);
@@ -12,9 +13,7 @@ int yylex(void);
 %}
 
 %union {
-  string string;
-  var_t *var;
-  var_list_t *var_list;
+  string id;
   int type;
   char unary_op;
   char *ident;
@@ -24,6 +23,7 @@ int yylex(void);
   struct value *value;
   struct list_head *list;
   struct expr_node *expr_node;
+  linked_list_t *linked_list;
 }
 
 %token ELLIPSIS
@@ -97,7 +97,7 @@ int yylex(void);
 %token <fval> FLOAT
 
 %token <str_val> STRING_LITERAL
-%token <var> ID
+%token <id> ID
 %token OP
 
 /*--------------------------------------------------------------------------*/
@@ -107,10 +107,10 @@ int yylex(void);
 %nonassoc NO_CODE_BLOCK
 
 /*--------------------------------------------------------------------------*/
-%type <var_list> var_list
+%type <linked_list> var_list
 %type <type> primitive_type
 %type <type> type_name
-%type <type> variable_type
+%type <type> type
 
 %type <expr_node> qualified_name
 %type <expr_node> literal_name
@@ -144,9 +144,9 @@ semicolons
 
 qualified_name
   : ID {
-    struct expr_node *node = new_expr_node(ID);
+    //struct expr_node *node = new_expr_node(ID);
     //node->s = $1;
-    $$ = node;
+    //$$ = node;
   }
   | qualified_name '.' ID
   ;
@@ -266,7 +266,7 @@ declarations
 type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
   | TYPE ID INTERFACE '{' interface_function_declarations '}'
-  | TYPE ID variable_type semicolons
+  | TYPE ID type semicolons
   ;
 
 field_declarations
@@ -354,7 +354,7 @@ local_variable_declaration_statement
 
 statemnet
   : expression_statement ';' {
-    expr_tree_print($1);
+    //expr_tree_print($1);
   }
   | selection_statement
   | iteration_statemnet
@@ -408,34 +408,32 @@ jump_statement
 
 /*--------------------------------------------------------------------------*/
 variable_declaration
-  : VAR var_list variable_type ';' {
-    stmt_t *stmt = new_var_decl_stmt();
-    var_decl_stmt_t *var_decl_stmt = (var_decl_stmt_t *)(stmt + 1);
-    var_decl_stmt->var_list = $2;
-    var_decl_stmt->type = $3;
-    add_stmt(stmt);
+  : VAR var_list type ';' {
+    new_var_decl($2, $3, null);
   }
   | VAR var_list '=' expression_list ';' {
 
   }
-  | VAR var_list variable_type '=' expression_list ';' {
+  | VAR var_list type '=' expression_list ';' {
 
   }
   ;
 
 var_list
   : ID {
-    printf("ID: %s\n", $1->name.val);
-    $$ = new_var_list();
-    var_list_add($$, $1);
+    printf("ID: %s\n", $1.val);
+    $$ = linked_list_new();
+    var_t *var = new_simple_var($1);
+    linked_list_add_tail($$, linked_node_new(var));
   }
   | var_list ',' ID {
+    printf("ID: %s\n", $3.val);
     $$ = $1;
-    var_list_add($$, $3);
+    linked_list_add_tail($$, linked_node_new(new_simple_var($3)));
   }
   ;
 
-variable_type
+type
   : type_name {
     $$ = $1;
   }
@@ -484,32 +482,32 @@ complex_primary
 
 literal_name  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
-    struct expr_node *node = new_expr_node(INTEGER);
-    node->i = $1;
-    $$ = node;
+    //struct expr_node *node = new_expr_node(INTEGER);
+    //node->i = $1;
+    //$$ = node;
   }
   | FLOAT {
 
   }
   | STRING_LITERAL {
-    struct expr_node *node = new_expr_node(STRING_LITERAL);
-    node->s.val = $1;
-    $$ = node;
+    //struct expr_node *node = new_expr_node(STRING_LITERAL);
+    //node->s.val = $1;
+    //$$ = node;
   }
   | TOKEN_NIL {
-    struct expr_node *node = new_expr_node(TOKEN_NIL);
-    node->f = 0.0;
-    $$ = node;
+    //struct expr_node *node = new_expr_node(TOKEN_NIL);
+    //node->f = 0.0;
+    //$$ = node;
   }
   | TOKEN_TRUE {
-    struct expr_node *node = new_expr_node(BOOL);
-    node->b = 1;
-    $$ = node;
+    //struct expr_node *node = new_expr_node(BOOL);
+    //node->b = 1;
+    //$$ = node;
   }
   | TOKEN_FALSE {
-    struct expr_node *node = new_expr_node(BOOL);
-    node->b = 0;
-    $$ = node;
+    //struct expr_node *node = new_expr_node(BOOL);
+    //node->b = 0;
+    //$$ = node;
   }
   ;
 
@@ -596,6 +594,7 @@ unary_expression
 
   }
   | unary_operator unary_expression {
+    /*
     if ($1 == '+') {
       $$ = $2;
     } else if ($1 == '-') {
@@ -613,21 +612,22 @@ unary_expression
         exit(-1);
       }
     }
+    */
   }
   ;
 
 unary_operator
   : '+' {
-    $$ = '+';
+    //$$ = '+';
   }
   | '-' {
-    $$ = '-';
+    //$$ = '-';
   }
 	| '~' {
-    $$ = '~';
+    //$$ = '~';
   }
 	| '!' {
-    $$ = '!';
+    //$$ = '!';
   }
 	;
 
@@ -651,11 +651,11 @@ additive_expression
     $$ = $1;
   }
 	| additive_expression '+' multiplicative_expression {
-    struct expr_node *node = new_expr_node(OP);
-    node->op = '+';
-    node->left = $1;
-    node->right = $3;
-    $$ = node;
+    //truct expr_node *node = new_expr_node(OP);
+    //node->op = '+';
+    //node->left = $1;
+    //node->right = $3;
+    //$$ = node;
   }
 	| additive_expression '-' multiplicative_expression {}
 	;

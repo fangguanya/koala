@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "koala_hash_table.h"
 #include "koala_string.h"
@@ -14,14 +15,14 @@ struct string_hash_node
   string val;
 };
 
-int string_cache_exist(string str)
+int string_cache_exist(string *str)
 {
   struct string_hash_node *string_node;
-  struct hash_node *hnode = hash_table_lookup(&string_hash_table, &str);
+  struct hash_node *hnode = hash_table_lookup(&string_hash_table, str);
   if (hnode)
   {
     string_node = PARENT_STRUCT(hnode, struct string_hash_node, hnode);
-    str = string_node->val;
+    *str = string_node->val;
     return 1;
   }
   else
@@ -81,14 +82,20 @@ string new_string(char *str)
   int len = strlen(str) + 1;
   assert(len <= STRING_BLOCK_SIZE);
   string.val = str;
-  string.len = len;
+  string.len = len - 1;
 
-  if (string_cache_exist(string))
+  if (string_cache_exist(&string))
   {
+    printf("found string:%s\n", string.val);
     return string;
   }
 
+  printf("new string:%s\n", string.val);
+
   struct string_block *block = get_avail_block();
+
+  printf("block:%p, left:%d\n", block, block->left);
+
   if (block->left < len)
   {
     block = new_string_block();

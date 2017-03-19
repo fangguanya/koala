@@ -1217,7 +1217,7 @@ YY_RULE_SETUP
 #line 99 "yacc/koala.l"
 {
                             echo();
-                            yylval.var = new_var(new_string(yytext));
+                            yylval.id = new_string(yytext);
                             return ID;
                           }
 	YY_BREAK
@@ -2256,7 +2256,7 @@ void yyfree (void * ptr )
 
 
 static void echo() {
-  fprintf(stdout, ">>>%s\n", yytext);
+  //fprintf(stdout, ">>>%s\n", yytext);
 }
 
 int yywrap() {
