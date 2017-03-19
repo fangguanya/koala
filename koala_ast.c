@@ -5,6 +5,39 @@
 #include <stdio.h>
 #include "koala_ast.h"
 
+simple_string_t *new_simple_string(string value)
+{
+  simple_string_t *str = malloc(sizeof(*str));
+  str->value = value;
+  return str;
+}
+
+type_info_t *new_type_info(int kind, void *attr)
+{
+  type_info_t *type = malloc(sizeof(*type));
+  type->kind = kind;
+  type->attr = attr;
+  return type;
+}
+
+array_type_t *new_array_type(int size, type_info_t *base_type)
+{
+  array_type_t *array_type = malloc(sizeof(*array_type));
+  assert(array_type);
+  array_type->size = size;
+  array_type->base_type = base_type;
+  return array_type;
+}
+
+func_proto_type_t *new_func_proto_type(linked_list_t *args,
+                                       linked_list_t *results)
+{
+  func_proto_type_t *prototype = malloc(sizeof(*prototype));
+  prototype->args = args;
+  prototype->results = results;
+  return prototype;
+}
+
 static char *type_string_map[] = {
   null,
   "int8", "int16", "int32", "int64",
@@ -54,11 +87,11 @@ void show_var_decl(var_decl_t *var_decl)
     var = PARENT_STRUCT(pos, linked_node_t, node)->data;
     show_var(var);
   }
-  printf("type:%s\n", type_string_map[var_decl->type.kind]);
+  printf("type:%s\n", type_string_map[var_decl->type->kind]);
 
 }
 
-var_decl_t *new_var_decl(linked_list_t *var_list, type_info_t type,
+var_decl_t *new_var_decl(linked_list_t *var_list, type_info_t *type,
                          linked_list_t *init_list)
 {
   var_decl_t *var_decl = malloc(sizeof(*var_decl));

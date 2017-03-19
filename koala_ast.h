@@ -101,6 +101,7 @@ typedef struct func_proto_type func_proto_type_t;
 typedef struct var_decl var_decl_t;
 typedef struct func_decl func_decl_t;
 typedef struct type_decl type_decl_t;
+typedef struct simple_string simple_string_t;
 
 struct type_info {
   int kind;
@@ -132,13 +133,13 @@ struct func_proto_type {
 
 struct var_decl {
   linked_list_t *var_list;
-  type_info_t type;
+  type_info_t *type;
   linked_list_t *init_list;
 };
 
 struct func_decl {
   string name;
-  func_proto_type_t type_info;
+  func_proto_type_t *type_info;
   linked_list_t *body;
 };
 
@@ -150,9 +151,19 @@ struct type_decl {
   */
 };
 
+struct simple_string {
+  string value;
+};
+
 /* function prototype */
+simple_string_t *new_simple_string(string value);
+type_info_t *new_type_info(int kind, void *attr);
+array_type_t *new_array_type(int size, type_info_t *base_type);
+func_proto_type_t *new_func_proto_type(linked_list_t *args,
+                                       linked_list_t *results);
+
 var_t *new_simple_var(string name);
-var_decl_t *new_var_decl(linked_list_t *var_list, type_info_t type,
+var_decl_t *new_var_decl(linked_list_t *var_list, type_info_t *type,
                          linked_list_t *init_list);
 
 END_DECLS /* 兼容C++编译宏 */

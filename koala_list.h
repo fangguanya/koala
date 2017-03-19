@@ -86,59 +86,20 @@ typedef struct linked_node
   void *data;
 } linked_node_t;
 
-static inline
-linked_list_t *linked_list_new()
-{
-  linked_list_t *list = malloc(sizeof(*list));
-  INIT_LIST_HEAD(&list->head);
-  list->count = 0;
-  return list;
-}
+linked_list_t *linked_list_new();
 
-static inline
-void linked_list_free(linked_list_t *list)
-{
-  INIT_LIST_HEAD(&list->head);
-  free(list);
-}
+void linked_list_free(linked_list_t *list);
 
-static inline
-linked_node_t *linked_node_new(void *data)
-{
-  linked_node_t *node = malloc(sizeof(*node));
-  INIT_LIST_HEAD(&node->node);
-  node->data = data;
-  return node;
-}
+linked_node_t *linked_node_new(void *data);
 
-static inline
-void linked_node_free(linked_node_t *node)
-{
-  INIT_LIST_HEAD(&node->node);
-  free(node);
-}
+void linked_node_free(linked_node_t *node);
 
-static inline
-void linked_list_add_head(linked_list_t *list, linked_node_t *node)
-{
-  LIST_ADD(&list->head, &node->node);
-  list->count++;
-}
+void linked_list_add_head(linked_list_t *list, void *data);
 
-static inline
-void linked_list_add_tail(linked_list_t *list, linked_node_t *node)
-{
-  LIST_ADD_TAIL(&list->head, &node->node);
-  list->count++;
-}
+void linked_list_add_tail(linked_list_t *list, void *data);
 
-static inline
-void linked_list_remove(linked_list_t *list, linked_node_t *node)
-{
-  LIST_DEL(&node->node);
-  list->count--;
-  assert(list->count >= 0);
-}
+
+void linked_list_remove(linked_list_t *list, linked_node_t *node);
 
 END_DECLS /* 兼容C++编译宏 */
 

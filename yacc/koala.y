@@ -13,14 +13,16 @@ int yylex(void);
 
 %union {
   string id;
-  int type;
+  int primitive_type;
   char unary_op;
   char *ident;
   int64 ival;
   float64 fval;
   char *str_val;
   linked_list_t *linked_list;
-  type_info_t type_info;
+  type_info_t *new_type_info;
+  func_proto_type_t *func_proto_type;
+  array_type_t *array_type;
 }
 
 %token ELLIPSIS
@@ -104,10 +106,14 @@ int yylex(void);
 %nonassoc NO_CODE_BLOCK
 
 /*--------------------------------------------------------------------------*/
+%type <linked_list> qualified_name
+%type <new_type_info> type_name
+%type <primitive_type> primitive_type
+%type <array_type> array_type
+%type <func_proto_type> function_type
+%type <linked_list> type_name_list
 %type <linked_list> var_list
-%type <type> primitive_type
-%type <type> type_name
-%type <type_info> type_info
+
 
 %type <unary_op> unary_operator
 
@@ -115,33 +121,41 @@ int yylex(void);
 
 %%
 
-semicolons
-  : ';'
-  ;
-
 qualified_name
   : ID {
-    //struct expr_node *node = new_expr_node(ID);
-    //node->s = $1;
-    //$$ = node;
+    $$ = linked_list_new();
+    linked_list_add_tail($$, new_simple_string($1));
   }
-  | qualified_name '.' ID
+  | qualified_name '.' ID {
+    $$ = $1;
+    linked_list_add_tail($$, new_simple_string($3));
+  }
   ;
 
 type_name_list
-  : type_name
-  | type_name_list ',' type_name
+  : type_name {
+    $$ = null;
+  }
+  | type_name_list ',' type_name {
+    $$ = null;
+  }
   ;
 
 type_name
   : primitive_type {
-    $$ = $1;
+    $$ = new_type_info($1, null);
   }
   | qualified_name {
-    $$ = TYPE_STRUCT;
+    $$ = new_type_info(TYPE_DEFINED, $1);
   }
   | array_type {
-    $$ = TYPE_ARRAY;
+    $$ = new_type_info(TYPE_ARRAY, $1);
+  }
+  | function_type {
+    $$ = new_type_info(TYPE_FUNC, $1);
+  }
+  | INTERFACE '{' '}' {
+    $$ = new_type_info(TYPE_INTF, null);
   }
   ;
 
@@ -165,7 +179,6 @@ primitive_type
     $$ = TYPE_INT16;
   }
   | INT32 {
-    printf("SYMBOL_TYPE_INT32\n");
     $$ = TYPE_INT32;
   }
   | INT64 {
@@ -183,24 +196,32 @@ primitive_type
   | STRING {
     $$ = TYPE_STRING;
   }
-  | INTERFACE '{' '}' {
-    $$ = TYPE_INTF;
-  }
   ;
 
 function_type
-  : FUNC '(' ')'
-  | FUNC '(' ')' return_type_list
-  | FUNC '(' parameter_type_list ')'
-  | FUNC '(' parameter_type_list ')' return_type_list
+  : FUNC '(' ')' {
+    $$ = new_func_proto_type(null, null);
+  }
+  | FUNC '(' ')' return_type_list {
+    $$ = new_func_proto_type(null, null);
+  }
+  | FUNC '(' type_name_list ')' {
+    $$ = new_func_proto_type(null, null);
+  }
+  | FUNC '(' type_name_list ')' return_type_list {
+    $$ = new_func_proto_type(null, null);
+  }
   ;
 
 array_type
-  : '[' INTEGER ']' type_name
+  : '[' INTEGER ']' type_name {
+    $$ = new_array_type($2, $4);
+  }
   ;
 
-field_name
-  : ID
+return_type_list
+  : type_name
+  | '(' type_name_list ')'
   ;
 
 program
@@ -214,7 +235,7 @@ program
   ;
 
 package_statement
-  : PACKAGE qualified_name semicolons
+  : PACKAGE qualified_name ';'
   ;
 
 import_statements
@@ -223,8 +244,8 @@ import_statements
   ;
 
 import_statement
-  : IMPORT qualified_name semicolons
-  | IMPORT qualified_name '.' '*' semicolons
+  : IMPORT qualified_name ';'
+  | IMPORT qualified_name '.' '*' ';'
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -243,7 +264,7 @@ declarations
 type_declaration
   : TYPE ID STRUCT '{' field_declarations '}'
   | TYPE ID INTERFACE '{' interface_function_declarations '}'
-  | TYPE ID type_info semicolons
+  | TYPE ID type_name ';'
   ;
 
 field_declarations
@@ -252,7 +273,7 @@ field_declarations
   ;
 
 field_declaration
-  : ID type_name semicolons
+  : ID type_name ';'
   ;
 
 interface_function_declarations
@@ -261,22 +282,12 @@ interface_function_declarations
   ;
 
 interface_function_declaration
-  : ID '(' ')' semicolons
-  | ID '(' ')' return_type_list semicolons
-  | ID '(' parameter_type_list ')' semicolons
-  | ID '(' parameter_type_list ')' return_type_list semicolons
-  | ID '(' parameter_list ')' semicolons
-  | ID '(' parameter_list ')' return_type_list semicolons
-  ;
-
-return_type_list
-  : type_name
-  | '(' type_name_list ')'
-  ;
-
-parameter_type_list
-  : type_name
-  | parameter_type_list ',' type_name
+  : ID '(' ')' ';'
+  | ID '(' ')' return_type_list ';'
+  | ID '(' type_name_list ')' ';'
+  | ID '(' type_name_list ')' return_type_list ';'
+  | ID '(' parameter_list ')' ';'
+  | ID '(' parameter_list ')' return_type_list ';'
   ;
 
 parameter_list
@@ -293,6 +304,7 @@ function_declaration
   | FUNC ID '(' parameter_list ')' return_type_list code_block
   ;
 
+
 anonymous_function_declaration
   : FUNC '(' ')' code_block
   | FUNC '(' ')' return_type_list code_block
@@ -300,17 +312,14 @@ anonymous_function_declaration
   | FUNC '(' parameter_list ')' return_type_list code_block
   ;
 
+
 /*--------------------------------------------------------------------------*/
 
 method_declaration
-  : FUNC method_name '(' ')' code_block
-  | FUNC method_name '(' ')' return_type_list code_block
-  | FUNC method_name '(' parameter_list ')' code_block
-  | FUNC method_name '(' parameter_list ')' return_type_list code_block
-  ;
-
-method_name
-  : ID '.' ID
+  : FUNC ID '.' ID '(' ')' code_block
+  | FUNC ID '.' ID '(' ')' return_type_list code_block
+  | FUNC ID '.' ID '(' parameter_list ')' code_block
+  | FUNC ID '.' ID '(' parameter_list ')' return_type_list code_block
   ;
 
 code_block
@@ -344,8 +353,8 @@ selection_statement
   ;
 
 if_statement
-  : IF '(' expression ')' code_block
-  | IF '(' expression ')' code_block ELSE else_statemnet
+  : IF '(' base_expression ')' code_block
+  | IF '(' base_expression ')' code_block ELSE else_statemnet
   ;
 
 else_statemnet
@@ -354,12 +363,12 @@ else_statemnet
   ;
 
 switch_statement
-  : SWITCH '(' expression ')' code_block
+  : SWITCH '(' base_expression ')' code_block
   ;
 
 iteration_statemnet
-  : WHILE '(' expression ')' code_block
-  | DO code_block WHILE '(' expression ')' ';'
+  : WHILE '(' base_expression ')' code_block
+  | DO code_block WHILE '(' base_expression ')' ';'
   | FOR '(' for_init for_expr for_incr ')' code_block
   ;
 
@@ -370,7 +379,7 @@ for_init
   ;
 
 for_expr
-  : expression ';'
+  : base_expression ';'
   | ';'
   ;
 
@@ -383,15 +392,18 @@ jump_statement
   | RETURN expression_list ';'
   ;
 
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------.
+|  |
+|                                                     |
+`--------------------------------------------------------------------------*/
 variable_declaration
-  : VAR var_list type_info ';' {
+  : VAR var_list type_name ';' {
     new_var_decl($2, $3, null);
   }
   | VAR var_list '=' expression_list ';' {
 
   }
-  | VAR var_list type_info '=' expression_list ';' {
+  | VAR var_list type_name '=' expression_list ';' {
 
   }
   ;
@@ -400,34 +412,31 @@ var_list
   : ID {
     printf("ID: %s\n", $1.val);
     $$ = linked_list_new();
-    struct var *var = new_simple_var($1);
-    linked_list_add_tail($$, linked_node_new(var));
+    linked_list_add_tail($$, new_simple_var($1));
   }
   | var_list ',' ID {
     printf("ID: %s\n", $3.val);
     $$ = $1;
-    struct var *var = new_simple_var($3);
-    linked_list_add_tail($$, linked_node_new(var));
+    linked_list_add_tail($$, new_simple_var($3));
   }
   ;
 
-type_info
+/*
+new_type_info
   : type_name {
     $$.kind = $1;
     $$.attr = null;
   }
-  | function_type {
-
-  }
+  | function_type {}
   ;
-
+*/
 /*-------------------------------------------------------------------------*/
 
 primary_expression
   : qualified_name {
     //$$ = $1;
   }
-  | literal_name {
+  | const_name {
 
   }
   | just_not_name {
@@ -439,7 +448,7 @@ just_not_name
   : TOKEN_THIS {
 
   }
-  | '(' expression ')' {
+  | '(' base_expression ')' {
 
   }
   | complex_primary {
@@ -459,7 +468,7 @@ complex_primary
   }
   ;
 
-literal_name  //常量允许访问成员变量和成员方法，不允许数组操作
+const_name  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
   }
   | FLOAT {
@@ -480,15 +489,15 @@ literal_name  //常量允许访问成员变量和成员方法，不允许数组�
   ;
 
 array_complex_primary
-  : '(' expression ')'
+  : '(' base_expression ')'
   | array_access
   | field_access
   | method_call
   ;
 
 array_access
-  : qualified_name '[' expression ']'
-  | array_complex_primary '[' expression ']' //常量不允许数组操作
+  : qualified_name '[' base_expression ']'
+  | array_complex_primary '[' base_expression ']' //常量不允许数组操作
   ;
 
 field_access
@@ -508,27 +517,28 @@ method_access
 /*-------------------------------------------------------------------------*/
 
 initializer_expression
-  : struct_initializer
-  | anonymous_function_declaration
-  //| interface_initializer
-  ;
-
-struct_initializer
   : '{' '}'
   | '{' expression_list '}'
-  | '{' field_initializer_list '}'
-  | type_name '{' '}'
-  | type_name '{' expression_list '}'
-  | type_name '{' field_initializer_list '}'
+  | '{' field_initial_list '}'
+  | '{' array_initial_list '}'
+  | qualified_name '{' '}'
+  | qualified_name '{' expression_list '}'
+  | qualified_name '{' field_initial_list '}'
+  | array_type '{' '}'
+  | array_type '{' expression_list '}'
+  | array_type '{' array_initial_list '}'
+  | anonymous_function_declaration
+  | primitive_type '(' base_expression ')'
   ;
 
-field_initializer_list
-  : field_initializer
-  | field_initializer_list ',' field_initializer
+field_initial_list
+  : ID ':' base_expression
+  | field_initial_list ',' ID ':' base_expression
   ;
 
-field_initializer
-  : field_name ':' expression
+array_initial_list
+  : INTEGER ':' base_expression
+  | array_initial_list ',' INTEGER ':' base_expression
   ;
 
 /*-------------------------------------------------------------------------*/
@@ -663,27 +673,27 @@ logical_or_expression
   | logical_or_expression OR logical_and_expression {}
   ;
 
-expression
+base_expression
   : logical_or_expression {
     //$$ = $1;
   }
   ;
 
-expressions
-  : expression
+expression
+  : base_expression
   | initializer_expression
   ;
 
 expression_list
-  : expressions
-  | expression_list ',' expressions
+  : expression
+  | expression_list ',' expression
   ;
 
 /*--------------------------------------------------------------------------*/
 
 assignment_expression
   : assignment_variable_list '=' expression_list
-  | assignment_variable compound_assignment_operator expression
+  | assignment_variable compound_assignment_operator base_expression
   ;
 
 assignment_variable_list
@@ -711,7 +721,7 @@ compound_assignment_operator
   ;
 
 expression_statement
-  : expression {
+  : base_expression {
     //$$ = $1;
   }
   | assignment_expression {

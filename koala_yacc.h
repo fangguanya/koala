@@ -123,16 +123,18 @@ union YYSTYPE
 #line 14 "yacc/koala.y" /* yacc.c:1909  */
 
   string id;
-  int type;
+  int primitive_type;
   char unary_op;
   char *ident;
   int64 ival;
   float64 fval;
   char *str_val;
   linked_list_t *linked_list;
-  type_info_t type_info;
+  type_info_t *new_type_info;
+  func_proto_type_t *func_proto_type;
+  array_type_t *array_type;
 
-#line 136 "koala_yacc.h" /* yacc.c:1909  */
+#line 138 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
