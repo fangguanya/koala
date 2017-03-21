@@ -10,14 +10,18 @@
 BEGIN_DECLS /* 兼容C++编译宏 */
 
 typedef enum {
+  OP_INVALID,
+  OP_INC_BEFORE, OP_DEC_BEFORE,
+  OP_BNOT, OP_LNOT,
+  OP_INC_AFTER, OP_DEC_AFTER,
   OP_TIMES, OP_DIVIDE, OP_MOD,
-  plus_op, minus_op,
-  left_shift_op, right_shift_op,
-  gt_op, ge_op, lt_op, le_op,
-  eq_op, neq_op,
-  binary_and_op, binary_or_op, binary_xor_op,
-  logic_and_op, logic_or_op
-} binary_op_t;
+  OP_PLUS, OP_MINUS,
+  OP_LSHIFT, OP_RSHIFT,
+  OP_GT, OP_GE, OP_LT, OP_LE,
+  OP_EQ, OP_NEQ,
+  OP_BAND, OP_BXOR, OP_BOR,
+  OP_LAND, OP_LOR,
+} operator_t;
 
 typedef enum {
   plus_assign_op, minus_assign_op, times_assign_op, divide_assign_op,
@@ -46,11 +50,13 @@ struct var {
 
 struct expr {
   enum {
-    invalid_exp,
+    EXP_INVALID,
     //terminal symbol
-    var_exp, uint_exp, sint_exp, float_exp, bool_exp, string_exp,
+    EXP_VAR, EXP_UINT, EXP_FLOAT, EXP_BOOL, EXP_STRING,
     //binary operation
-    binary_op_exp,
+    EXP_BINARAY,
+    //unary operation
+    EXP_UNARY,
     // call operation
     call_exp,
     // expression sequence
@@ -64,15 +70,18 @@ struct expr {
   union {
     var_t var;
     uint64 uint_num;
-    int64 sint_num;
-    double float_num;
-    int bool_val;
+    float64 float_num;
+    bool bool_val;
     string str;
     struct {
-      binary_op_t op;
+      operator_t op;
       expr_t *left;
       expr_t *right;
     } binary_op;
+    struct {
+      operator_t op;
+      expr_t *exp;
+    } unary_op;
     struct {
       string func;
       linked_list_t args;
@@ -89,7 +98,7 @@ struct expr {
       expr_t *exp;
     } multi_assign_op;
     */
-  } u;
+  };
 };
 
 typedef struct type_info type_info_t;
@@ -156,7 +165,6 @@ struct simple_string {
 };
 
 /* function prototype */
-simple_string_t *new_simple_string(string value);
 type_info_t *new_type_info(int kind, void *attr);
 array_type_t *new_array_type(int size, type_info_t *base_type);
 func_proto_type_t *new_func_proto_type(linked_list_t *args,
@@ -165,6 +173,15 @@ func_proto_type_t *new_func_proto_type(linked_list_t *args,
 var_t *new_simple_var(string name);
 var_decl_t *new_var_decl(linked_list_t *var_list, type_info_t *type,
                          linked_list_t *init_list);
+
+expr_t *new_uint_expr(uint64 val);
+expr_t *new_float_expr(float64 val);
+expr_t *new_string_expr(string val);
+expr_t *new_bool_expr(bool val);
+expr_t *new_binary_exp(operator_t op, expr_t *left, expr_t *right);
+expr_t *new_unary_exp(operator_t op, expr_t *expr);
+
+void show_expr(expr_t *exp);
 
 END_DECLS /* 兼容C++编译宏 */
 

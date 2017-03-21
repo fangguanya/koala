@@ -124,15 +124,15 @@ union YYSTYPE
 
   string id;
   int primitive_type;
-  char unary_op;
   char *ident;
-  int64 ival;
+  uint64 ival;
   float64 fval;
-  char *str_val;
+  string str_val;
   linked_list_t *linked_list;
   type_info_t *new_type_info;
   func_proto_type_t *func_proto_type;
   array_type_t *array_type;
+  expr_t *expression;
 
 #line 138 "koala_yacc.h" /* yacc.c:1909  */
 };

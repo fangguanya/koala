@@ -1,8 +1,49 @@
 #!/media/psf/Home/Projects/koala/koala
 
-var age, abc, def int32;
+package com.github.koala;
 
-var age, abc, def string;
+var age, abc, def int32 = 100+200-3, 200, 300;
+
+var p Person = Person{};
+
+var q = Person{"zhuguangxiang", 30};
+
+var r = {name:"jacky", age : 30};
+
+var a1 [10]int32 = [10][5]int32{{1,2}, {3,4}, {5,6,7}};
+
+var a1 [10]int32 = {2 : 100, 3:200};
+
+var a2 [200]Person = {0 : {"zgx", 20}, 1 : {"jmmy", 30}};
+
+var p = Person{name: Name{"zhuguangxiang", "jimmy"}, age : 20};
+
+var p Person = {{"zhuguangxiang", "jimmy"}, 20};
+
+var i interface{};
+
+var f func(string, int32) (Person, int64);
+
+type Person struct {
+  Name string;
+  Age int32;
+}
+
+type Message interface {
+  SendMsg(msg interface{}, to string) int32;
+  RecvMsg(msg Buffer, from string) int32;
+}
+
+type int int32;
+type Student Person;
+
+func Print(str string) {
+
+}
+
+func Person.Print(str string) {
+
+}
 
 func main()
 {

@@ -9,6 +9,10 @@
 
 BEGIN_DECLS /* 兼容C++编译宏 */
 
+typedef struct symbol symbol_t;
+typedef struct binder binder_t;
+typedef struct symbol_table symbol_table_t;
+
 struct symbol {
   string name;
   int type;
@@ -28,21 +32,21 @@ struct symbol_table {
   struct hash_table table;
 };
 
-void symbol_table_init(struct symbol_table *table);
-void symbol_table_fini(struct symbol_table *table);
+void symbol_table_init(symbol_table_t *table);
+void symbol_table_fini(symbol_table_t *table);
 
-static inline void symbol_table_begin_scope(struct symbol_table *table)
+static inline void symbol_table_begin_scope(symbol_table_t *table)
 {
   table->current_scope++;
 }
 
-static inline void symbol_table_end_scope(struct symbol_table *table)
+static inline void symbol_table_end_scope(symbol_table_t *table)
 {
   table->current_scope--;
 }
 
-int symbol_table_add(struct symbol_table *table, string name, int type);
-struct symbol *symbol_table_find(struct symbol_table *table, string name);
+int symbol_table_add(symbol_table_t *table, string name, int type);
+symbol_t *symbol_table_find(symbol_table_t *table, string name);
 
 END_DECLS /* 兼容C++编译宏 */
 

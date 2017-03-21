@@ -14,15 +14,15 @@ int yylex(void);
 %union {
   string id;
   int primitive_type;
-  char unary_op;
   char *ident;
-  int64 ival;
+  uint64 ival;
   float64 fval;
-  char *str_val;
+  string str_val;
   linked_list_t *linked_list;
   type_info_t *new_type_info;
   func_proto_type_t *func_proto_type;
   array_type_t *array_type;
+  expr_t *expression;
 }
 
 %token ELLIPSIS
@@ -106,7 +106,7 @@ int yylex(void);
 %nonassoc NO_CODE_BLOCK
 
 /*--------------------------------------------------------------------------*/
-%type <linked_list> qualified_name
+%type <str_val> qualified_name
 %type <new_type_info> type_name
 %type <primitive_type> primitive_type
 %type <array_type> array_type
@@ -114,8 +114,24 @@ int yylex(void);
 %type <linked_list> type_name_list
 %type <linked_list> var_list
 
+%type <expression> base_expression
+%type <expression> logical_or_expression
+%type <expression> logical_and_expression
+%type <expression> inclusive_or_expression
+%type <expression> exclusive_or_expression
+%type <expression> and_expression
+%type <expression> equality_expression
+%type <expression> relational_expression
+%type <expression> shift_expression
+%type <expression> additive_expression
+%type <expression> multiplicative_expression
+%type <expression> unary_expression
+%type <expression> postfix_expression
+%type <expression> primary_expression
+%type <expression> just_not_name
 
-%type <unary_op> unary_operator
+%type <expression> constant
+
 
 %start program
 
@@ -123,12 +139,10 @@ int yylex(void);
 
 qualified_name
   : ID {
-    $$ = linked_list_new();
-    linked_list_add_tail($$, new_simple_string($1));
+    $$ = $1;
   }
   | qualified_name '.' ID {
-    $$ = $1;
-    linked_list_add_tail($$, new_simple_string($3));
+    $$ = string_append($1, $3);
   }
   ;
 
@@ -146,7 +160,7 @@ type_name
     $$ = new_type_info($1, null);
   }
   | qualified_name {
-    $$ = new_type_info(TYPE_DEFINED, $1);
+    $$ = new_type_info(TYPE_DEFINED, $1.val);
   }
   | array_type {
     $$ = new_type_info(TYPE_ARRAY, $1);
@@ -268,12 +282,8 @@ type_declaration
   ;
 
 field_declarations
-  : field_declaration
-  | field_declarations field_declaration
-  ;
-
-field_declaration
   : ID type_name ';'
+  | field_declarations ID type_name ';'
   ;
 
 interface_function_declarations
@@ -323,7 +333,9 @@ method_declaration
   ;
 
 code_block
-  : '{' local_variable_declaration_statements '}'
+  : '{' local_variable_declaration_statements '}' {
+    printf("code block\n");
+  }
   | '{' '}'
   ;
 
@@ -335,12 +347,15 @@ local_variable_declaration_statements
 
 local_variable_declaration_statement
   : variable_declaration
-  | statemnet
+  | statement {
+    printf("----statement\n");
+  }
   ;
 
-statemnet
+statement
   : expression_statement ';' {
     //expr_tree_print($1);
+    printf("----expression_statement\n");
   }
   | selection_statement
   | iteration_statemnet
@@ -421,72 +436,7 @@ var_list
   }
   ;
 
-/*
-new_type_info
-  : type_name {
-    $$.kind = $1;
-    $$.attr = null;
-  }
-  | function_type {}
-  ;
-*/
 /*-------------------------------------------------------------------------*/
-
-primary_expression
-  : qualified_name {
-    //$$ = $1;
-  }
-  | const_name {
-
-  }
-  | just_not_name {
-    //$$ = $1;
-  }
-  ;
-
-just_not_name
-  : TOKEN_THIS {
-
-  }
-  | '(' base_expression ')' {
-
-  }
-  | complex_primary {
-    //$$ = $1;
-  }
-  ;
-
-complex_primary
-  : array_access {
-
-  }
-  | field_access {
-
-  }
-  | method_call {
-
-  }
-  ;
-
-const_name  //常量允许访问成员变量和成员方法，不允许数组操作
-  : INTEGER {
-  }
-  | FLOAT {
-
-  }
-  | STRING_LITERAL {
-
-  }
-  | TOKEN_NIL {
-
-  }
-  | TOKEN_TRUE {
-
-  }
-  | TOKEN_FALSE {
-
-  }
-  ;
 
 array_complex_primary
   : '(' base_expression ')'
@@ -514,6 +464,10 @@ method_access
   | qualified_name
   ;
 
+argument_list
+	: expression_list
+	;
+
 /*-------------------------------------------------------------------------*/
 
 initializer_expression
@@ -532,155 +486,250 @@ initializer_expression
   ;
 
 field_initial_list
-  : ID ':' base_expression
-  | field_initial_list ',' ID ':' base_expression
+  : ID ':' expression
+  | field_initial_list ',' ID ':' expression
   ;
 
 array_initial_list
-  : INTEGER ':' base_expression
-  | array_initial_list ',' INTEGER ':' base_expression
+  : INTEGER ':' expression
+  | array_initial_list ',' INTEGER ':' expression
   ;
 
 /*-------------------------------------------------------------------------*/
 
-postfix_expression
-  : primary_expression {
+primary_expression
+  : qualified_name {
+    $$ = new_string_expr($1);
+  }
+  | constant {
+    $$ = $1;
+  }
+  | just_not_name {
+    $$ = $1;
+  }
+  ;
+
+just_not_name
+  : '(' base_expression ')' {
+    $$ = $2;
+  }
+  | complex_primary {
     //$$ = $1;
   }
-  | real_postfix_expression {
+  ;
+
+complex_primary
+  : array_access {
+
+  }
+  | field_access {
+
+  }
+  | method_call {
 
   }
   ;
 
-real_postfix_expression
-  : postfix_expression INC
-  | postfix_expression DEC
+constant  //常量允许访问成员变量和成员方法，不允许数组操作
+  : INTEGER {
+    $$ = new_uint_expr($1);
+  }
+  | FLOAT {
+    $$ = new_float_expr($1);
+  }
+  | STRING_LITERAL {
+    $$ = new_string_expr($1);
+  }
+  | TOKEN_NIL {
+    $$ = null;
+  }
+  | TOKEN_TRUE {
+    $$ = new_bool_expr(true);
+  }
+  | TOKEN_FALSE {
+    $$ = new_bool_expr(false);
+  }
   ;
 
-argument_list
-	: expression_list
-	;
+postfix_expression
+  : primary_expression {
+    $$ = $1;
+  }
+  | postfix_expression INC {
+    if ($1->kind != EXP_VAR) {
+      yyerror("error: lvalue required as increment operand\n");
+      exit(-1);
+    } else {
+      $$ = new_unary_exp(OP_INC_AFTER, $1);
+    }
+  }
+  | postfix_expression DEC {
+    if ($1->kind != EXP_VAR) {
+      yyerror("error: lvalue required as decrement operand\n");
+      exit(-1);
+    } else {
+      $$ = new_unary_exp(OP_DEC_AFTER, $1);
+    }
+  }
+  ;
 
 unary_expression
   : postfix_expression {
-    //$$ = $1;
+    $$ = $1;
   }
   | INC unary_expression {
-
+    if ($2->kind != EXP_VAR) {
+      yyerror("error: rvalue required as increment operand\n");
+      exit(-1);
+    } else {
+      $$ = new_unary_exp(OP_INC_BEFORE, $2);
+    }
   }
   | DEC unary_expression {
-
+    if ($2->kind != EXP_VAR) {
+      yyerror("error: rvalue required as decrement operand\n");
+      exit(-1);
+    } else {
+      $$ = new_unary_exp(OP_DEC_BEFORE, $2);
+    }
   }
-  | unary_operator unary_expression {
-
+  | '+' unary_expression {
+    $$ = $2;
+  }
+  | '-' unary_expression {
+    $$ = new_unary_exp(OP_MINUS, $2);
+  }
+  | '~' unary_expression {
+    $$ = new_unary_exp(OP_BNOT, $2);
+  }
+  | '!' unary_expression {
+    $$ = new_unary_exp(OP_LNOT, $2);
   }
   ;
 
-unary_operator
-  : '+' {
-  }
-  | '-' {
-  }
-	| '~' {
-  }
-	| '!' {
-  }
-	;
-
 multiplicative_expression
 	: unary_expression {
-    //$$ = $1;
+    $$ = $1;
   }
 	| multiplicative_expression '*' unary_expression {
-
+    $$ = new_binary_exp(OP_TIMES, $1, $3);
   }
 	| multiplicative_expression '/' unary_expression {
-
+    $$ = new_binary_exp(OP_DIVIDE, $1, $3);
   }
 	| multiplicative_expression '%' unary_expression {
-
+    $$ = new_binary_exp(OP_MOD, $1, $3);
   }
 	;
 
 additive_expression
 	: multiplicative_expression {
-    //$$ = $1;
+    $$ = $1;
   }
 	| additive_expression '+' multiplicative_expression {
-
+    $$ = new_binary_exp(OP_PLUS, $1, $3);
   }
-	| additive_expression '-' multiplicative_expression {}
+	| additive_expression '-' multiplicative_expression {
+    $$ = new_binary_exp(OP_MINUS, $1, $3);
+  }
 	;
 
 shift_expression
 	: additive_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| shift_expression SHIFT_LEFT additive_expression {}
-	| shift_expression SHIFT_RIGHT additive_expression {}
+	| shift_expression SHIFT_LEFT additive_expression {
+    $$ = new_binary_exp(OP_LSHIFT, $1, $3);
+  }
+	| shift_expression SHIFT_RIGHT additive_expression {
+    $$ = new_binary_exp(OP_RSHIFT, $1, $3);
+  }
 	;
 
 relational_expression
 	: shift_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| relational_expression '<' shift_expression {}
-	| relational_expression '>' shift_expression {}
-	| relational_expression LE  shift_expression {}
-	| relational_expression GE  shift_expression {}
+	| relational_expression '<' shift_expression {
+    $$ = new_binary_exp(OP_LT, $1, $3);
+  }
+	| relational_expression '>' shift_expression {
+    $$ = new_binary_exp(OP_GT, $1, $3);
+  }
+	| relational_expression LE  shift_expression {
+    $$ = new_binary_exp(OP_LE, $1, $3);
+  }
+	| relational_expression GE  shift_expression {
+    $$ = new_binary_exp(OP_GE, $1, $3);
+  }
 	;
 
 equality_expression
 	: relational_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| equality_expression EQ relational_expression {}
-	| equality_expression NE relational_expression {}
+	| equality_expression EQ relational_expression {
+    $$ = new_binary_exp(OP_EQ, $1, $3);
+  }
+	| equality_expression NE relational_expression {
+    $$ = new_binary_exp(OP_NEQ, $1, $3);
+  }
 	;
 
 and_expression
 	: equality_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| and_expression '&' equality_expression {}
+	| and_expression '&' equality_expression {
+    $$ = new_binary_exp(OP_BAND, $1, $3);
+  }
 	;
 
 exclusive_or_expression
 	: and_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| exclusive_or_expression '^' and_expression {}
+	| exclusive_or_expression '^' and_expression {
+    $$ = new_binary_exp(OP_BXOR, $1, $3);
+  }
 	;
 
 inclusive_or_expression
 	: exclusive_or_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-	| inclusive_or_expression '|' exclusive_or_expression {}
+	| inclusive_or_expression '|' exclusive_or_expression {
+    $$ = new_binary_exp(OP_BOR, $1, $3);
+  }
 	;
 
 logical_and_expression
   : inclusive_or_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-  | logical_and_expression AND inclusive_or_expression {}
+  | logical_and_expression AND inclusive_or_expression {
+    $$ = new_binary_exp(OP_LAND, $1, $3);
+  }
   ;
 
 logical_or_expression
   : logical_and_expression {
-    //$$ = $1;
+    $$ = $1;
   }
-  | logical_or_expression OR logical_and_expression {}
+  | logical_or_expression OR logical_and_expression {
+    $$ = new_binary_exp(OP_LOR, $1, $3);
+  }
   ;
 
 base_expression
   : logical_or_expression {
-    //$$ = $1;
+    $$ = $1;
   }
   ;
 
 expression
-  : base_expression
+  : base_expression {
+  }
   | initializer_expression
   ;
 
@@ -722,7 +771,9 @@ compound_assignment_operator
 
 expression_statement
   : base_expression {
-    //$$ = $1;
+    printf("----base_expression\n");
+    show_expr($1);
+    putchar('\n');
   }
   | assignment_expression {
 

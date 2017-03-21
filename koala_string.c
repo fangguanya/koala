@@ -78,11 +78,15 @@ static struct string_block *get_avail_block()
 
 string new_string(char *str)
 {
+  return new_nstring(str, strlen(str));
+}
+
+string new_nstring(char *str, int len)
+{
   string string;
-  int len = strlen(str) + 1;
   assert(len <= STRING_BLOCK_SIZE);
   string.val = str;
-  string.len = len - 1;
+  string.len = len;
 
   if (string_cache_exist(&string))
   {
@@ -96,21 +100,33 @@ string new_string(char *str)
 
   printf("block:%p, left:%d\n", block, block->left);
 
-  if (block->left < len)
+  if (block->left < len + 1)
   {
     block = new_string_block();
   }
 
   char *data = block->page + STRING_BLOCK_SIZE - block->left;
-  block->left -= len;
+  block->left -= (len + 1);
   assert(block->left >= 0);
 
   memcpy(data, str, len);
+  data[len] = 0;
+
   string.val = data;
-  string.len = len - 1;
+  string.len = len;
   string_cache_add(string);
 
   return string;
+}
+
+string string_append(string str1, string str2)
+{
+  char str[str1.len + str2.len + 2];
+  memcpy(str, str1.val, str1.len);
+  str[str1.len] = '.';
+  memcpy(str+str1.len, str2.val, str2.len);
+  str[sizeof(str) - 1] = '0';
+  return new_nstring(str, sizeof(str) - 1);
 }
 
 static uint32 str_hash_fn(void *key)

@@ -917,12 +917,12 @@ YY_RULE_SETUP
 case 8:
 YY_RULE_SETUP
 #line 24 "yacc/koala.l"
-{return SHIFT_LEFT;}
+{return SHIFT_RIGHT;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 25 "yacc/koala.l"
-{return SHIFT_RIGHT;}
+{return SHIFT_LEFT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
@@ -1208,7 +1208,7 @@ YY_RULE_SETUP
 #line 93 "yacc/koala.l"
 {
                             echo();
-                            yylval.str_val = strdup(yytext);
+                            yylval.str_val = new_nstring(yytext+1, yyleng - 2);
                             return STRING_LITERAL;
                           }
 	YY_BREAK

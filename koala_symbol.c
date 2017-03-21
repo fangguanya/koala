@@ -20,9 +20,9 @@ static int type_size[] = {
   sizeof(char *)  /* pointer */
 };
 
-struct symbol *new_symbol(string name, int type)
+symbol_t *new_symbol(string name, int type)
 {
-  struct symbol *sym = malloc(sizeof(*sym));
+  symbol_t *sym = malloc(sizeof(*sym));
   sym->name = name;
   sym->type = type;
   sym->size = type_size[type];
@@ -31,21 +31,21 @@ struct symbol *new_symbol(string name, int type)
   return sym;
 }
 
-void free_symbol(struct symbol *sym)
+void free_symbol(symbol_t *sym)
 {
   free(sym);
 }
 
-struct binder *new_binder(struct symbol *sym)
+binder_t *new_binder(symbol_t *sym)
 {
-  struct binder *binder = malloc(sizeof(*binder));
+  binder_t *binder = malloc(sizeof(*binder));
   assert(binder);
   binder->symbol = sym;
   HASH_NODE_INIT(&binder->hnode, &binder->symbol->name);
   return binder;
 }
 
-void free_binder(struct binder *binder)
+void free_binder(binder_t *binder)
 {
   free_symbol(binder->symbol);
   free(binder);
@@ -78,11 +78,11 @@ static int binder_equal_fn(void *k1, void *k2)
 
 static void binder_free_fn(struct hash_node *hnode)
 {
-  struct binder *binder = PARENT_STRUCT(hnode, struct binder, hnode);
+  binder_t *binder = PARENT_STRUCT(hnode, binder_t, hnode);
   free_binder(binder);
 }
 
-void symbol_table_init(struct symbol_table *table)
+void symbol_table_init(symbol_table_t *table)
 {
   int failed = hash_table_init(&table->table,
                                binder_hash_fn,
@@ -92,18 +92,18 @@ void symbol_table_init(struct symbol_table *table)
   table->current_scope = 0;
 }
 
-void symbol_table_fini(struct symbol_table *table)
+void symbol_table_fini(symbol_table_t *table)
 {
   hash_table_fini(&table->table);
   table->current_scope = 0;
 }
 
-int symbol_table_add(struct symbol_table *table, string name, int type)
+int symbol_table_add(symbol_table_t *table, string name, int type)
 {
-  struct binder *binder;
+  binder_t *binder;
   struct hash_node *hnode = hash_table_lookup(&table->table, &name);
   if (hnode != null) {
-    binder = PARENT_STRUCT(hnode, struct binder, hnode);
+    binder = PARENT_STRUCT(hnode, binder_t, hnode);
     if (binder->scope >= table->current_scope) {
       printf("duplicated symblol,(%d,%d,%s)\n", table->current_scope,
             binder->scope, name.val);

@@ -12,6 +12,9 @@ typedef struct string {
 } string;
 
 string new_string(char *str);
+string new_nstring(char *str, int len);
+string string_append(string str1, string str2);
+
 void init_string_system();
 
 END_DECLS /* 兼容C++编译宏 */

@@ -21,8 +21,8 @@ L   [a-zA-Z_]
 "<="                      {return LE;}
 "&&"                      {return AND;}
 "||"                      {return OR;}
-">>"                      {return SHIFT_LEFT;}
-"<<"                      {return SHIFT_RIGHT;}
+">>"                      {return SHIFT_RIGHT;}
+"<<"                      {return SHIFT_LEFT;}
 "++"                      {return INC;}
 "--"                      {return DEC;}
 "+="                      {return ADD_ASSIGN;}
@@ -92,7 +92,7 @@ L   [a-zA-Z_]
 
 (\"(\\.|[^"\\])*\")       {
                             echo();
-                            yylval.str_val = strdup(yytext);
+                            yylval.str_val = new_nstring(yytext+1, yyleng - 2);
                             return STRING_LITERAL;
                           }
 
