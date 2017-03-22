@@ -12,7 +12,7 @@ int yylex(void);
 %}
 
 %union {
-  string id;
+  string identifier;
   int primitive_type;
   char *ident;
   uint64 ival;
@@ -75,7 +75,7 @@ int yylex(void);
 
 %token INT8
 %token INT16
-%token <type> INT32
+%token INT32
 %token INT64
 %token UINT8
 %token UINT16
@@ -86,7 +86,6 @@ int yylex(void);
 %token BOOL
 %token STRING
 %token TOKEN_NIL
-
 %token TOKEN_TRUE
 %token TOKEN_FALSE
 
@@ -96,14 +95,11 @@ int yylex(void);
 %token <fval> FLOAT
 
 %token <str_val> STRING_LITERAL
-%token <id> ID
-%token OP
+%token <identifier> IDENTIFIER
 
 /*--------------------------------------------------------------------------*/
 
-%nonassoc IFX
 %nonassoc ELSE
-%nonassoc NO_CODE_BLOCK
 
 /*--------------------------------------------------------------------------*/
 %type <str_val> qualified_name
@@ -114,7 +110,7 @@ int yylex(void);
 %type <linked_list> type_name_list
 %type <linked_list> var_list
 
-%type <expression> base_expression
+%type <expression> basic_expression
 %type <expression> logical_or_expression
 %type <expression> logical_and_expression
 %type <expression> inclusive_or_expression
@@ -128,7 +124,6 @@ int yylex(void);
 %type <expression> unary_expression
 %type <expression> postfix_expression
 %type <expression> primary_expression
-%type <expression> just_not_name
 
 %type <expression> constant
 
@@ -138,12 +133,14 @@ int yylex(void);
 %%
 
 qualified_name
-  : ID {
+  : IDENTIFIER {
     $$ = $1;
   }
-  | qualified_name '.' ID {
+  /*
+  | qualified_name '.' IDENTIFIER {
     $$ = string_append($1, $3);
   }
+  */
   ;
 
 type_name_list
@@ -276,14 +273,14 @@ declarations
   ;
 
 type_declaration
-  : TYPE ID STRUCT '{' field_declarations '}'
-  | TYPE ID INTERFACE '{' interface_function_declarations '}'
-  | TYPE ID type_name ';'
+  : TYPE IDENTIFIER STRUCT '{' field_declarations '}'
+  | TYPE IDENTIFIER INTERFACE '{' interface_function_declarations '}'
+  | TYPE IDENTIFIER type_name ';'
   ;
 
 field_declarations
-  : ID type_name ';'
-  | field_declarations ID type_name ';'
+  : IDENTIFIER type_name ';'
+  | field_declarations IDENTIFIER type_name ';'
   ;
 
 interface_function_declarations
@@ -292,26 +289,26 @@ interface_function_declarations
   ;
 
 interface_function_declaration
-  : ID '(' ')' ';'
-  | ID '(' ')' return_type_list ';'
-  | ID '(' type_name_list ')' ';'
-  | ID '(' type_name_list ')' return_type_list ';'
-  | ID '(' parameter_list ')' ';'
-  | ID '(' parameter_list ')' return_type_list ';'
+  : IDENTIFIER '(' ')' ';'
+  | IDENTIFIER '(' ')' return_type_list ';'
+  | IDENTIFIER '(' type_name_list ')' ';'
+  | IDENTIFIER '(' type_name_list ')' return_type_list ';'
+  | IDENTIFIER '(' parameter_list ')' ';'
+  | IDENTIFIER '(' parameter_list ')' return_type_list ';'
   ;
 
 parameter_list
-  : ID type_name
-  | parameter_list ',' ID type_name
+  : IDENTIFIER type_name
+  | parameter_list ',' IDENTIFIER type_name
   ;
 
 /*--------------------------------------------------------------------------*/
 
 function_declaration
-  : FUNC ID '(' ')' code_block
-  | FUNC ID '(' ')' return_type_list code_block
-  | FUNC ID '(' parameter_list ')' code_block
-  | FUNC ID '(' parameter_list ')' return_type_list code_block
+  : FUNC IDENTIFIER '(' ')' code_block
+  | FUNC IDENTIFIER '(' ')' return_type_list code_block
+  | FUNC IDENTIFIER '(' parameter_list ')' code_block
+  | FUNC IDENTIFIER '(' parameter_list ')' return_type_list code_block
   ;
 
 
@@ -326,10 +323,10 @@ anonymous_function_declaration
 /*--------------------------------------------------------------------------*/
 
 method_declaration
-  : FUNC ID '.' ID '(' ')' code_block
-  | FUNC ID '.' ID '(' ')' return_type_list code_block
-  | FUNC ID '.' ID '(' parameter_list ')' code_block
-  | FUNC ID '.' ID '(' parameter_list ')' return_type_list code_block
+  : FUNC IDENTIFIER '.' IDENTIFIER '(' ')' code_block
+  | FUNC IDENTIFIER '.' IDENTIFIER '(' ')' return_type_list code_block
+  | FUNC IDENTIFIER '.' IDENTIFIER '(' parameter_list ')' code_block
+  | FUNC IDENTIFIER '.' IDENTIFIER '(' parameter_list ')' return_type_list code_block
   ;
 
 code_block
@@ -368,8 +365,8 @@ selection_statement
   ;
 
 if_statement
-  : IF '(' base_expression ')' code_block
-  | IF '(' base_expression ')' code_block ELSE else_statemnet
+  : IF '(' basic_expression ')' code_block
+  | IF '(' basic_expression ')' code_block ELSE else_statemnet
   ;
 
 else_statemnet
@@ -378,12 +375,12 @@ else_statemnet
   ;
 
 switch_statement
-  : SWITCH '(' base_expression ')' code_block
+  : SWITCH '(' basic_expression ')' code_block
   ;
 
 iteration_statemnet
-  : WHILE '(' base_expression ')' code_block
-  | DO code_block WHILE '(' base_expression ')' ';'
+  : WHILE '(' basic_expression ')' code_block
+  | DO code_block WHILE '(' basic_expression ')' ';'
   | FOR '(' for_init for_expr for_incr ')' code_block
   ;
 
@@ -394,7 +391,7 @@ for_init
   ;
 
 for_expr
-  : base_expression ';'
+  : basic_expression ';'
   | ';'
   ;
 
@@ -424,34 +421,34 @@ variable_declaration
   ;
 
 var_list
-  : ID {
-    printf("ID: %s\n", $1.val);
+  : IDENTIFIER {
+    printf("IDENTIFIER: %s\n", $1.val);
     $$ = linked_list_new();
     linked_list_add_tail($$, new_simple_var($1));
   }
-  | var_list ',' ID {
-    printf("ID: %s\n", $3.val);
+  | var_list ',' IDENTIFIER {
+    printf("IDENTIFIER: %s\n", $3.val);
     $$ = $1;
     linked_list_add_tail($$, new_simple_var($3));
   }
   ;
 
 /*-------------------------------------------------------------------------*/
-
+/*
 array_complex_primary
-  : '(' base_expression ')'
+  : '(' basic_expression ')'
   | array_access
   | field_access
   | method_call
   ;
 
 array_access
-  : qualified_name '[' base_expression ']'
-  | array_complex_primary '[' base_expression ']' //常量不允许数组操作
+  : qualified_name '[' basic_expression ']'
+  | array_complex_primary '[' basic_expression ']' //常量不允许数组操作
   ;
 
 field_access
-  : just_not_name '.' ID
+  : just_not_name '.' IDENTIFIER
   ;
 
 method_call
@@ -467,6 +464,7 @@ method_access
 argument_list
 	: expression_list
 	;
+*/
 
 /*-------------------------------------------------------------------------*/
 
@@ -482,12 +480,12 @@ initializer_expression
   | array_type '{' expression_list '}'
   | array_type '{' array_initial_list '}'
   | anonymous_function_declaration
-  | primitive_type '(' base_expression ')'
+  | primitive_type '(' basic_expression ')'
   ;
 
 field_initial_list
-  : ID ':' expression
-  | field_initial_list ',' ID ':' expression
+  : IDENTIFIER ':' expression
+  | field_initial_list ',' IDENTIFIER ':' expression
   ;
 
 array_initial_list
@@ -498,35 +496,14 @@ array_initial_list
 /*-------------------------------------------------------------------------*/
 
 primary_expression
-  : qualified_name {
+  : qualified_name {    /* IDENTIFIER { */
     $$ = new_string_expr($1);
   }
   | constant {
     $$ = $1;
   }
-  | just_not_name {
-    $$ = $1;
-  }
-  ;
-
-just_not_name
-  : '(' base_expression ')' {
+  | '(' basic_expression ')' {
     $$ = $2;
-  }
-  | complex_primary {
-    //$$ = $1;
-  }
-  ;
-
-complex_primary
-  : array_access {
-
-  }
-  | field_access {
-
-  }
-  | method_call {
-
   }
   ;
 
@@ -571,7 +548,24 @@ postfix_expression
       $$ = new_unary_exp(OP_DEC_AFTER, $1);
     }
   }
+  | postfix_expression '.' IDENTIFIER {
+
+  }
+  | postfix_expression '[' basic_expression ']' {
+
+  }
+  | postfix_expression '(' ')' {
+
+  }
+  | postfix_expression '(' argument_expression_list ')' {
+
+  }
   ;
+
+argument_expression_list
+	: basic_expression
+	| argument_expression_list ',' basic_expression
+	;
 
 unary_expression
   : postfix_expression {
@@ -721,14 +715,14 @@ logical_or_expression
   }
   ;
 
-base_expression
+basic_expression
   : logical_or_expression {
     $$ = $1;
   }
   ;
 
 expression
-  : base_expression {
+  : basic_expression {
   }
   | initializer_expression
   ;
@@ -742,7 +736,7 @@ expression_list
 
 assignment_expression
   : assignment_variable_list '=' expression_list
-  | assignment_variable compound_assignment_operator base_expression
+  | assignment_variable compound_assignment_operator basic_expression
   ;
 
 assignment_variable_list
@@ -752,8 +746,8 @@ assignment_variable_list
 
 assignment_variable
   : qualified_name
-  | array_access
-  | field_access
+  //| array_access
+  //| field_access
   ;
 
 compound_assignment_operator
@@ -770,8 +764,8 @@ compound_assignment_operator
   ;
 
 expression_statement
-  : base_expression {
-    printf("----base_expression\n");
+  : basic_expression {
+    printf("----basic_expression\n");
     show_expr($1);
     putchar('\n');
   }

@@ -13,7 +13,7 @@ L   [a-zA-Z_]
 
 %%
 
-[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)^:] {return yytext[0];}
+[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)^:\?] {return yytext[0];}
 
 "=="                      {return EQ;}
 "!="                      {return NE;}
@@ -98,8 +98,8 @@ L   [a-zA-Z_]
 
 {L}({L}|{D})*             {
                             echo();
-                            yylval.id = new_string(yytext);
-                            return ID;
+                            yylval.identifier = new_string(yytext);
+                            return IDENTIFIER;
                           }
 
 [\t\n ]+                  {}

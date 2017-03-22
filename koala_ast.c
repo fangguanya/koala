@@ -276,7 +276,7 @@ void show_expr(expr_t *exp)
     break;
 
     case EXP_FLOAT :
-      printf("%f", exp->float_num);
+      printf("%.16lf", exp->float_num);
     break;
 
     case EXP_BOOL :

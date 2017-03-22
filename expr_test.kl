@@ -1,4 +1,4 @@
-#!/media/psf/Home/Projects/koala/koala
+#!/Users/zgx/Projects/koala/koala
 
 func main() {
   2+3;
@@ -19,4 +19,13 @@ func main() {
   2 || 3 & 4;
 
   (2 || 3) & 4;
+  3.1415926535 + 3;
+
+  person.SetName("zhuguangxiang")[a+b-2][a*b/3];
+  array[20];
+  person.Name + person.Age;
+  person.Name[100];
+  array[a+2-3*b];
+  aa.bb.cc.dd.ee.ff.gg;
+  array[foo(20,40,a+b)].SetAge(10).IntVal.SetName("zgx");
 }

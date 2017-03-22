@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -108,21 +108,18 @@ extern int yydebug;
     OCT = 318,
     FLOAT = 319,
     STRING_LITERAL = 320,
-    ID = 321,
-    OP = 322,
-    IFX = 323,
-    NO_CODE_BLOCK = 324
+    IDENTIFIER = 321
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
-#line 14 "yacc/koala.y" /* yacc.c:1909  */
+#line 14 "yacc/koala.y" /* yacc.c:1915  */
 
-  string id;
+  string identifier;
   int primitive_type;
   char *ident;
   uint64 ival;
@@ -134,8 +131,10 @@ union YYSTYPE
   array_type_t *array_type;
   expr_t *expression;
 
-#line 138 "koala_yacc.h" /* yacc.c:1909  */
+#line 135 "koala_yacc.h" /* yacc.c:1915  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
