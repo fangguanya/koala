@@ -72,6 +72,7 @@ L   [a-zA-Z_]
 "float64"                 {return FLOAT64;}
 "bool"                    {return BOOL;}
 "string"                  {return STRING;}
+"interface{}"             {return ROOT_OBJECT;}
 
 "this"                    {return TOKEN_THIS;}
 "true"                    {return TOKEN_TRUE;}

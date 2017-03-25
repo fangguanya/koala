@@ -18,23 +18,24 @@ typedef float               float32;
 typedef double              float64;
 typedef int                 bool;
 
-#define TYPE_INT8       1
-#define TYPE_INT16      2
-#define TYPE_INT32      3
-#define TYPE_INT64      4
-#define TYPE_UINT8      5
-#define TYPE_UINT16     6
-#define TYPE_UINT32     7
-#define TYPE_UINT64     8
-#define TYPE_FLOAT32    9
-#define TYPE_FLOAT64    10
-#define TYPE_BOOL       11
-#define TYPE_STRING     12
-#define TYPE_ARRAY      13
-#define TYPE_STRUCT     14
-#define TYPE_INTF       15
-#define TYPE_FUNC       16
-#define TYPE_DEFINED    17
+#define TYPE_INT8         1
+#define TYPE_INT16        2
+#define TYPE_INT32        3
+#define TYPE_INT64        4
+#define TYPE_UINT8        5
+#define TYPE_UINT16       6
+#define TYPE_UINT32       7
+#define TYPE_UINT64       8
+#define TYPE_FLOAT32      9
+#define TYPE_FLOAT64      10
+#define TYPE_BOOL         11
+#define TYPE_STRING       12
+#define TYPE_ROOT_OBJECT  13
+#define TYPE_ARRAY        14
+#define TYPE_STRUCT       15
+#define TYPE_INTF         16
+#define TYPE_FUNC         17
+#define TYPE_DEFINED      18
 
 END_DECLS /* 兼容C++编译宏 */
 

@@ -16,7 +16,15 @@ var a2 []int32 = {2 : 100, 3:200};
 
 var a3 []Person = {0 : Person("zgx", 20), 1 : Person("jmmy", 30)};
 
+var a4 []Person = {Person(), Person()};
+
+var a5 []float32 = {1.1, 2.2};
+
 var i interface{};
+
+var f1 func(interface{}) = func(object interface{}) {
+
+  };
 
 var f func(string, int32) (Person, int64);
 

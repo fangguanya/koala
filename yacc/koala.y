@@ -51,8 +51,6 @@ int yylex(void);
 %token INC
 %token DEC
 
-%token TOKEN_THIS
-
 %token IF
 %token ELSE
 %token WHILE
@@ -87,6 +85,9 @@ int yylex(void);
 %token FLOAT64
 %token BOOL
 %token STRING
+%token ROOT_OBJECT
+
+%token TOKEN_THIS
 %token TOKEN_NIL
 %token TOKEN_TRUE
 %token TOKEN_FALSE
@@ -200,6 +201,9 @@ PrimitiveType
   | STRING {
     $$ = TYPE_STRING;
   }
+  | ROOT_OBJECT {
+    $$ = TYPE_ROOT_OBJECT;
+  }
   ;
 
 ReferenceType
@@ -208,9 +212,6 @@ ReferenceType
   }
   | FunctionType {
     //$$ = new_type_info(TYPE_FUNC, $1);
-  }
-  | InterfaceType {
-
   }
   ;
 
@@ -238,12 +239,6 @@ ReturnTypeList
   : Type
   | '(' Type ')'
   | '(' ReturnTypeList ',' Type ')'
-  ;
-
-InterfaceType
-  : INTERFACE '{' '}' {
-    //$$ = new_type_info(TYPE_INTF, null);
-  }
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -519,11 +514,15 @@ method_access
 /*-------------------------------------------------------------------------*/
 
 primary_expression
-  : IDENTIFIER {}
+  : IDENTIFIER {
+
+  }
   | constant {
     $$ = $1;
   }
-  | TOKEN_THIS {}
+  | TOKEN_THIS {
+    
+  }
   | '(' basic_expression ')' {
     $$ = $2;
   }
