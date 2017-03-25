@@ -13,7 +13,7 @@ L   [a-zA-Z_]
 
 %%
 
-[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)^:\?] {return yytext[0];}
+[\+\-\*\/\%&\|!=><,.;{}\[\]\(\)^:] {return yytext[0];}
 
 "=="                      {return EQ;}
 "!="                      {return NE;}
@@ -25,6 +25,7 @@ L   [a-zA-Z_]
 "<<"                      {return SHIFT_LEFT;}
 "++"                      {return INC;}
 "--"                      {return DEC;}
+":="                      {return VAR_ASSIGN;}
 "+="                      {return ADD_ASSIGN;}
 "-="                      {return SUB_ASSIGN;}
 "*="                      {return MUL_ASSIGN;}
@@ -57,6 +58,7 @@ L   [a-zA-Z_]
 "const"                   {return CONST;}
 "package"                 {return PACKAGE;}
 "import"                  {return IMPORT;}
+"new"                     {return NEW;}
 
 "int8"                    {return INT8;}
 "int16"                   {return INT16;}

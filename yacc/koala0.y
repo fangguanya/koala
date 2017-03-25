@@ -27,7 +27,6 @@ int yylex(void);
 
 %token ELLIPSIS
 
-%token VAR_ASSIGN
 %token ADD_ASSIGN
 %token SUB_ASSIGN
 %token MUL_ASSIGN
@@ -293,6 +292,9 @@ VariableDeclaration
   | VAR VariableList '=' VariableInitializerList ';' {
 
   }
+  | VAR VariableList '=' expression_list ';' {
+
+  }
   | VAR VariableList Type '=' VariableInitializerList ';' {
 
   }
@@ -311,45 +313,17 @@ VariableList
   }
   ;
 
+
 VariableInitializerList
   : ComplexVariableInitializer
   | VariableInitializerList ',' ComplexVariableInitializer
   ;
 
 ComplexVariableInitializer
-  : basic_expression {}
-  | PrimitiveType '(' basic_expression ')' {}
-  | AnonymousFunctionDeclaration {}
-  | '{' ArrayInitializerList '}'
-  | DimExprs Type
-  | DimExprs Type '{' ArrayInitializerList '}'
-  | DimExprs Type '{' '}'
-  ;
-
-ArrayInitializerList
-  : ArrayInitializer
-  | ArrayInitializerList ',' ArrayInitializer
-  ;
-
-DimExprs
-	: DimExpr
-	| DimExprs DimExpr
-	;
-
-DimExpr
-  : '[' basic_expression ']'
-  ;
-
-ArrayInitializer
-  : basic_expression {}
-  | PrimitiveType '(' basic_expression ')' {}
-  | AnonymousFunctionDeclaration {}
-  | ArrayPositionInitializer {}
-  | '{' ArrayInitializerList '}'
-  ;
-
-ArrayPositionInitializer
-  : INTEGER ':' ArrayInitializer
+  : PrimitiveType '(' basic_expression ')'
+  | NEW PackageOrTypeName '(' expression_list ')'
+  | AnonymousFunctionDeclaration
+  | NEW PackageOrTypeName '(' ')' CodeBlock
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -371,7 +345,7 @@ MemberDeclaration
   ;
 
 FieldDeclaration
-  : VAR IDENTIFIER Type ';'
+  : IDENTIFIER Type ';'
   ;
 
 MethodDeclaration
@@ -415,14 +389,14 @@ InterfaceFunctionDeclaration
 /*--------------------------------------------------------------------------*/
 
 FunctionDeclaration
-  : MethodDeclarationHeader1 CodeBlock
+  : FUNC IDENTIFIER '(' ')' CodeBlock
+  | FUNC IDENTIFIER '(' ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList CodeBlock
   ;
 
 AnonymousFunctionDeclaration
-  : FUNC '(' ')' CodeBlock
-  | FUNC '(' ')' ReturnTypeList CodeBlock
-  | FUNC '(' ParameterList ')' CodeBlock
-  | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock
+  : MethodDeclarationHeader1 CodeBlock
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -604,21 +578,13 @@ postfix_expression
       $$ = new_unary_exp(OP_DEC_AFTER, $1);
     }
   }
-  | postfix_expression '.' IDENTIFIER {
-
-  }
   | postfix_expression '[' basic_expression ']' {
 
   }
   | postfix_expression '(' expression_list ')' {
 
   }
-  | postfix_expression '(' ')' {
-
-  }
-  | postfix_expression '(' ')' CodeBlock {
-
-  }
+  | postfix_expression '.' IDENTIFIER {}
   ;
 
 unary_expression
@@ -778,25 +744,38 @@ basic_expression
 expression
   : basic_expression {
   }
-  //| ComplexVariableInitializer
+  //| complex_initial_expression
   ;
+
+/*
+complex_initial_expression
+  : PrimitiveType '(' basic_expression ')'
+  | PackageOrTypeName '(' expression_list ')'
+  | AnonymousFunctionDeclaration
+  ;
+*/
 
 expression_list
   : expression
   | expression_list ',' expression
   ;
 
-postfix_expression_list
-  : postfix_expression
-  | postfix_expression_list ',' postfix_expression
-  ;
-
 /*--------------------------------------------------------------------------*/
 
 assignment_expression
-  : postfix_expression_list '=' VariableInitializerList
-  | postfix_expression compound_assignment_operator ComplexVariableInitializer
-  | postfix_expression VAR_ASSIGN ComplexVariableInitializer
+  : assignment_variable_list '=' expression_list
+  | assignment_variable compound_assignment_operator basic_expression
+  ;
+
+assignment_variable_list
+  : assignment_variable
+  | assignment_variable_list ',' assignment_variable
+  ;
+
+assignment_variable
+  : IDENTIFIER
+  // | array_access
+  // | field_access
   ;
 
 compound_assignment_operator

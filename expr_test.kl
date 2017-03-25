@@ -1,6 +1,69 @@
 #!/Users/zgx/Projects/koala/koala
 
+package com.huawei.koala.test;
+
+import com.huawei.tools.*;
+import com.huawei.base.io.file;
+
+var a int32;
+var b []int64;
+var c [][]Person;
+var d [][]com.huawei.base.ip.Socket;
+var e com.huawei.base.ip.Socket;
+var f Socket;
+var g interface{};
+var h func(string, int32) Socket = func(name string, age int32) {
+    return Socket("1.1.2.3", 22);
+  };
+
+type Person struct {
+  var Name string;
+  var Age int32;
+
+  func __init__()
+  {
+    Name = null;
+    Age = 0;
+  }
+
+  func __init__(name string, age int32)
+  {
+    this.Name = name;
+    this.Age  = age;
+  }
+
+  func SetName(name string)
+  {
+    this.Name = name + 1;
+    age := 1;
+    age := "zhuguangxiang";
+  }
+
+};
+
+type int int32;
+
+type Stringer interface {
+  func String() string;
+};
+
+type myStringer Stringer;
+
 func main() {
+  var stringer = Stringer() {
+    /*
+    func String() string
+    {
+      return "hello, world";
+    }
+    */
+  }.String();
+
+  Person().SetName("zhuguangxiang");
+
+  200.String();
+  upname := "zhuguangxiang".UpperCase();
+
   2+3;
   2+3*4-5;
   "zgx" + 20;
@@ -22,10 +85,13 @@ func main() {
   3.1415926535 + 3;
 
   person.SetName("zhuguangxiang")[a+b-2][a*b/3];
-  array[20];
+  array[20][2][3];
   person.Name + person.Age;
   person.Name[100];
   array[a+2-3*b];
   aa.bb.cc.dd.ee.ff.gg;
-  array[foo(20,40,a+b)].SetAge(10).IntVal.SetName("zgx");
+  array[foo(20,40,a+b)+a-b*3].SetAge(10).IntVal.SetName("zgx");
+  person.SetName("zhuguangxiang");
+  array[boo[3]+4];
+  foo()(a,b)[0][2].Name.bar()().Age = 1;
 }

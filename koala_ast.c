@@ -297,7 +297,7 @@ void show_expr(expr_t *exp)
 
     default:
       printf("unknown expr kind\n");
-      exit(-1);
+      //exit(-1);
     break;
   }
 
