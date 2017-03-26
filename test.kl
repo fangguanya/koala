@@ -1,6 +1,6 @@
 #!/Users/zgx/Projects/koala/koala
 
-var xxx int32 = 0 : 3;
+var xxx int32 = 0;
 var age, abc, def int32 = 100+200-3, 200, 300;
 
 var p Person = Person();
@@ -48,14 +48,15 @@ func Print(str string) {
 
 func getSendFunc(name string) func(string, id) int32
 {
+
   return func(msg string, to id) int32 {
     return 1;
   };
-
+  
   return 1;
   return 2+3, 4+5;
   //return {2:{100,200, 5: 20}, {100, 200}, 4:{1,2}};
-  return [10][5]int32{{1,2}, {3,4}, {5,6,7}};
+  //return [10][5]int32{{1,2}, {3,4}, {5,6,7}};
   return Person("zhuguangxiang");
 }
 
