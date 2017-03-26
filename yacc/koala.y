@@ -159,11 +159,13 @@ Type
   : PrimitiveType {
     //$$ = new_type_info($1, null);
   }
-  | ComplexType {
+  | ModuleType {
 
   }
+  | FunctionType {}
   | DIMS PrimitiveType {}
-  | DIMS ComplexType {}
+  | DIMS ModuleType {}
+  | DIMS FunctionType {}
   ;
 
 PrimitiveType
@@ -208,15 +210,6 @@ PrimitiveType
   }
   ;
 
-ComplexType
-  : ModuleType {
-    //$$ = new_type_info(TYPE_DEFINED, $1.val);
-  }
-  | FunctionType {
-    //$$ = new_type_info(TYPE_FUNC, $1);
-  }
-  ;
-
 ModuleType
   : IDENTIFIER {
     printf("Type:%s\n", $1.val);
@@ -249,9 +242,17 @@ ReturnTypeList
 
 /*--------------------------------------------------------------------------*/
 Program
-  : ImportDeclarations Declarations
-  | ImportDeclarations
-  |                    Declarations
+  : PackageDeclaration ImportDeclarations Declarations
+  | PackageDeclaration ImportDeclarations
+  | PackageDeclaration                    Declarations
+  |                    ImportDeclarations Declarations
+  | PackageDeclaration
+  |                    ImportDeclarations
+  |                                       Declarations
+  ;
+
+PackageDeclaration
+  : PACKAGE ModuleFilePathName SemiOrEmpty
   ;
 
 ImportDeclarations
@@ -260,9 +261,9 @@ ImportDeclarations
   ;
 
 ImportDeclaration
-  : IMPORT ModuleFilePathName ';'
-  | IMPORT ModuleFilePathName AS IDENTIFIER ';'
-  | IMPORT ModuleFilePathName '.' '*' ';'
+  : IMPORT ModuleFilePathName SemiOrEmpty
+  | IMPORT ModuleFilePathName AS IDENTIFIER SemiOrEmpty
+  | IMPORT ModuleFilePathName '.' '*' SemiOrEmpty
   ;
 
 Declarations
@@ -348,9 +349,14 @@ ArrayPositionInitializer
 
 /*--------------------------------------------------------------------------*/
 
+SemiOrEmpty
+  : %empty
+  | ';'
+  ;
+
 TypeDeclaration
-  : TYPE IDENTIFIER STRUCT '{' MemberDeclarations '}' ';'
-  | TYPE IDENTIFIER INTERFACE '{' InterfaceFunctionDeclarations '}' ';'
+  : TYPE IDENTIFIER STRUCT '{' MemberDeclarations '}' SemiOrEmpty
+  | TYPE IDENTIFIER INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty
   | TYPE IDENTIFIER Type ';'
   ;
 
@@ -366,6 +372,7 @@ MemberDeclaration
 
 FieldDeclaration
   : VAR IDENTIFIER Type ';'
+  | IDENTIFIER Type ';'
   ;
 
 MethodDeclaration
@@ -377,11 +384,17 @@ MethodDeclarationHeader1
   | FUNC IDENTIFIER '(' ')' ReturnTypeList
   | FUNC IDENTIFIER '(' ParameterList ')'
   | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList
+  | IDENTIFIER '(' ')'
+  | IDENTIFIER '(' ')' ReturnTypeList
+  | IDENTIFIER '(' ParameterList ')'
+  | IDENTIFIER '(' ParameterList ')' ReturnTypeList
   ;
 
 MethodDeclarationHeader2
   : FUNC IDENTIFIER '(' TypeList ')'
   | FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList
+  | IDENTIFIER '(' TypeList ')'
+  | IDENTIFIER '(' TypeList ')' ReturnTypeList
   ;
 
 ParameterList

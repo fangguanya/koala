@@ -1,5 +1,6 @@
 #!/Users/zgx/Projects/koala/koala
-//不需要package关键字
+//package作用在编译的时候，将输出二进制文件放到对应的目录中
+package com.huawei.koala;
 //模块名即文件名
 //后续访问外模块只能是：模块名.符号，符号(已星号导入)
 //全路径访问不允许
@@ -22,6 +23,32 @@ var h func(string, int32) Socket = func(name string, age int32) {
     Println(file.GetName());
     return Socket("1.1.2.3", 22);
   };
+
+var h0 [][]func(string, int32) Socket = {
+  {foo, bar},
+  {
+    func(name string, age int32) {
+      fmt.Println(file.GetName());
+      Println(file.GetName());
+      return Socket("1.1.2.3", 22);
+    },
+    func(name string, age int32) {
+      fmt.Println(file.GetName());
+      Println(file.GetName());
+      return Socket("1.1.2.3", 22);
+    }
+  }
+};
+
+type Person struct {
+  Name string;
+  Age int32;
+  __init__() (string) {
+    Name = "huaweizte";
+    Age = 26;
+  }
+
+}
 
 type Person struct {
   var Name string;
