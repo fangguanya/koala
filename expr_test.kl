@@ -1,18 +1,25 @@
 #!/Users/zgx/Projects/koala/koala
-
-package com.huawei.koala.test;
-
-import com.huawei.tools.*;
-import com.huawei.base.io.file;
+//不需要package关键字
+//模块名即文件名
+//后续访问外模块只能是：模块名.符号，符号(已星号导入)
+//全路径访问不允许
+//导入模块下的所有public符号
+import com.huawei.tools.io.file.*;
+//导入模块，并重命名模块名
+import com.huawei.base.io.file as file;
+//导入模块，模块名即文件名
+import com.huawei.base.ip.socket;
 
 var a int32;
 var b []int64;
 var c [][]Person;
-var d [][]com.huawei.base.ip.Socket;
-var e com.huawei.base.ip.Socket;
+var d [][]socket.Socket;
+var e socket.Socket;
 var f Socket;
 var g interface{};
 var h func(string, int32) Socket = func(name string, age int32) {
+    fmt.Println(file.GetName());
+    Println(file.GetName());
     return Socket("1.1.2.3", 22);
   };
 

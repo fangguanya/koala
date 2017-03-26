@@ -88,30 +88,32 @@ extern int yydebug;
     CONST = 298,
     PACKAGE = 299,
     IMPORT = 300,
-    NEW = 301,
-    INT8 = 302,
-    INT16 = 303,
-    INT32 = 304,
-    INT64 = 305,
-    UINT8 = 306,
-    UINT16 = 307,
-    UINT32 = 308,
-    UINT64 = 309,
-    FLOAT32 = 310,
-    FLOAT64 = 311,
-    BOOL = 312,
-    STRING = 313,
-    ROOT_OBJECT = 314,
-    TOKEN_THIS = 315,
-    TOKEN_NIL = 316,
-    TOKEN_TRUE = 317,
-    TOKEN_FALSE = 318,
-    INTEGER = 319,
-    HEX = 320,
-    OCT = 321,
-    FLOAT = 322,
-    STRING_LITERAL = 323,
-    IDENTIFIER = 324
+    AS = 301,
+    NEW = 302,
+    INT8 = 303,
+    INT16 = 304,
+    INT32 = 305,
+    INT64 = 306,
+    UINT8 = 307,
+    UINT16 = 308,
+    UINT32 = 309,
+    UINT64 = 310,
+    FLOAT32 = 311,
+    FLOAT64 = 312,
+    BOOL = 313,
+    STRING = 314,
+    ROOT_OBJECT = 315,
+    DIMS = 316,
+    TOKEN_THIS = 317,
+    TOKEN_NIL = 318,
+    TOKEN_TRUE = 319,
+    TOKEN_FALSE = 320,
+    INTEGER = 321,
+    HEX = 322,
+    OCT = 323,
+    FLOAT = 324,
+    STRING_LITERAL = 325,
+    IDENTIFIER = 326
   };
 #endif
 
@@ -134,7 +136,7 @@ union YYSTYPE
   array_type_t *array_type;
   expr_t *expression;
 
-#line 138 "koala_yacc.h" /* yacc.c:1915  */
+#line 140 "koala_yacc.h" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;

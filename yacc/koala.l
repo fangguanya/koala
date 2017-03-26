@@ -58,6 +58,7 @@ L   [a-zA-Z_]
 "const"                   {return CONST;}
 "package"                 {return PACKAGE;}
 "import"                  {return IMPORT;}
+"as"                      {return AS;}
 "new"                     {return NEW;}
 
 "int8"                    {return INT8;}
@@ -73,7 +74,7 @@ L   [a-zA-Z_]
 "bool"                    {return BOOL;}
 "string"                  {return STRING;}
 "interface{}"             {return ROOT_OBJECT;}
-
+"[]"+                     {return DIMS;}
 "this"                    {return TOKEN_THIS;}
 "true"                    {return TOKEN_TRUE;}
 "false"                   {return TOKEN_FALSE;}

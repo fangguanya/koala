@@ -1,7 +1,5 @@
 #!/Users/zgx/Projects/koala/koala
 
-package com.github.koala;
-
 var age, abc, def int32 = 100+200-3, 200, 300;
 
 var p Person = Person();

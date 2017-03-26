@@ -71,6 +71,7 @@ int yylex(void);
 %token CONST
 %token PACKAGE
 %token IMPORT
+%token AS
 %token NEW
 
 %token INT8
@@ -86,6 +87,7 @@ int yylex(void);
 %token BOOL
 %token STRING
 %token ROOT_OBJECT
+%token DIMS
 
 %token TOKEN_THIS
 %token TOKEN_NIL
@@ -133,11 +135,11 @@ int yylex(void);
 
 %%
 
-PackageOrTypeName
+ModuleFilePathName
   : IDENTIFIER {
     //$$ = null;
   }
-  | PackageOrTypeName '.' IDENTIFIER {
+  | ModuleFilePathName '.' IDENTIFIER {
     //$$ = null;
   }
   ;
@@ -157,11 +159,11 @@ Type
   : PrimitiveType {
     //$$ = new_type_info($1, null);
   }
-  | ReferenceType {
+  | ComplexType {
 
   }
-  | Dims PrimitiveType {}
-  | Dims ReferenceType {}
+  | DIMS PrimitiveType {}
+  | DIMS ComplexType {}
   ;
 
 PrimitiveType
@@ -206,8 +208,8 @@ PrimitiveType
   }
   ;
 
-ReferenceType
-  : PackageOrTypeName {
+ComplexType
+  : ModuleType {
     //$$ = new_type_info(TYPE_DEFINED, $1.val);
   }
   | FunctionType {
@@ -215,9 +217,13 @@ ReferenceType
   }
   ;
 
-Dims
-  : '[' ']'
-  | Dims '[' ']'
+ModuleType
+  : IDENTIFIER {
+    printf("Type:%s\n", $1.val);
+  }
+  | IDENTIFIER '.' IDENTIFIER {
+    printf("Module:%s, Type:%s\n", $1.val, $3.val);
+  }
   ;
 
 FunctionType
@@ -243,17 +249,9 @@ ReturnTypeList
 
 /*--------------------------------------------------------------------------*/
 Program
-  : PackageDeclaration ImportDeclarations Declarations
-  | PackageDeclaration ImportDeclarations
-  | PackageDeclaration                    Declarations
-  |                    ImportDeclarations Declarations
-  | PackageDeclaration
-  |                    ImportDeclarations
-  |                                       Declarations
-  ;
-
-PackageDeclaration
-  : PACKAGE PackageOrTypeName ';'
+  : ImportDeclarations Declarations
+  | ImportDeclarations
+  |                    Declarations
   ;
 
 ImportDeclarations
@@ -262,8 +260,9 @@ ImportDeclarations
   ;
 
 ImportDeclaration
-  : IMPORT PackageOrTypeName ';'
-  | IMPORT PackageOrTypeName '.' '*' ';'
+  : IMPORT ModuleFilePathName ';'
+  | IMPORT ModuleFilePathName AS IDENTIFIER ';'
+  | IMPORT ModuleFilePathName '.' '*' ';'
   ;
 
 Declarations
@@ -380,14 +379,14 @@ MethodDeclarationHeader1
   | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList
   ;
 
-ParameterList
-  : IDENTIFIER Type
-  | ParameterList ',' IDENTIFIER Type
-  ;
-
 MethodDeclarationHeader2
   : FUNC IDENTIFIER '(' TypeList ')'
   | FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList
+  ;
+
+ParameterList
+  : IDENTIFIER Type
+  | ParameterList ',' IDENTIFIER Type
   ;
 
 CodeBlock
@@ -410,7 +409,10 @@ InterfaceFunctionDeclaration
 /*--------------------------------------------------------------------------*/
 
 FunctionDeclaration
-  : MethodDeclarationHeader1 CodeBlock
+  : FUNC IDENTIFIER '(' ')' CodeBlock
+  | FUNC IDENTIFIER '(' ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList CodeBlock
   ;
 
 AnonymousFunctionDeclaration
@@ -521,7 +523,7 @@ primary_expression
     $$ = $1;
   }
   | TOKEN_THIS {
-    
+
   }
   | '(' basic_expression ')' {
     $$ = $2;
