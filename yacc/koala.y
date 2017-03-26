@@ -9,6 +9,8 @@
 int yyerror(const char *str);
 int yylex(void);
 
+extern int dim_count;
+
 %}
 
 %union {
@@ -73,6 +75,7 @@ int yylex(void);
 %token IMPORT
 %token AS
 %token NEW
+%token FUNC_HEADER
 
 %token INT8
 %token INT16
@@ -105,6 +108,14 @@ int yylex(void);
 /*--------------------------------------------------------------------------*/
 
 %nonassoc ELSE
+
+%precedence IDENTIFIER
+%precedence '.'
+
+%precedence ')'
+%precedence '('
+
+//%expect 2
 
 /*--------------------------------------------------------------------------*/
 //%type <new_type_info> Type
@@ -163,9 +174,9 @@ Type
 
   }
   | FunctionType {}
-  | DIMS PrimitiveType {}
-  | DIMS ModuleType {}
-  | DIMS FunctionType {}
+  | DIMS PrimitiveType {printf(">>>>>>PrimitiveType Array:%d\n", dim_count);}
+  | DIMS ModuleType {printf(">>>>>>ModuleType Array:%d\n", dim_count);}
+  | DIMS FunctionType {printf(">>>>>>FunctionType Array:%d\n", dim_count);}
   ;
 
 PrimitiveType
@@ -188,6 +199,7 @@ PrimitiveType
     $$ = TYPE_INT16;
   }
   | INT32 {
+    printf("int32\n");
     $$ = TYPE_INT32;
   }
   | INT64 {
@@ -203,6 +215,7 @@ PrimitiveType
     $$ = TYPE_BOOL;
   }
   | STRING {
+    printf("string\n");
     $$ = TYPE_STRING;
   }
   | ROOT_OBJECT {
@@ -211,33 +224,31 @@ PrimitiveType
   ;
 
 ModuleType
-  : IDENTIFIER {
-    printf("Type:%s\n", $1.val);
-  }
-  | IDENTIFIER '.' IDENTIFIER {
+  : IDENTIFIER '.' IDENTIFIER {
     printf("Module:%s, Type:%s\n", $1.val, $3.val);
+  }
+  | IDENTIFIER {
+    printf("Type:%s\n", $1.val);
   }
   ;
 
 FunctionType
-  : FUNC '(' ')' {
+  : FUNC '(' ')' ReturnTypeList {
     $$ = new_func_proto_type(null, null);
   }
-  | FUNC '(' ')' ReturnTypeList {
-    $$ = new_func_proto_type(null, null);
-  }
-  | FUNC '(' TypeList ')' {
-    $$ = new_func_proto_type(null, null);
-  }
+  | FUNC '(' ')' {}
   | FUNC '(' TypeList ')' ReturnTypeList {
+    printf("FunctionType 3\n");
     $$ = new_func_proto_type(null, null);
   }
+  | FUNC '(' TypeList ')' {}
   ;
 
 ReturnTypeList
   : Type
-  | '(' Type ')'
-  | '(' ReturnTypeList ',' Type ')'
+  //| '(' Type ')'
+  //| '(' ReturnTypeList ',' Type ')'
+  | '(' TypeList ')'
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -285,10 +296,10 @@ VariableDeclaration
   : VAR VariableList Type ';' {
     //new_var_decl($2, $3, null);
   }
-  | VAR VariableList '=' VariableInitializerList ';' {
+  | VAR VariableList '=' ArrayInitializerList ';' {
 
   }
-  | VAR VariableList Type '=' VariableInitializerList ';' {
+  | VAR VariableList Type '=' ArrayInitializerList ';' {
 
   }
   ;
@@ -306,6 +317,7 @@ VariableList
   }
   ;
 
+/*
 VariableInitializerList
   : ComplexVariableInitializer
   | VariableInitializerList ',' ComplexVariableInitializer
@@ -320,6 +332,7 @@ ComplexVariableInitializer
   | DimExprs Type '{' ArrayInitializerList '}'
   | DimExprs Type '{' '}'
   ;
+*/
 
 ArrayInitializerList
   : ArrayInitializer
@@ -336,17 +349,16 @@ DimExpr
   ;
 
 ArrayInitializer
-  : basic_expression {}
-  | PrimitiveType '(' basic_expression ')' {}
-  | AnonymousFunctionDeclaration {}
-  | ArrayPositionInitializer {}
-  | '{' ArrayInitializerList '}'
+  : basic_expression
+  | arrayinit
   ;
-
+arrayinit
+  : '{' ArrayInitializerList '}'
+/*
 ArrayPositionInitializer
   : INTEGER ':' ArrayInitializer
   ;
-
+*/
 /*--------------------------------------------------------------------------*/
 
 SemiOrEmpty
@@ -380,21 +392,21 @@ MethodDeclaration
   ;
 
 MethodDeclarationHeader1
-  : FUNC IDENTIFIER '(' ')'
-  | FUNC IDENTIFIER '(' ')' ReturnTypeList
-  | FUNC IDENTIFIER '(' ParameterList ')'
+  : FUNC IDENTIFIER '(' ')' ReturnTypeList
+  | FUNC IDENTIFIER '(' ')'
   | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList
-  | IDENTIFIER '(' ')'
+  | FUNC IDENTIFIER '(' ParameterList ')'
   | IDENTIFIER '(' ')' ReturnTypeList
-  | IDENTIFIER '(' ParameterList ')'
+  | IDENTIFIER '(' ')'
   | IDENTIFIER '(' ParameterList ')' ReturnTypeList
+  | IDENTIFIER '(' ParameterList ')'
   ;
 
 MethodDeclarationHeader2
-  : FUNC IDENTIFIER '(' TypeList ')'
-  | FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList
-  | IDENTIFIER '(' TypeList ')'
+  : FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList
+  | FUNC IDENTIFIER '(' TypeList ')'
   | IDENTIFIER '(' TypeList ')' ReturnTypeList
+  | IDENTIFIER '(' TypeList ')'
   ;
 
 ParameterList
@@ -422,17 +434,17 @@ InterfaceFunctionDeclaration
 /*--------------------------------------------------------------------------*/
 
 FunctionDeclaration
-  : FUNC IDENTIFIER '(' ')' CodeBlock
-  | FUNC IDENTIFIER '(' ')' ReturnTypeList CodeBlock
-  | FUNC IDENTIFIER '(' ParameterList ')' CodeBlock
+  : FUNC IDENTIFIER '(' ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ')' CodeBlock
   | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' CodeBlock
   ;
 
 AnonymousFunctionDeclaration
-  : FUNC '(' ')' CodeBlock
-  | FUNC '(' ')' ReturnTypeList CodeBlock
-  | FUNC '(' ParameterList ')' CodeBlock
+  : FUNC '(' ')' ReturnTypeList CodeBlock
+  | FUNC '(' ')' CodeBlock
   | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock
+  | FUNC '(' ParameterList ')' CodeBlock
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -541,7 +553,24 @@ primary_expression
   | '(' basic_expression ')' {
     $$ = $2;
   }
+  | complex_primary {}
   ;
+
+complex_primary
+  : PrimitiveType '(' constant ')' {
+    printf("complex_primary\n");
+  }
+  | AnonymousFunctionDeclaration {}
+  | ArrayExpression {}
+  ;
+
+
+ArrayExpression
+  : DimExprs Type
+  | DimExprs Type '{' ArrayInitializerList '}'
+  | DimExprs Type '{' '}'
+  ;
+
 /*
 just_not_name
   : TOKEN_THIS {}
@@ -579,6 +608,7 @@ DimExpr
 
 constant  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
+    printf("INTEGER: %lld\n", $1);
     $$ = new_uint_expr($1);
   }
   | FLOAT {
@@ -808,8 +838,8 @@ postfix_expression_list
 /*--------------------------------------------------------------------------*/
 
 assignment_expression
-  : postfix_expression_list '=' VariableInitializerList
-  | postfix_expression compound_assignment_operator ComplexVariableInitializer
+  : postfix_expression_list '=' ArrayInitializerList
+  | postfix_expression compound_assignment_operator ArrayInitializer
   ;
 
 compound_assignment_operator
@@ -829,8 +859,8 @@ compound_assignment_operator
 expression_statement
   : basic_expression {
     printf("----basic_expression\n");
-    show_expr($1);
-    putchar('\n');
+    //show_expr($1);
+    //putchar('\n');
   }
   | assignment_expression {
 

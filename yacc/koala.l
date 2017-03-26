@@ -4,6 +4,7 @@
 #include "koala_includes.h"
 #include "koala_yacc.h"
 static void echo();
+int dim_count = 0;
 
 %}
 
@@ -74,7 +75,10 @@ L   [a-zA-Z_]
 "bool"                    {return BOOL;}
 "string"                  {return STRING;}
 "interface{}"             {return ROOT_OBJECT;}
-"[]"+                     {return DIMS;}
+"[]"+                     {
+                            dim_count = yyleng/2;
+                            return DIMS;
+                          }
 "self"                    {return SELF;}
 "true"                    {return TOKEN_TRUE;}
 "false"                   {return TOKEN_FALSE;}

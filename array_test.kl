@@ -1,0 +1,25 @@
+#!/media/psf/Home/Projects/koala/koala
+
+var a0 [][]int32 = [3][2]int32{{1,2}, {3,4}, {4,5}};
+
+var a000 [][]int32 = {{1,2}, {3,4}, {4,5}};
+
+var a00 []func(string, int32) (string);
+
+var a111 []io.Socket;
+//var a222 []io.a.Socket;
+
+var a1 io.Socket;
+var a2 IPAddress;
+
+func main()
+{
+  [2][2]Person()[0];
+  Person("zhuguangxiang").GetName().length() > 0;
+  int32(3).String().length() > 0;
+  100.String().length < 200;
+  "jacky".length();
+  [3][2]Person{{Person("ab"), Person("cd")}, {Person("ef")}}[0][1].GetName().length();
+  a, b, c = 100, 200, [2][2]Person{};
+  ([2]Person)[0] = Person("ab");
+}

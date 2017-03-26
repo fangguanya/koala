@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -90,39 +90,40 @@ extern int yydebug;
     IMPORT = 300,
     AS = 301,
     NEW = 302,
-    INT8 = 303,
-    INT16 = 304,
-    INT32 = 305,
-    INT64 = 306,
-    UINT8 = 307,
-    UINT16 = 308,
-    UINT32 = 309,
-    UINT64 = 310,
-    FLOAT32 = 311,
-    FLOAT64 = 312,
-    BOOL = 313,
-    STRING = 314,
-    ROOT_OBJECT = 315,
-    DIMS = 316,
-    SELF = 317,
-    TOKEN_NIL = 318,
-    TOKEN_TRUE = 319,
-    TOKEN_FALSE = 320,
-    INTEGER = 321,
-    HEX = 322,
-    OCT = 323,
-    FLOAT = 324,
-    STRING_LITERAL = 325,
-    IDENTIFIER = 326
+    FUNC_HEADER = 303,
+    INT8 = 304,
+    INT16 = 305,
+    INT32 = 306,
+    INT64 = 307,
+    UINT8 = 308,
+    UINT16 = 309,
+    UINT32 = 310,
+    UINT64 = 311,
+    FLOAT32 = 312,
+    FLOAT64 = 313,
+    BOOL = 314,
+    STRING = 315,
+    ROOT_OBJECT = 316,
+    DIMS = 317,
+    SELF = 318,
+    TOKEN_NIL = 319,
+    TOKEN_TRUE = 320,
+    TOKEN_FALSE = 321,
+    INTEGER = 322,
+    HEX = 323,
+    OCT = 324,
+    FLOAT = 325,
+    STRING_LITERAL = 326,
+    IDENTIFIER = 327
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
+typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 14 "yacc/koala.y" /* yacc.c:1915  */
+#line 16 "yacc/koala.y" /* yacc.c:1909  */
 
   string identifier;
   int type;
@@ -136,10 +137,8 @@ union YYSTYPE
   array_type_t *array_type;
   expr_t *expression;
 
-#line 140 "koala_yacc.h" /* yacc.c:1915  */
+#line 141 "koala_yacc.h" /* yacc.c:1909  */
 };
-
-typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
