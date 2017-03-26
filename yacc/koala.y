@@ -283,7 +283,8 @@ Declarations
   ;
 
 Declaration
-  : VariableDeclaration
+  : ConstDeclaration
+  | VariableDeclaration
   | TypeDeclaration
   | FunctionDeclaration
   ;
@@ -292,6 +293,15 @@ Declaration
 |  |
 |                                                     |
 `--------------------------------------------------------------------------*/
+ConstDeclaration
+  : CONST VariableList '=' ArrayInitializerList ';' {
+
+  }
+  | CONST VariableList Type '=' ArrayInitializerList ';' {
+
+  }
+  ;
+
 VariableDeclaration
   : VAR VariableList Type ';' {
     //new_var_decl($2, $3, null);
@@ -350,10 +360,13 @@ DimExpr
 
 ArrayInitializer
   : basic_expression
+  | INTEGER ':' ArrayInitializer
   | arrayinit
   ;
 arrayinit
   : '{' ArrayInitializerList '}'
+  ;
+
 /*
 ArrayPositionInitializer
   : INTEGER ':' ArrayInitializer
@@ -512,7 +525,7 @@ for_incr
 
 jump_statement
   : RETURN ';'
-  | RETURN expression_list ';'
+  | RETURN ArrayInitializerList ';'
   ;
 
 /*-------------------------------------------------------------------------*/

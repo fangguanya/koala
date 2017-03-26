@@ -1,4 +1,4 @@
-#!/Users/zgx/Projects/koala/koala
+#!/media/psf/Home/Projects/koala/koala
 
 func test() {
   p.p.Person().SetName("zhuguangxiang").SET().GET()();

@@ -7,7 +7,15 @@ var a000 [][]int32 = {{1,2}, {3,4}, {4,5}};
 var a00 []func(string, int32) (string);
 
 var a111 []io.Socket;
-//var a222 []io.a.Socket;
+var a222 []int32 = {0:{100:200}, 3:200};
+
+var a int32 = int32(100);
+var a int32 = string("zhuguangxiang");
+var a bool = bool(false);
+
+var ddd int32 = [3]int32{0:200};
+
+var eee Person = 0:200;
 
 var a1 io.Socket;
 var a2 IPAddress;

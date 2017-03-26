@@ -1,4 +1,5 @@
-#!/Users/zgx/Projects/koala/koala
+#!/media/psf/Home/Projects/koala/koala
+
 //package作用在编译的时候，将输出二进制文件放到对应的目录中
 package com.huawei.koala;
 //模块名即文件名
@@ -28,18 +29,22 @@ var h0 [][]func(string, int32) Socket = {
   {foo, bar},
   {
     func(name string, age int32) {
-      fmt.Println(file.GetName());
+      fmt.Println(file1.GetName());
       Println(file.GetName());
-      return Socket("1.1.2.3", 22);
+      return Socket("1.1.2.3.5", 22);
     },
     func(name string, age int32) {
-      fmt.Println(file.GetName());
-      Println(file.GetName());
-      return Socket("1.1.2.3", 22);
+      fmt1.Println2(file2.GetName());
+      Println3(file3.GetName());
+      return Socket222("1.1.2.3.4", 22333);
+      return [2]Socket{Socket("10.1.1.2", 23), Socket()};
+      return [20]Socket{}(); //无意义的语义
+      return {1,2,3};
     }
   }
 };
 
+var a = 100;
 const PI = 3.14;
 
 type Person struct {
