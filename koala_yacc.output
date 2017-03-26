@@ -208,7 +208,7 @@ Grammar
 
   142 primary_expression: IDENTIFIER
   143                   | constant
-  144                   | TOKEN_THIS
+  144                   | SELF
   145                   | '(' basic_expression ')'
 
   146 constant: INTEGER
@@ -285,18 +285,18 @@ Grammar
 
   201 assignment_expression: postfix_expression_list '=' VariableInitializerList
   202                      | postfix_expression compound_assignment_operator ComplexVariableInitializer
-  203                      | postfix_expression VAR_ASSIGN ComplexVariableInitializer
 
-  204 compound_assignment_operator: ADD_ASSIGN
-  205                             | SUB_ASSIGN
-  206                             | MUL_ASSIGN
-  207                             | DIV_ASSIGN
-  208                             | MOD_ASSIGN
-  209                             | AND_ASSIGN
-  210                             | OR_ASSIGN
-  211                             | XOR_ASSIGN
-  212                             | RIGHT_ASSIGN
-  213                             | LEFT_ASSIGN
+  203 compound_assignment_operator: ADD_ASSIGN
+  204                             | SUB_ASSIGN
+  205                             | MUL_ASSIGN
+  206                             | DIV_ASSIGN
+  207                             | MOD_ASSIGN
+  208                             | AND_ASSIGN
+  209                             | OR_ASSIGN
+  210                             | XOR_ASSIGN
+  211                             | RIGHT_ASSIGN
+  212                             | LEFT_ASSIGN
+  213                             | TYPELESS_ASSIGN
 
   214 expression_statement: basic_expression
   215                     | assignment_expression
@@ -334,17 +334,17 @@ $end (0) 0
 '~' (126) 165
 error (256)
 ELLIPSIS (258)
-VAR_ASSIGN (259) 203
-ADD_ASSIGN (260) 204
-SUB_ASSIGN (261) 205
-MUL_ASSIGN (262) 206
-DIV_ASSIGN (263) 207
-MOD_ASSIGN (264) 208
-AND_ASSIGN (265) 209
-OR_ASSIGN (266) 210
-XOR_ASSIGN (267) 211
-RIGHT_ASSIGN (268) 212
-LEFT_ASSIGN (269) 213
+TYPELESS_ASSIGN (259) 213
+ADD_ASSIGN (260) 203
+SUB_ASSIGN (261) 204
+MUL_ASSIGN (262) 205
+DIV_ASSIGN (263) 206
+MOD_ASSIGN (264) 207
+AND_ASSIGN (265) 208
+OR_ASSIGN (266) 209
+XOR_ASSIGN (267) 210
+RIGHT_ASSIGN (268) 211
+LEFT_ASSIGN (269) 212
 EQ (270) 183
 NE (271) 184
 GE (272) 181
@@ -393,7 +393,7 @@ BOOL (313) 21
 STRING (314) 22
 ROOT_OBJECT (315) 23
 DIMS (316) 8 9 10
-TOKEN_THIS (317) 144
+SELF (317) 144
 TOKEN_NIL (318) 149
 TOKEN_TRUE (319) 150
 TOKEN_FALSE (320) 151
@@ -446,7 +446,7 @@ VariableList (110)
 VariableInitializerList (111)
     on left: 56 57, on right: 52 53 57 201
 ComplexVariableInitializer (112)
-    on left: 58 59 60 61 62 63 64, on right: 56 57 202 203
+    on left: 58 59 60 61 62 63 64, on right: 56 57 202
 ArrayInitializerList (113)
     on left: 65 66, on right: 61 63 66 74
 DimExprs (114)
@@ -516,7 +516,7 @@ constant (145)
     on left: 146 147 148 149 150 151, on right: 143
 postfix_expression (146)
     on left: 152 153 154 155 156 157 158 159, on right: 153 154 155
-    156 157 158 159 160 199 200 202 203
+    156 157 158 159 160 199 200 202
 unary_expression (147)
     on left: 160 161 162 163 164 165 166, on right: 161 162 163 164
     165 166 167 168 169 170
@@ -551,9 +551,10 @@ expression_list (160)
 postfix_expression_list (161)
     on left: 199 200, on right: 200 201
 assignment_expression (162)
-    on left: 201 202 203, on right: 215
+    on left: 201 202, on right: 215
 compound_assignment_operator (163)
-    on left: 204 205 206 207 208 209 210 211 212 213, on right: 202
+    on left: 203 204 205 206 207 208 209 210 211 212 213, on right:
+    202
 expression_statement (164)
     on left: 214 215, on right: 120 134 139
 
@@ -1089,7 +1090,7 @@ State 45
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1326,7 +1327,7 @@ State 67
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1352,7 +1353,7 @@ State 68
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1384,7 +1385,7 @@ State 69
 
 State 70
 
-  144 primary_expression: TOKEN_THIS .
+  144 primary_expression: SELF .
 
     $default  reduce using rule 144 (primary_expression)
 
@@ -1444,7 +1445,7 @@ State 78
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1495,7 +1496,7 @@ State 79
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1538,7 +1539,7 @@ State 80
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1575,7 +1576,7 @@ State 81
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1601,7 +1602,7 @@ State 82
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1627,7 +1628,7 @@ State 83
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1653,7 +1654,7 @@ State 84
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -1933,7 +1934,7 @@ State 107
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2225,7 +2226,7 @@ State 126
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2347,7 +2348,7 @@ State 138
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2398,7 +2399,7 @@ State 139
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2490,7 +2491,7 @@ State 146
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2530,7 +2531,7 @@ State 147
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2567,7 +2568,7 @@ State 148
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2593,7 +2594,7 @@ State 149
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2619,7 +2620,7 @@ State 150
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2645,7 +2646,7 @@ State 151
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2672,7 +2673,7 @@ State 152
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2699,7 +2700,7 @@ State 153
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2727,7 +2728,7 @@ State 154
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2755,7 +2756,7 @@ State 155
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2784,7 +2785,7 @@ State 156
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2813,7 +2814,7 @@ State 157
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2842,7 +2843,7 @@ State 158
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2871,7 +2872,7 @@ State 159
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2901,7 +2902,7 @@ State 160
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2931,7 +2932,7 @@ State 161
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2962,7 +2963,7 @@ State 162
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -2994,7 +2995,7 @@ State 163
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3027,7 +3028,7 @@ State 164
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3061,7 +3062,7 @@ State 165
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3150,7 +3151,7 @@ State 169
     SWITCH          shift, and go to state 237
     VAR             shift, and go to state 1
     RETURN          shift, and go to state 238
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3559,7 +3560,7 @@ State 197
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3610,7 +3611,7 @@ State 199
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3661,7 +3662,7 @@ State 200
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -3746,7 +3747,7 @@ State 205
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4107,7 +4108,7 @@ State 238
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4169,7 +4170,7 @@ State 241
     SWITCH          shift, and go to state 237
     VAR             shift, and go to state 1
     RETURN          shift, and go to state 238
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4273,24 +4274,23 @@ State 249
   160 unary_expression: postfix_expression .
   199 postfix_expression_list: postfix_expression .
   202 assignment_expression: postfix_expression . compound_assignment_operator ComplexVariableInitializer
-  203                      | postfix_expression . VAR_ASSIGN ComplexVariableInitializer
 
-    VAR_ASSIGN    shift, and go to state 298
-    ADD_ASSIGN    shift, and go to state 299
-    SUB_ASSIGN    shift, and go to state 300
-    MUL_ASSIGN    shift, and go to state 301
-    DIV_ASSIGN    shift, and go to state 302
-    MOD_ASSIGN    shift, and go to state 303
-    AND_ASSIGN    shift, and go to state 304
-    OR_ASSIGN     shift, and go to state 305
-    XOR_ASSIGN    shift, and go to state 306
-    RIGHT_ASSIGN  shift, and go to state 307
-    LEFT_ASSIGN   shift, and go to state 308
-    INC           shift, and go to state 143
-    DEC           shift, and go to state 144
-    '.'           shift, and go to state 145
-    '('           shift, and go to state 146
-    '['           shift, and go to state 147
+    TYPELESS_ASSIGN  shift, and go to state 298
+    ADD_ASSIGN       shift, and go to state 299
+    SUB_ASSIGN       shift, and go to state 300
+    MUL_ASSIGN       shift, and go to state 301
+    DIV_ASSIGN       shift, and go to state 302
+    MOD_ASSIGN       shift, and go to state 303
+    AND_ASSIGN       shift, and go to state 304
+    OR_ASSIGN        shift, and go to state 305
+    XOR_ASSIGN       shift, and go to state 306
+    RIGHT_ASSIGN     shift, and go to state 307
+    LEFT_ASSIGN      shift, and go to state 308
+    INC              shift, and go to state 143
+    DEC              shift, and go to state 144
+    '.'              shift, and go to state 145
+    '('              shift, and go to state 146
+    '['              shift, and go to state 147
 
     ','       reduce using rule 199 (postfix_expression_list)
     '='       reduce using rule 199 (postfix_expression_list)
@@ -4666,7 +4666,7 @@ State 284
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4753,7 +4753,7 @@ State 289
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4790,7 +4790,7 @@ State 290
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4835,7 +4835,7 @@ State 292
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
     VAR             shift, and go to state 1
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4878,7 +4878,7 @@ State 293
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4941,7 +4941,84 @@ State 297
 
 State 298
 
-  203 assignment_expression: postfix_expression VAR_ASSIGN . ComplexVariableInitializer
+  213 compound_assignment_operator: TYPELESS_ASSIGN .
+
+    $default  reduce using rule 213 (compound_assignment_operator)
+
+
+State 299
+
+  203 compound_assignment_operator: ADD_ASSIGN .
+
+    $default  reduce using rule 203 (compound_assignment_operator)
+
+
+State 300
+
+  204 compound_assignment_operator: SUB_ASSIGN .
+
+    $default  reduce using rule 204 (compound_assignment_operator)
+
+
+State 301
+
+  205 compound_assignment_operator: MUL_ASSIGN .
+
+    $default  reduce using rule 205 (compound_assignment_operator)
+
+
+State 302
+
+  206 compound_assignment_operator: DIV_ASSIGN .
+
+    $default  reduce using rule 206 (compound_assignment_operator)
+
+
+State 303
+
+  207 compound_assignment_operator: MOD_ASSIGN .
+
+    $default  reduce using rule 207 (compound_assignment_operator)
+
+
+State 304
+
+  208 compound_assignment_operator: AND_ASSIGN .
+
+    $default  reduce using rule 208 (compound_assignment_operator)
+
+
+State 305
+
+  209 compound_assignment_operator: OR_ASSIGN .
+
+    $default  reduce using rule 209 (compound_assignment_operator)
+
+
+State 306
+
+  210 compound_assignment_operator: XOR_ASSIGN .
+
+    $default  reduce using rule 210 (compound_assignment_operator)
+
+
+State 307
+
+  211 compound_assignment_operator: RIGHT_ASSIGN .
+
+    $default  reduce using rule 211 (compound_assignment_operator)
+
+
+State 308
+
+  212 compound_assignment_operator: LEFT_ASSIGN .
+
+    $default  reduce using rule 212 (compound_assignment_operator)
+
+
+State 309
+
+  202 assignment_expression: postfix_expression compound_assignment_operator . ComplexVariableInitializer
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
@@ -4959,7 +5036,7 @@ State 298
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -4997,139 +5074,11 @@ State 298
     basic_expression              go to state 105
 
 
-State 299
-
-  204 compound_assignment_operator: ADD_ASSIGN .
-
-    $default  reduce using rule 204 (compound_assignment_operator)
-
-
-State 300
-
-  205 compound_assignment_operator: SUB_ASSIGN .
-
-    $default  reduce using rule 205 (compound_assignment_operator)
-
-
-State 301
-
-  206 compound_assignment_operator: MUL_ASSIGN .
-
-    $default  reduce using rule 206 (compound_assignment_operator)
-
-
-State 302
-
-  207 compound_assignment_operator: DIV_ASSIGN .
-
-    $default  reduce using rule 207 (compound_assignment_operator)
-
-
-State 303
-
-  208 compound_assignment_operator: MOD_ASSIGN .
-
-    $default  reduce using rule 208 (compound_assignment_operator)
-
-
-State 304
-
-  209 compound_assignment_operator: AND_ASSIGN .
-
-    $default  reduce using rule 209 (compound_assignment_operator)
-
-
-State 305
-
-  210 compound_assignment_operator: OR_ASSIGN .
-
-    $default  reduce using rule 210 (compound_assignment_operator)
-
-
-State 306
-
-  211 compound_assignment_operator: XOR_ASSIGN .
-
-    $default  reduce using rule 211 (compound_assignment_operator)
-
-
-State 307
-
-  212 compound_assignment_operator: RIGHT_ASSIGN .
-
-    $default  reduce using rule 212 (compound_assignment_operator)
-
-
-State 308
-
-  213 compound_assignment_operator: LEFT_ASSIGN .
-
-    $default  reduce using rule 213 (compound_assignment_operator)
-
-
-State 309
-
-  202 assignment_expression: postfix_expression compound_assignment_operator . ComplexVariableInitializer
-
-    INC             shift, and go to state 67
-    DEC             shift, and go to state 68
-    FUNC            shift, and go to state 69
-    INT8            shift, and go to state 29
-    INT16           shift, and go to state 30
-    INT32           shift, and go to state 31
-    INT64           shift, and go to state 32
-    UINT8           shift, and go to state 33
-    UINT16          shift, and go to state 34
-    UINT32          shift, and go to state 35
-    UINT64          shift, and go to state 36
-    FLOAT32         shift, and go to state 37
-    FLOAT64         shift, and go to state 38
-    BOOL            shift, and go to state 39
-    STRING          shift, and go to state 40
-    ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
-    TOKEN_NIL       shift, and go to state 71
-    TOKEN_TRUE      shift, and go to state 72
-    TOKEN_FALSE     shift, and go to state 73
-    INTEGER         shift, and go to state 74
-    FLOAT           shift, and go to state 75
-    STRING_LITERAL  shift, and go to state 76
-    IDENTIFIER      shift, and go to state 77
-    '('             shift, and go to state 78
-    '{'             shift, and go to state 79
-    '['             shift, and go to state 80
-    '+'             shift, and go to state 81
-    '-'             shift, and go to state 82
-    '~'             shift, and go to state 83
-    '!'             shift, and go to state 84
-
-    PrimitiveType                 go to state 85
-    ComplexVariableInitializer    go to state 342
-    DimExprs                      go to state 88
-    DimExpr                       go to state 89
-    AnonymousFunctionDeclaration  go to state 90
-    primary_expression            go to state 91
-    constant                      go to state 92
-    postfix_expression            go to state 93
-    unary_expression              go to state 94
-    multiplicative_expression     go to state 95
-    additive_expression           go to state 96
-    shift_expression              go to state 97
-    relational_expression         go to state 98
-    equality_expression           go to state 99
-    and_expression                go to state 100
-    exclusive_or_expression       go to state 101
-    inclusive_or_expression       go to state 102
-    logical_and_expression        go to state 103
-    logical_or_expression         go to state 104
-    basic_expression              go to state 105
-
-
 State 310
 
   200 postfix_expression_list: postfix_expression_list ',' . postfix_expression
 
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -5141,7 +5090,7 @@ State 310
 
     primary_expression  go to state 91
     constant            go to state 92
-    postfix_expression  go to state 343
+    postfix_expression  go to state 342
 
 
 State 311
@@ -5164,7 +5113,7 @@ State 311
     BOOL            shift, and go to state 39
     STRING          shift, and go to state 40
     ROOT_OBJECT     shift, and go to state 41
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -5181,7 +5130,7 @@ State 311
     '!'             shift, and go to state 84
 
     PrimitiveType                 go to state 85
-    VariableInitializerList       go to state 344
+    VariableInitializerList       go to state 343
     ComplexVariableInitializer    go to state 87
     DimExprs                      go to state 88
     DimExpr                       go to state 89
@@ -5228,7 +5177,7 @@ State 315
 
    85 FieldDeclaration: VAR IDENTIFIER Type . ';'
 
-    ';'  shift, and go to state 345
+    ';'  shift, and go to state 344
 
 
 State 316
@@ -5239,9 +5188,9 @@ State 316
    91                         | FUNC IDENTIFIER '(' . ParameterList ')' ReturnTypeList
 
     IDENTIFIER  shift, and go to state 108
-    ')'         shift, and go to state 346
+    ')'         shift, and go to state 345
 
-    ParameterList  go to state 347
+    ParameterList  go to state 346
 
 
 State 317
@@ -5273,7 +5222,7 @@ State 317
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 348
+    ReturnTypeList  go to state 347
 
 
 State 318
@@ -5283,7 +5232,7 @@ State 318
   101 ParameterList: ParameterList . ',' IDENTIFIER Type
 
     ','  shift, and go to state 173
-    ')'  shift, and go to state 349
+    ')'  shift, and go to state 348
 
 
 State 319
@@ -5325,14 +5274,14 @@ State 321
     ROOT_OBJECT  shift, and go to state 41
     DIMS         shift, and go to state 42
     IDENTIFIER   shift, and go to state 322
-    ')'          shift, and go to state 346
+    ')'          shift, and go to state 345
 
-    TypeList       go to state 350
+    TypeList       go to state 349
     Type           go to state 119
     PrimitiveType  go to state 47
     ModuleType     go to state 48
     FunctionType   go to state 49
-    ParameterList  go to state 347
+    ParameterList  go to state 346
 
 
 State 322
@@ -5374,7 +5323,7 @@ State 323
    99                         | IDENTIFIER '(' TypeList . ')' ReturnTypeList
 
     ','  shift, and go to state 192
-    ')'  shift, and go to state 351
+    ')'  shift, and go to state 350
 
 
 State 324
@@ -5397,7 +5346,7 @@ State 326
 
     '{'  shift, and go to state 169
 
-    CodeBlock  go to state 352
+    CodeBlock  go to state 351
 
 
 State 327
@@ -5432,7 +5381,7 @@ State 331
 
    32 ReturnTypeList: '(' ReturnTypeList ',' Type . ')'
 
-    ')'  shift, and go to state 353
+    ')'  shift, and go to state 352
 
 
 State 332
@@ -5440,21 +5389,21 @@ State 332
   126 if_statement: IF '(' basic_expression . ')' CodeBlock
   127             | IF '(' basic_expression . ')' CodeBlock ELSE else_statemnet
 
-    ')'  shift, and go to state 354
+    ')'  shift, and go to state 353
 
 
 State 333
 
   131 iteration_statemnet: WHILE '(' basic_expression . ')' CodeBlock
 
-    ')'  shift, and go to state 355
+    ')'  shift, and go to state 354
 
 
 State 334
 
   132 iteration_statemnet: DO CodeBlock WHILE . '(' basic_expression ')' ';'
 
-    '('  shift, and go to state 356
+    '('  shift, and go to state 355
 
 
 State 335
@@ -5477,7 +5426,7 @@ State 337
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -5486,13 +5435,13 @@ State 337
     STRING_LITERAL  shift, and go to state 76
     IDENTIFIER      shift, and go to state 77
     '('             shift, and go to state 78
-    ';'             shift, and go to state 357
+    ';'             shift, and go to state 356
     '+'             shift, and go to state 81
     '-'             shift, and go to state 82
     '~'             shift, and go to state 83
     '!'             shift, and go to state 84
 
-    for_expr                   go to state 358
+    for_expr                   go to state 357
     primary_expression         go to state 91
     constant                   go to state 92
     postfix_expression         go to state 93
@@ -5507,21 +5456,21 @@ State 337
     inclusive_or_expression    go to state 102
     logical_and_expression     go to state 103
     logical_or_expression      go to state 104
-    basic_expression           go to state 359
+    basic_expression           go to state 358
 
 
 State 338
 
   134 for_init: expression_statement . ';'
 
-    ';'  shift, and go to state 360
+    ';'  shift, and go to state 359
 
 
 State 339
 
   130 switch_statement: SWITCH '(' basic_expression . ')' CodeBlock
 
-    ')'  shift, and go to state 361
+    ')'  shift, and go to state 360
 
 
 State 340
@@ -5533,19 +5482,12 @@ State 340
 
 State 341
 
-  203 assignment_expression: postfix_expression VAR_ASSIGN ComplexVariableInitializer .
-
-    $default  reduce using rule 203 (assignment_expression)
-
-
-State 342
-
   202 assignment_expression: postfix_expression compound_assignment_operator ComplexVariableInitializer .
 
     $default  reduce using rule 202 (assignment_expression)
 
 
-State 343
+State 342
 
   153 postfix_expression: postfix_expression . INC
   154                   | postfix_expression . DEC
@@ -5565,7 +5507,7 @@ State 343
     $default  reduce using rule 200 (postfix_expression_list)
 
 
-State 344
+State 343
 
    57 VariableInitializerList: VariableInitializerList . ',' ComplexVariableInitializer
   201 assignment_expression: postfix_expression_list '=' VariableInitializerList .
@@ -5575,14 +5517,14 @@ State 344
     $default  reduce using rule 201 (assignment_expression)
 
 
-State 345
+State 344
 
    85 FieldDeclaration: VAR IDENTIFIER Type ';' .
 
     $default  reduce using rule 85 (FieldDeclaration)
 
 
-State 346
+State 345
 
    88 MethodDeclarationHeader1: FUNC IDENTIFIER '(' ')' .
    89                         | FUNC IDENTIFIER '(' ')' . ReturnTypeList
@@ -5611,27 +5553,27 @@ State 346
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 362
+    ReturnTypeList  go to state 361
 
 
-State 347
+State 346
 
    90 MethodDeclarationHeader1: FUNC IDENTIFIER '(' ParameterList . ')'
    91                         | FUNC IDENTIFIER '(' ParameterList . ')' ReturnTypeList
   101 ParameterList: ParameterList . ',' IDENTIFIER Type
 
     ','  shift, and go to state 173
-    ')'  shift, and go to state 363
+    ')'  shift, and go to state 362
 
 
-State 348
+State 347
 
    93 MethodDeclarationHeader1: IDENTIFIER '(' ')' ReturnTypeList .
 
     $default  reduce using rule 93 (MethodDeclarationHeader1)
 
 
-State 349
+State 348
 
    94 MethodDeclarationHeader1: IDENTIFIER '(' ParameterList ')' .
    95                         | IDENTIFIER '(' ParameterList ')' . ReturnTypeList
@@ -5660,20 +5602,20 @@ State 349
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 364
+    ReturnTypeList  go to state 363
 
 
-State 350
+State 349
 
     4 TypeList: TypeList . ',' Type
    96 MethodDeclarationHeader2: FUNC IDENTIFIER '(' TypeList . ')'
    97                         | FUNC IDENTIFIER '(' TypeList . ')' ReturnTypeList
 
     ','  shift, and go to state 192
-    ')'  shift, and go to state 365
+    ')'  shift, and go to state 364
 
 
-State 351
+State 350
 
    98 MethodDeclarationHeader2: IDENTIFIER '(' TypeList ')' .
    99                         | IDENTIFIER '(' TypeList ')' . ReturnTypeList
@@ -5702,27 +5644,36 @@ State 351
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 366
+    ReturnTypeList  go to state 365
 
 
-State 352
+State 351
 
   115 AnonymousFunctionDeclaration: FUNC '(' ParameterList ')' ReturnTypeList CodeBlock .
 
     $default  reduce using rule 115 (AnonymousFunctionDeclaration)
 
 
-State 353
+State 352
 
    32 ReturnTypeList: '(' ReturnTypeList ',' Type ')' .
 
     $default  reduce using rule 32 (ReturnTypeList)
 
 
-State 354
+State 353
 
   126 if_statement: IF '(' basic_expression ')' . CodeBlock
   127             | IF '(' basic_expression ')' . CodeBlock ELSE else_statemnet
+
+    '{'  shift, and go to state 169
+
+    CodeBlock  go to state 366
+
+
+State 354
+
+  131 iteration_statemnet: WHILE '(' basic_expression ')' . CodeBlock
 
     '{'  shift, and go to state 169
 
@@ -5731,20 +5682,11 @@ State 354
 
 State 355
 
-  131 iteration_statemnet: WHILE '(' basic_expression ')' . CodeBlock
-
-    '{'  shift, and go to state 169
-
-    CodeBlock  go to state 368
-
-
-State 356
-
   132 iteration_statemnet: DO CodeBlock WHILE '(' . basic_expression ')' ';'
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -5772,23 +5714,23 @@ State 356
     inclusive_or_expression    go to state 102
     logical_and_expression     go to state 103
     logical_or_expression      go to state 104
-    basic_expression           go to state 369
+    basic_expression           go to state 368
 
 
-State 357
+State 356
 
   138 for_expr: ';' .
 
     $default  reduce using rule 138 (for_expr)
 
 
-State 358
+State 357
 
   133 iteration_statemnet: FOR '(' for_init for_expr . for_incr ')' CodeBlock
 
     INC             shift, and go to state 67
     DEC             shift, and go to state 68
-    TOKEN_THIS      shift, and go to state 70
+    SELF            shift, and go to state 70
     TOKEN_NIL       shift, and go to state 71
     TOKEN_TRUE      shift, and go to state 72
     TOKEN_FALSE     shift, and go to state 73
@@ -5802,7 +5744,7 @@ State 358
     '~'             shift, and go to state 83
     '!'             shift, and go to state 84
 
-    for_incr                   go to state 370
+    for_incr                   go to state 369
     primary_expression         go to state 91
     constant                   go to state 92
     postfix_expression         go to state 249
@@ -5820,40 +5762,40 @@ State 358
     basic_expression           go to state 250
     postfix_expression_list    go to state 251
     assignment_expression      go to state 252
-    expression_statement       go to state 371
+    expression_statement       go to state 370
 
 
-State 359
+State 358
 
   137 for_expr: basic_expression . ';'
 
-    ';'  shift, and go to state 372
+    ';'  shift, and go to state 371
 
 
-State 360
+State 359
 
   134 for_init: expression_statement ';' .
 
     $default  reduce using rule 134 (for_init)
 
 
-State 361
+State 360
 
   130 switch_statement: SWITCH '(' basic_expression ')' . CodeBlock
 
     '{'  shift, and go to state 169
 
-    CodeBlock  go to state 373
+    CodeBlock  go to state 372
 
 
-State 362
+State 361
 
    89 MethodDeclarationHeader1: FUNC IDENTIFIER '(' ')' ReturnTypeList .
 
     $default  reduce using rule 89 (MethodDeclarationHeader1)
 
 
-State 363
+State 362
 
    90 MethodDeclarationHeader1: FUNC IDENTIFIER '(' ParameterList ')' .
    91                         | FUNC IDENTIFIER '(' ParameterList ')' . ReturnTypeList
@@ -5882,17 +5824,17 @@ State 363
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 374
+    ReturnTypeList  go to state 373
 
 
-State 364
+State 363
 
    95 MethodDeclarationHeader1: IDENTIFIER '(' ParameterList ')' ReturnTypeList .
 
     $default  reduce using rule 95 (MethodDeclarationHeader1)
 
 
-State 365
+State 364
 
    96 MethodDeclarationHeader2: FUNC IDENTIFIER '(' TypeList ')' .
    97                         | FUNC IDENTIFIER '(' TypeList ')' . ReturnTypeList
@@ -5921,139 +5863,139 @@ State 365
     PrimitiveType   go to state 47
     ModuleType      go to state 48
     FunctionType    go to state 49
-    ReturnTypeList  go to state 375
+    ReturnTypeList  go to state 374
 
 
-State 366
+State 365
 
    99 MethodDeclarationHeader2: IDENTIFIER '(' TypeList ')' ReturnTypeList .
 
     $default  reduce using rule 99 (MethodDeclarationHeader2)
 
 
-State 367
+State 366
 
   126 if_statement: IF '(' basic_expression ')' CodeBlock .
   127             | IF '(' basic_expression ')' CodeBlock . ELSE else_statemnet
 
-    ELSE  shift, and go to state 376
+    ELSE  shift, and go to state 375
 
     $default  reduce using rule 126 (if_statement)
 
 
-State 368
+State 367
 
   131 iteration_statemnet: WHILE '(' basic_expression ')' CodeBlock .
 
     $default  reduce using rule 131 (iteration_statemnet)
 
 
-State 369
+State 368
 
   132 iteration_statemnet: DO CodeBlock WHILE '(' basic_expression . ')' ';'
+
+    ')'  shift, and go to state 376
+
+
+State 369
+
+  133 iteration_statemnet: FOR '(' for_init for_expr for_incr . ')' CodeBlock
 
     ')'  shift, and go to state 377
 
 
 State 370
 
-  133 iteration_statemnet: FOR '(' for_init for_expr for_incr . ')' CodeBlock
-
-    ')'  shift, and go to state 378
-
-
-State 371
-
   139 for_incr: expression_statement .
 
     $default  reduce using rule 139 (for_incr)
 
 
-State 372
+State 371
 
   137 for_expr: basic_expression ';' .
 
     $default  reduce using rule 137 (for_expr)
 
 
-State 373
+State 372
 
   130 switch_statement: SWITCH '(' basic_expression ')' CodeBlock .
 
     $default  reduce using rule 130 (switch_statement)
 
 
-State 374
+State 373
 
    91 MethodDeclarationHeader1: FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList .
 
     $default  reduce using rule 91 (MethodDeclarationHeader1)
 
 
-State 375
+State 374
 
    97 MethodDeclarationHeader2: FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList .
 
     $default  reduce using rule 97 (MethodDeclarationHeader2)
 
 
-State 376
+State 375
 
   127 if_statement: IF '(' basic_expression ')' CodeBlock ELSE . else_statemnet
 
     IF   shift, and go to state 233
     '{'  shift, and go to state 169
 
-    CodeBlock       go to state 379
-    if_statement    go to state 380
-    else_statemnet  go to state 381
+    CodeBlock       go to state 378
+    if_statement    go to state 379
+    else_statemnet  go to state 380
 
 
-State 377
+State 376
 
   132 iteration_statemnet: DO CodeBlock WHILE '(' basic_expression ')' . ';'
 
-    ';'  shift, and go to state 382
+    ';'  shift, and go to state 381
 
 
-State 378
+State 377
 
   133 iteration_statemnet: FOR '(' for_init for_expr for_incr ')' . CodeBlock
 
     '{'  shift, and go to state 169
 
-    CodeBlock  go to state 383
+    CodeBlock  go to state 382
 
 
-State 379
+State 378
 
   129 else_statemnet: CodeBlock .
 
     $default  reduce using rule 129 (else_statemnet)
 
 
-State 380
+State 379
 
   128 else_statemnet: if_statement .
 
     $default  reduce using rule 128 (else_statemnet)
 
 
-State 381
+State 380
 
   127 if_statement: IF '(' basic_expression ')' CodeBlock ELSE else_statemnet .
 
     $default  reduce using rule 127 (if_statement)
 
 
-State 382
+State 381
 
   132 iteration_statemnet: DO CodeBlock WHILE '(' basic_expression ')' ';' .
 
     $default  reduce using rule 132 (iteration_statemnet)
 
 
-State 383
+State 382
 
   133 iteration_statemnet: FOR '(' for_init for_expr for_incr ')' CodeBlock .
 

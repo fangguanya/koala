@@ -46,7 +46,7 @@ extern int yydebug;
   enum yytokentype
   {
     ELLIPSIS = 258,
-    VAR_ASSIGN = 259,
+    TYPELESS_ASSIGN = 259,
     ADD_ASSIGN = 260,
     SUB_ASSIGN = 261,
     MUL_ASSIGN = 262,
@@ -104,7 +104,7 @@ extern int yydebug;
     STRING = 314,
     ROOT_OBJECT = 315,
     DIMS = 316,
-    TOKEN_THIS = 317,
+    SELF = 317,
     TOKEN_NIL = 318,
     TOKEN_TRUE = 319,
     TOKEN_FALSE = 320,

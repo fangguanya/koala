@@ -2,6 +2,17 @@
 #include <stdio.h>
 #include "koala_includes.h"
 
+int yyerror(const char *str)
+{
+  fprintf(stderr, "%s\n", str);
+  return 0;
+}
+
+void yyecho(char *str)
+{
+  fprintf(stdout, "%s\n", str);
+}
+
 struct symbol_table var_sym_tbl;
 
 void koala_compiler_init()

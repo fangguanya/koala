@@ -1,5 +1,6 @@
 #!/Users/zgx/Projects/koala/koala
 
+var xxx int32 = 0 : 3;
 var age, abc, def int32 = 100+200-3, 200, 300;
 
 var p Person = Person();
@@ -40,11 +41,50 @@ type int int32;
 type Student Person;
 
 func Print(str string) {
+  var name string;
+  2+3;
+  //var age int32;
+}
 
+func getSendFunc(name string) func(string, id) int32
+{
+  return func(msg string, to id) int32 {
+    return 1;
+  };
+
+  return 1;
+  return 2+3, 4+5;
+  //return {2:{100,200, 5: 20}, {100, 200}, 4:{1,2}};
+  return [10][5]int32{{1,2}, {3,4}, {5,6,7}};
+  return Person("zhuguangxiang");
+}
+
+func codeblock_test() {
+  a = 1;
+  a = 2+3;
+  if ( a > 3) {
+
+  }
+
+  Person("zhuguangxiang");
+
+  b = 1;
+
+/*
+  if (Person("zhuguangxiang").GetName().length() > 0) {
+
+  }
+
+  if (int32(3).String().length() > 0) {
+
+  }
+  */
 }
 
 func main()
 {
+  var name string;
+  var age int32;
   !false;
   2+3;
   (a+b)[0].b(1,2).aa.bb.cc.dd[0][0];
@@ -56,4 +96,5 @@ func main()
   foo(0,1)[0][1].a.bar()()();
   123.foo();
   a = 1;
+  //var name string;
 }

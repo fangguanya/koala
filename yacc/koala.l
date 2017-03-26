@@ -25,7 +25,7 @@ L   [a-zA-Z_]
 "<<"                      {return SHIFT_LEFT;}
 "++"                      {return INC;}
 "--"                      {return DEC;}
-":="                      {return VAR_ASSIGN;}
+":="                      {return TYPELESS_ASSIGN;}
 "+="                      {return ADD_ASSIGN;}
 "-="                      {return SUB_ASSIGN;}
 "*="                      {return MUL_ASSIGN;}
@@ -75,7 +75,7 @@ L   [a-zA-Z_]
 "string"                  {return STRING;}
 "interface{}"             {return ROOT_OBJECT;}
 "[]"+                     {return DIMS;}
-"this"                    {return TOKEN_THIS;}
+"self"                    {return SELF;}
 "true"                    {return TOKEN_TRUE;}
 "false"                   {return TOKEN_FALSE;}
 "nil"                     {return TOKEN_NIL;}

@@ -22,7 +22,7 @@ int yylex(void);
   type_info_t *new_type_info;
   func_proto_type_t *func_proto_type;
   array_type_t *array_type;
-  expr_t *expression;
+  expr_t *Expression;
 }
 
 %token ELLIPSIS
@@ -107,65 +107,42 @@ int yylex(void);
 %nonassoc ELSE
 
 /*--------------------------------------------------------------------------*/
-//%type <new_type_info> Type
+//%type <new_type_info> TypeSpecifier
 %type <type> PrimitiveType
 %type <func_proto_type> FunctionType
-%type <linked_list> TypeList
+%type <linked_list> TypeSpecifierList
 %type <linked_list> VariableList
 
-%type <expression> basic_expression
-%type <expression> logical_or_expression
-%type <expression> logical_and_expression
-%type <expression> inclusive_or_expression
-%type <expression> exclusive_or_expression
-%type <expression> and_expression
-%type <expression> equality_expression
-%type <expression> relational_expression
-%type <expression> shift_expression
-%type <expression> additive_expression
-%type <expression> multiplicative_expression
-%type <expression> unary_expression
-%type <expression> postfix_expression
-%type <expression> primary_expression
+%type <Expression> LogicalOrExpression
+%type <Expression> LogicalAndExpression
+%type <Expression> InclusiveOrExpression
+%type <Expression> ExclusiveOrExpression
+%type <Expression> AndExpression
+%type <Expression> EqualityExpression
+%type <Expression> RelationalExpression
+%type <Expression> ShiftExpression
+%type <Expression> AdditiveExpression
+%type <Expression> MultiplicativeExpression
+%type <Expression> UnaryExpression
+%type <Expression> PostfixExpression
+%type <Expression> PrimaryExpression
 
-%type <expression> constant
+%type <Expression> Literal
 
 
 %start Program
 
 %%
 
-ModuleFilePathName
-  : IDENTIFIER {
-    //$$ = null;
-  }
-  | ModuleFilePathName '.' IDENTIFIER {
-    //$$ = null;
-  }
-  ;
-/*
-ExpressionName
-  : IDENTIFIER {}
-  | ExpressionName '.' IDENTIFIER {}
-  ;
-*/
-
-TypeList
-  : Type {}
-  | TypeList ',' Type {}
+TypeSpecifier
+  : TypeName
+  | DIMS TypeName
   ;
 
-Type
-  : PrimitiveType {
-    //$$ = new_type_info($1, null);
-  }
-  | ModuleType {
-
-  }
-  | FunctionType {}
-  | DIMS PrimitiveType {}
-  | DIMS ModuleType {}
-  | DIMS FunctionType {}
+TypeName
+  : PrimitiveType
+  | QualifiedName
+  | FunctionType
   ;
 
 PrimitiveType
@@ -210,12 +187,10 @@ PrimitiveType
   }
   ;
 
-ModuleType
+QualifiedName
   : IDENTIFIER {
-    printf("Type:%s\n", $1.val);
   }
-  | IDENTIFIER '.' IDENTIFIER {
-    printf("Module:%s, Type:%s\n", $1.val, $3.val);
+  | QualifiedName '.' IDENTIFIER {
   }
   ;
 
@@ -223,21 +198,25 @@ FunctionType
   : FUNC '(' ')' {
     $$ = new_func_proto_type(null, null);
   }
-  | FUNC '(' ')' ReturnTypeList {
+  | FUNC '(' ')' ReturnTypeSpecifierList {
     $$ = new_func_proto_type(null, null);
   }
-  | FUNC '(' TypeList ')' {
+  | FUNC '(' TypeSpecifierList ')' {
     $$ = new_func_proto_type(null, null);
   }
-  | FUNC '(' TypeList ')' ReturnTypeList {
+  | FUNC '(' TypeSpecifierList ')' ReturnTypeSpecifierList {
     $$ = new_func_proto_type(null, null);
   }
   ;
 
-ReturnTypeList
-  : Type
-  | '(' Type ')'
-  | '(' ReturnTypeList ',' Type ')'
+TypeSpecifierList
+  : TypeSpecifier {}
+  | TypeSpecifierList ',' TypeSpecifier {}
+  ;
+
+ReturnTypeSpecifierList
+  : TypeSpecifier
+  | '(' TypeSpecifierList ')'
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -252,7 +231,7 @@ Program
   ;
 
 PackageDeclaration
-  : PACKAGE ModuleFilePathName SemiOrEmpty
+  : PACKAGE QualifiedName SemiOrEmpty
   ;
 
 ImportDeclarations
@@ -261,9 +240,9 @@ ImportDeclarations
   ;
 
 ImportDeclaration
-  : IMPORT ModuleFilePathName SemiOrEmpty
-  | IMPORT ModuleFilePathName AS IDENTIFIER SemiOrEmpty
-  | IMPORT ModuleFilePathName '.' '*' SemiOrEmpty
+  : IMPORT QualifiedName SemiOrEmpty
+  | IMPORT QualifiedName AS IDENTIFIER SemiOrEmpty
+  | IMPORT QualifiedName '.' '*' SemiOrEmpty
   ;
 
 Declarations
@@ -272,7 +251,8 @@ Declarations
   ;
 
 Declaration
-  : VariableDeclaration
+  : ConstDeclaration
+  | VariableDeclaration
   | TypeDeclaration
   | FunctionDeclaration
   ;
@@ -281,14 +261,23 @@ Declaration
 |  |
 |                                                     |
 `--------------------------------------------------------------------------*/
+ConstDeclaration
+  : CONST VariableList '=' VariableInitializerList ';' {
+
+  }
+  | CONST VariableList TypeSpecifier '=' VariableInitializerList ';' {
+
+  }
+  ;
+
 VariableDeclaration
-  : VAR VariableList Type ';' {
+  : VAR VariableList TypeSpecifier ';' {
     //new_var_decl($2, $3, null);
   }
   | VAR VariableList '=' VariableInitializerList ';' {
 
   }
-  | VAR VariableList Type '=' VariableInitializerList ';' {
+  | VAR VariableList TypeSpecifier '=' VariableInitializerList ';' {
 
   }
   ;
@@ -306,46 +295,24 @@ VariableList
   }
   ;
 
-VariableInitializerList
-  : ComplexVariableInitializer
-  | VariableInitializerList ',' ComplexVariableInitializer
+VariableInitializer
+  : Expression
+  | INTEGER ':' VariableInitializer
+  | '{' '}'
+  | '{' ArrayInitializerList '}'
   ;
 
-ComplexVariableInitializer
-  : basic_expression {}
-  | PrimitiveType '(' basic_expression ')' {}
-  | AnonymousFunctionDeclaration {}
-  | '{' ArrayInitializerList '}'
-  | DimExprs Type
-  | DimExprs Type '{' ArrayInitializerList '}'
-  | DimExprs Type '{' '}'
+VariableInitializerList
+  : ArrayInitializerList
   ;
 
 ArrayInitializerList
-  : ArrayInitializer
-  | ArrayInitializerList ',' ArrayInitializer
+  : VariableInitializer
+  | ArrayInitializerList ',' VariableInitializer
   ;
 
-DimExprs
-	: DimExpr
-	| DimExprs DimExpr
-	;
+/*--------------------------------------------------------------------------*/
 
-DimExpr
-  : '[' basic_expression ']'
-  ;
-
-ArrayInitializer
-  : basic_expression {}
-  | PrimitiveType '(' basic_expression ')' {}
-  | AnonymousFunctionDeclaration {}
-  | ArrayPositionInitializer {}
-  | '{' ArrayInitializerList '}'
-  ;
-
-ArrayPositionInitializer
-  : INTEGER ':' ArrayInitializer
-  ;
 
 /*--------------------------------------------------------------------------*/
 
@@ -357,7 +324,7 @@ SemiOrEmpty
 TypeDeclaration
   : TYPE IDENTIFIER STRUCT '{' MemberDeclarations '}' SemiOrEmpty
   | TYPE IDENTIFIER INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty
-  | TYPE IDENTIFIER Type ';'
+  | TYPE IDENTIFIER TypeSpecifier ';'
   ;
 
 MemberDeclarations
@@ -371,8 +338,8 @@ MemberDeclaration
   ;
 
 FieldDeclaration
-  : VAR IDENTIFIER Type ';'
-  | IDENTIFIER Type ';'
+  : VAR IDENTIFIER TypeSpecifier ';'
+  | IDENTIFIER TypeSpecifier ';'
   ;
 
 MethodDeclaration
@@ -381,32 +348,25 @@ MethodDeclaration
 
 MethodDeclarationHeader1
   : FUNC IDENTIFIER '(' ')'
-  | FUNC IDENTIFIER '(' ')' ReturnTypeList
+  | FUNC IDENTIFIER '(' ')' ReturnTypeSpecifierList
   | FUNC IDENTIFIER '(' ParameterList ')'
-  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList
+  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeSpecifierList
   | IDENTIFIER '(' ')'
-  | IDENTIFIER '(' ')' ReturnTypeList
+  | IDENTIFIER '(' ')' ReturnTypeSpecifierList
   | IDENTIFIER '(' ParameterList ')'
-  | IDENTIFIER '(' ParameterList ')' ReturnTypeList
+  | IDENTIFIER '(' ParameterList ')' ReturnTypeSpecifierList
   ;
 
 MethodDeclarationHeader2
-  : FUNC IDENTIFIER '(' TypeList ')'
-  | FUNC IDENTIFIER '(' TypeList ')' ReturnTypeList
-  | IDENTIFIER '(' TypeList ')'
-  | IDENTIFIER '(' TypeList ')' ReturnTypeList
+  : FUNC IDENTIFIER '(' TypeSpecifierList ')'
+  | FUNC IDENTIFIER '(' TypeSpecifierList ')' ReturnTypeSpecifierList
+  | IDENTIFIER '(' TypeSpecifierList ')'
+  | IDENTIFIER '(' TypeSpecifierList ')' ReturnTypeSpecifierList
   ;
 
 ParameterList
-  : IDENTIFIER Type
-  | ParameterList ',' IDENTIFIER Type
-  ;
-
-CodeBlock
-  : '{' local_variable_declaration_statements '}' {
-    printf("code block\n");
-  }
-  | '{' '}'
+  : IDENTIFIER TypeSpecifier
+  | ParameterList ',' IDENTIFIER TypeSpecifier
   ;
 
 InterfaceFunctionDeclarations
@@ -423,161 +383,189 @@ InterfaceFunctionDeclaration
 
 FunctionDeclaration
   : FUNC IDENTIFIER '(' ')' CodeBlock
-  | FUNC IDENTIFIER '(' ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ')' ReturnTypeSpecifierList CodeBlock
   | FUNC IDENTIFIER '(' ParameterList ')' CodeBlock
-  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeList CodeBlock
+  | FUNC IDENTIFIER '(' ParameterList ')' ReturnTypeSpecifierList CodeBlock
   ;
 
 AnonymousFunctionDeclaration
   : FUNC '(' ')' CodeBlock
-  | FUNC '(' ')' ReturnTypeList CodeBlock
+  | FUNC '(' ')' ReturnTypeSpecifierList CodeBlock
   | FUNC '(' ParameterList ')' CodeBlock
-  | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock
+  | FUNC '(' ParameterList ')' ReturnTypeSpecifierList CodeBlock {
+    printf("-----AnonymousFunctionDeclaration\n");
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
-local_variable_declaration_statements
-  : local_variable_declaration_statement
-  | local_variable_declaration_statements local_variable_declaration_statement
+
+CodeBlock
+  : '{' CodeBlockBody '}' {
+    printf("code block\n");
+  }
+  | '{' '}'
   ;
 
-local_variable_declaration_statement
+/* 变量定义必须在最前面 不允许随处定义变量（可以使用TYPELES变量）*/
+CodeBlockBody
+  : VariableDeclarations Statements
+  | VariableDeclarations
+  |                      Statements
+  ;
+
+VariableDeclarations
   : VariableDeclaration
-  | statement {
-    printf("----statement\n");
-  }
+  | VariableDeclarations VariableDeclaration
   ;
 
-statement
-  : expression_statement ';' {
+Statements
+  : Statement {
+    printf("----Statement\n");
+  }
+  | Statements Statement
+  ;
+
+Statement
+  : ExpressionStatement ';' {
     //expr_tree_print($1);
-    printf("----expression_statement\n");
+    printf("----ExpressionStatement\n");
   }
-  | selection_statement
-  | iteration_statemnet
-  | jump_statement
-  ;
-
-selection_statement
-  : if_statement
-  | switch_statement
-  ;
-
-if_statement
-  : IF '(' basic_expression ')' CodeBlock
-  | IF '(' basic_expression ')' CodeBlock ELSE else_statemnet
-  ;
-
-else_statemnet
-  : if_statement
+  | SelectionStatement
+  | IterationStatemnet
+  | JumpStatement
   | CodeBlock
   ;
 
-switch_statement
-  : SWITCH '(' basic_expression ')' CodeBlock
+ExpressionStatement
+  : Expression {
+    printf("----Expression\n");
+    //show_expr($1);
+    //putchar('\n');
+  }
+  | AssignmentExpression {
+    printf("----AssignmentExpression\n");
+  }
   ;
 
-iteration_statemnet
-  : WHILE '(' basic_expression ')' CodeBlock
-  | DO CodeBlock WHILE '(' basic_expression ')' ';'
+SelectionStatement
+  : IfStatement
+  | switch_statement
+  ;
+
+IfStatement
+  : IF '(' Expression ')' CodeBlock
+  | IF '(' Expression ')' CodeBlock ELSE CodeBlock
+  | IF '(' Expression ')' CodeBlock ELSE IfStatement
+  ;
+
+switch_statement
+  : SWITCH '(' Expression ')' CodeBlock
+  ;
+
+IterationStatemnet
+  : WHILE '(' Expression ')' CodeBlock
+  | DO CodeBlock WHILE '(' Expression ')' ';'
   | FOR '(' for_init for_expr for_incr ')' CodeBlock
   ;
 
 for_init
-  : expression_statement ';'
+  : ExpressionStatement ';'
   | VariableDeclaration
   | ';'
   ;
 
 for_expr
-  : basic_expression ';'
+  : Expression ';'
   | ';'
   ;
 
 for_incr
-  : expression_statement
+  : ExpressionStatement
   ;
 
-jump_statement
+JumpStatement
   : RETURN ';'
-  | RETURN expression_list ';'
+  | RETURN ExpressionList ';' {
+    printf("-----RETURN\n");
+  }
+  ;
+
+ExpressionList
+  : Expression
+  | ExpressionList ',' Expression
   ;
 
 /*-------------------------------------------------------------------------*/
-/*
-array_access
-  : IDENTIFIER '[' basic_expression ']'
-  | just_not_name '[' basic_expression ']' //常量不允许数组操作
+
+PrimaryExpression
+  : QualifiedName {
+
+  }
+  | NotJustName {}
   ;
 
-field_access
-  : just_not_name '.' IDENTIFIER {
-    printf(">>>>>>>>>>%s\n", $3.val);
-  }
+NotJustName
+  : SELF
+  | ComplexPrimary
+  | NewAllocationExpression
   ;
 
-method_call
-  : method_access '(' expression_list ')'
-  | method_access '(' ')'
+ComplexPrimary
+  : '(' Expression ')' {}
+  | ComplexPrimaryNoParenthesis
   ;
 
-method_access
-  : complex_primary
-  | IDENTIFIER
-  ;
-*/
-/*-------------------------------------------------------------------------*/
-
-primary_expression
-  : IDENTIFIER {
-
-  }
-  | constant {
-    $$ = $1;
-  }
-  | SELF {
-
-  }
-  | '(' basic_expression ')' {
-    $$ = $2;
-  }
-  ;
-/*
-just_not_name
-  : TOKEN_THIS {}
-  | '(' basic_expression ')' {
-    $$ = $2;
-  }
-  | complex_primary {
-    //$$ = $1;
-    printf("complex_primary\n");
-  }
+ComplexPrimaryNoParenthesis
+  : Literal
+  | ArrayAccess
+  | FieldAccess
+  | MethodCall
   ;
 
-
-complex_primary_expression
-  : array_access {
-
-  }
-  | field_access {
-    printf("field_access\n");
-  }
-  | method_call {
-
-  }
-
-array_access
-  :
-  | ExpressionName DimExpr
-  | complex_primary_expression DimExpr
+ArrayAccess
+  : QualifiedName '[' Expression ']'
+  | ComplexPrimary '[' Expression ']'
   ;
+
+FieldAccess
+  //: NotJustName '.' IDENTIFIER
+  : RealPostfixExpression '.' IDENTIFIER
+  ;
+
+MethodCall
+  : MethodAccess '(' ArgumentList ')'
+  | MethodAccess '(' ')'
+  ;
+
+MethodAccess
+  : ComplexPrimaryNoParenthesis
+  | QualifiedName
+  ;
+
+ArgumentList
+  : Expression
+  | ArgumentList ',' Expression
+  ;
+
+NewAllocationExpression
+  : PrimitiveType '(' Literal ')'
+  | AnonymousFunctionDeclaration
+  | DimExprs TypeSpecifier
+  | DimExprs TypeSpecifier '{' ArrayInitializerList '}'
+  | DimExprs TypeSpecifier '{' '}'
+  //| QualifiedName '(' ')' CodeBlock
+  ;
+
+DimExprs
+	: DimExpr
+	| DimExprs DimExpr
+	;
 
 DimExpr
-  : '[' basic_expression ']'
+  : '[' Expression ']'
   ;
-*/
 
-constant  //常量允许访问成员变量和成员方法，不允许数组操作
+Literal
   : INTEGER {
     $$ = new_uint_expr($1);
   }
@@ -598,11 +586,20 @@ constant  //常量允许访问成员变量和成员方法，不允许数组操�
   }
   ;
 
-postfix_expression
-  : primary_expression {
+RealPostfixExpression
+	: PostfixExpression INC
+	| PostfixExpression DEC
+	;
+
+PostfixExpression
+  : PrimaryExpression {
     $$ = $1;
   }
-  | postfix_expression INC {
+  | RealPostfixExpression {}
+  ;
+
+/*
+  | PostfixExpression INC {
     if ($1->kind != EXP_VAR) {
       yyerror("error: lvalue required as increment operand\n");
       exit(-1);
@@ -610,7 +607,7 @@ postfix_expression
       $$ = new_unary_exp(OP_INC_AFTER, $1);
     }
   }
-  | postfix_expression DEC {
+  | PostfixExpression DEC {
     if ($1->kind != EXP_VAR) {
       yyerror("error: lvalue required as decrement operand\n");
       exit(-1);
@@ -618,28 +615,14 @@ postfix_expression
       $$ = new_unary_exp(OP_DEC_AFTER, $1);
     }
   }
-  | postfix_expression '.' IDENTIFIER {
-
-  }
-  | postfix_expression '[' basic_expression ']' {
-
-  }
-  | postfix_expression '(' expression_list ')' {
-
-  }
-  | postfix_expression '(' ')' {
-
-  }
-  | postfix_expression '(' ')' CodeBlock {
-
-  }
   ;
+*/
 
-unary_expression
-  : postfix_expression {
+UnaryExpression
+  : PostfixExpression {
     $$ = $1;
   }
-  | INC unary_expression {
+  | INC UnaryExpression {
     if ($2->kind != EXP_VAR) {
       yyerror("error: rvalue required as increment operand\n");
       exit(-1);
@@ -647,7 +630,7 @@ unary_expression
       $$ = new_unary_exp(OP_INC_BEFORE, $2);
     }
   }
-  | DEC unary_expression {
+  | DEC UnaryExpression {
     if ($2->kind != EXP_VAR) {
       yyerror("error: rvalue required as decrement operand\n");
       exit(-1);
@@ -655,164 +638,151 @@ unary_expression
       $$ = new_unary_exp(OP_DEC_BEFORE, $2);
     }
   }
-  | '+' unary_expression {
+  | '+' UnaryExpression {
     $$ = $2;
   }
-  | '-' unary_expression {
+  | '-' UnaryExpression {
     $$ = new_unary_exp(OP_MINUS, $2);
   }
-  | '~' unary_expression {
+  | '~' UnaryExpression {
     $$ = new_unary_exp(OP_BNOT, $2);
   }
-  | '!' unary_expression {
+  | '!' UnaryExpression {
     $$ = new_unary_exp(OP_LNOT, $2);
   }
   ;
 
-multiplicative_expression
-	: unary_expression {
+MultiplicativeExpression
+	: UnaryExpression {
     $$ = $1;
   }
-	| multiplicative_expression '*' unary_expression {
+	| MultiplicativeExpression '*' UnaryExpression {
     $$ = new_binary_exp(OP_TIMES, $1, $3);
   }
-	| multiplicative_expression '/' unary_expression {
+	| MultiplicativeExpression '/' UnaryExpression {
     $$ = new_binary_exp(OP_DIVIDE, $1, $3);
   }
-	| multiplicative_expression '%' unary_expression {
+	| MultiplicativeExpression '%' UnaryExpression {
     $$ = new_binary_exp(OP_MOD, $1, $3);
   }
 	;
 
-additive_expression
-	: multiplicative_expression {
+AdditiveExpression
+	: MultiplicativeExpression {
     $$ = $1;
   }
-	| additive_expression '+' multiplicative_expression {
+	| AdditiveExpression '+' MultiplicativeExpression {
     $$ = new_binary_exp(OP_PLUS, $1, $3);
   }
-	| additive_expression '-' multiplicative_expression {
+	| AdditiveExpression '-' MultiplicativeExpression {
     $$ = new_binary_exp(OP_MINUS, $1, $3);
   }
 	;
 
-shift_expression
-	: additive_expression {
+ShiftExpression
+	: AdditiveExpression {
     $$ = $1;
   }
-	| shift_expression SHIFT_LEFT additive_expression {
+	| ShiftExpression SHIFT_LEFT AdditiveExpression {
     $$ = new_binary_exp(OP_LSHIFT, $1, $3);
   }
-	| shift_expression SHIFT_RIGHT additive_expression {
+	| ShiftExpression SHIFT_RIGHT AdditiveExpression {
     $$ = new_binary_exp(OP_RSHIFT, $1, $3);
   }
 	;
 
-relational_expression
-	: shift_expression {
+RelationalExpression
+	: ShiftExpression {
     $$ = $1;
   }
-	| relational_expression '<' shift_expression {
+	| RelationalExpression '<' ShiftExpression {
     $$ = new_binary_exp(OP_LT, $1, $3);
   }
-	| relational_expression '>' shift_expression {
+	| RelationalExpression '>' ShiftExpression {
     $$ = new_binary_exp(OP_GT, $1, $3);
   }
-	| relational_expression LE  shift_expression {
+	| RelationalExpression LE  ShiftExpression {
     $$ = new_binary_exp(OP_LE, $1, $3);
   }
-	| relational_expression GE  shift_expression {
+	| RelationalExpression GE  ShiftExpression {
     $$ = new_binary_exp(OP_GE, $1, $3);
   }
 	;
 
-equality_expression
-	: relational_expression {
+EqualityExpression
+	: RelationalExpression {
     $$ = $1;
   }
-	| equality_expression EQ relational_expression {
+	| EqualityExpression EQ RelationalExpression {
     $$ = new_binary_exp(OP_EQ, $1, $3);
   }
-	| equality_expression NE relational_expression {
+	| EqualityExpression NE RelationalExpression {
     $$ = new_binary_exp(OP_NEQ, $1, $3);
   }
 	;
 
-and_expression
-	: equality_expression {
+AndExpression
+	: EqualityExpression {
     $$ = $1;
   }
-	| and_expression '&' equality_expression {
+	| AndExpression '&' EqualityExpression {
     $$ = new_binary_exp(OP_BAND, $1, $3);
   }
 	;
 
-exclusive_or_expression
-	: and_expression {
+ExclusiveOrExpression
+	: AndExpression {
     $$ = $1;
   }
-	| exclusive_or_expression '^' and_expression {
+	| ExclusiveOrExpression '^' AndExpression {
     $$ = new_binary_exp(OP_BXOR, $1, $3);
   }
 	;
 
-inclusive_or_expression
-	: exclusive_or_expression {
+InclusiveOrExpression
+	: ExclusiveOrExpression {
     $$ = $1;
   }
-	| inclusive_or_expression '|' exclusive_or_expression {
+	| InclusiveOrExpression '|' ExclusiveOrExpression {
     $$ = new_binary_exp(OP_BOR, $1, $3);
   }
 	;
 
-logical_and_expression
-  : inclusive_or_expression {
+LogicalAndExpression
+  : InclusiveOrExpression {
     $$ = $1;
   }
-  | logical_and_expression AND inclusive_or_expression {
+  | LogicalAndExpression AND InclusiveOrExpression {
     $$ = new_binary_exp(OP_LAND, $1, $3);
   }
   ;
 
-logical_or_expression
-  : logical_and_expression {
+LogicalOrExpression
+  : LogicalAndExpression {
     $$ = $1;
   }
-  | logical_or_expression OR logical_and_expression {
+  | LogicalOrExpression OR LogicalAndExpression {
     $$ = new_binary_exp(OP_LOR, $1, $3);
   }
   ;
 
-basic_expression
-  : logical_or_expression {
-    $$ = $1;
-  }
-  ;
-
-expression
-  : basic_expression {
-  }
-  //| ComplexVariableInitializer
-  ;
-
-expression_list
-  : expression
-  | expression_list ',' expression
-  ;
-
-postfix_expression_list
-  : postfix_expression
-  | postfix_expression_list ',' postfix_expression
+Expression
+  : LogicalOrExpression
   ;
 
 /*--------------------------------------------------------------------------*/
 
-assignment_expression
-  : postfix_expression_list '=' VariableInitializerList
-  | postfix_expression compound_assignment_operator ComplexVariableInitializer
+AssignmentExpression
+  : PostfixExpressionList '=' VariableInitializerList
+  | PostfixExpression CompoundOperator VariableInitializer
   ;
 
-compound_assignment_operator
+PostfixExpressionList
+  : PostfixExpression
+  | PostfixExpressionList ',' PostfixExpression
+  ;
+
+CompoundOperator
   : ADD_ASSIGN
   | SUB_ASSIGN
   | MUL_ASSIGN
@@ -824,17 +794,6 @@ compound_assignment_operator
   | RIGHT_ASSIGN
   | LEFT_ASSIGN
   | TYPELESS_ASSIGN
-  ;
-
-expression_statement
-  : basic_expression {
-    printf("----basic_expression\n");
-    show_expr($1);
-    putchar('\n');
-  }
-  | assignment_expression {
-
-  }
   ;
 
 /*--------------------------------------------------------------------------*/

@@ -40,6 +40,8 @@ var h0 [][]func(string, int32) Socket = {
   }
 };
 
+const PI = 3.14;
+
 type Person struct {
   Name string;
   Age int32;
