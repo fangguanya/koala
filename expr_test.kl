@@ -3,7 +3,7 @@
 //package作用在编译的时候，将输出二进制文件放到对应的目录中
 package com.huawei.koala;
 //模块名即文件名
-//后续访问外模块只能是：模块名.符号，符号(已星号导入)
+//后续访问外模块只能是：模块名.符号，符号(星号导入模块下的全部开放的符号)
 //全路径访问不允许
 //导入模块下的所有public符号
 import com.huawei.tools.io.file.*;
@@ -39,7 +39,7 @@ var h0 [][]func(string, int32) Socket = {
       return Socket222("1.1.2.3.4", 22333);
       return [2]Socket{Socket("10.1.1.2", 23), Socket()};
       return [20]Socket{}(); //无意义的语义
-      return {1,2,3};
+      //return {1,2,3};
     }
   }
 };
@@ -91,13 +91,11 @@ type Stringer interface {
 type myStringer Stringer;
 
 func main() {
-  var stringer = Stringer() {
-    /*
-    func String() string
+  var stringer = Stringer2222() {
+    func String333() string
     {
       return "hello, world";
     }
-    */
   }.String();
 
   Person().SetName("zhuguangxiang");

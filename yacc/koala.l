@@ -35,8 +35,8 @@ L   [a-zA-Z_]
 "&="                      {return AND_ASSIGN;}
 "|="                      {return OR_ASSIGN;}
 "^="                      {return XOR_ASSIGN;}
-">>="                     {return RIGHT_ASSIGN;}
-"<<="                     {return LEFT_ASSIGN;}
+">>="                     {return RIGHT_SHIFT_ASSIGN;}
+"<<="                     {return LEFT_SHIFT_ASSIGN;}
 "..."                     {return ELLIPSIS;}
 
 "if"                      {return IF;}
@@ -47,6 +47,7 @@ L   [a-zA-Z_]
 "in"                      {return IN;}
 "switch"                  {return SWITCH;}
 "case"                    {return CASE;}
+'fallthrough'             {return FALLTHROUGH;}
 "break"                   {return BREAK;}
 "continue"                {return CONTINUE;}
 "default"                 {return DEFAULT;}
@@ -107,7 +108,7 @@ L   [a-zA-Z_]
 {L}({L}|{D})*             {
                             echo();
                             yylval.identifier = new_string(yytext);
-                            return IDENTIFIER;
+                            return ID;
                           }
 
 [\t\n ]+                  {}

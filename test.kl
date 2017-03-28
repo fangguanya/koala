@@ -1,23 +1,27 @@
 #!/media/psf/Home/Projects/koala/koala
 
 func test() {
+  var a = 0;
   p.p.Person().SetName("zhuguangxiang").SET().GET()();
+
 }
 
-var xxx int32 = 0;
+var yyy = {1,2,3};
+
+var xxx int32 = 200;
 var age, abc, def int32 = 100+200-3, 200, 300;
 
 var p Person = Person();
 
 var q = Person("zhuguangxiang", 30);
 
-var a0 [][]int32 = {2:{100,200, 5: 20}, {100, 200}, 4:{1,2}};
+var a0 [][]int32 = {{100,200, 20}, {100, 200}, {1,2}};
 
-var a1 [][]int32 = [10][5]int32{{1,2}, {3,4}, {5,6,7}};
+var a1 = [10][5]int32{{1,2}, {3,4}, {5,6,7}};
 
-var a2 []int32 = {2 : 100, 3:200};
+var a2 []int32 = {100, 200};
 
-var a3 []Person = {0 : Person("zgx", 20), 1 : Person("jmmy", 30)};
+var a3 []Person = {Person("zgx", 20), Person("jmmy", 30)};
 
 var a4 []Person = {Person(), Person()};
 
@@ -75,7 +79,7 @@ func codeblock_test() {
 
   b = 1;
 
-/*
+
   if (Person("zhuguangxiang").GetName().length() > 0) {
 
   }
@@ -83,7 +87,7 @@ func codeblock_test() {
   if (int32(3).String().length() > 0) {
 
   }
-  */
+
 }
 
 func main()
@@ -101,5 +105,21 @@ func main()
   foo(0,1)[0][1].a.bar()()();
   123.foo();
   a = 1;
-  //var name string;
+  if (a > b && c < d) {
+
+  } else if ( true ) {
+
+  } else if (false) {
+
+  } else {
+
+  }
+
+  for (i,j = 1, 2; i < j; i, j = 1, 1) {
+
+  }
+
+  for (var i, j = 0, 100;  i < j; i++) {
+    
+  }
 }
