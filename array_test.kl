@@ -1,4 +1,4 @@
-#!/media/psf/Home/Projects/koala/koala
+#!/Users/zgx/Projects/koala/koala
 
 var a1 = [3][2]int32 {{1,2}, [2]int32, {0}};
 
@@ -9,27 +9,27 @@ var a000 [][]int32 = {{1,2}, {3,4}, {4,5}};
 var a00 = [3]func(string, int32) (string);
 
 var a111 []io.Socket;
-var a222 []int32 = {0:{100:200}, 3:200};
+var a222 []int32 = {{200}, 200};
 
 var a int32 = int32(100);
 var a int32 = string("zhuguangxiang");
 var a bool = bool(false);
 
-var ddd int32 = [3]int32{0:200};
+var ddd int32 = [3]int32{200};
 
-var eee Person = 0:200;
+var eee Person = 200;
 
 var a1 io.Socket;
 var a2 IPAddress;
 
 func main()
 {
-  [2][2]Person()[0];
+  [2][2]Person[0];
   Person("zhuguangxiang").GetName().length() > 0;
   int32(3).String().length() > 0;
   100.String().length < 200;
   "jacky".length();
   [3][2]Person{{Person("ab"), Person("cd")}, {Person("ef")}}[0][1].GetName().length();
-  a, b, c = 100, 200, [2][2]Person{};
+  a, b, c = 100, 200, [2][2]Person;
   ([2]Person)[0] = Person("ab");
 }

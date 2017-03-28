@@ -1,4 +1,4 @@
-#!/media/psf/Home/Projects/koala/koala
+#!/Users/zgx/Projects/koala/koala
 
 //package作用在编译的时候，将输出二进制文件放到对应的目录中
 package com.huawei.koala;
@@ -12,6 +12,7 @@ import com.huawei.base.io.file as file;
 //导入模块，模块名即文件名
 import com.huawei.base.ip.socket;
 
+var b = string("hello");
 var a int32;
 var b []int64;
 var c [][]Person;
@@ -38,7 +39,7 @@ var h0 [][]func(string, int32) Socket = {
       Println3(file3.GetName());
       return Socket222("1.1.2.3.4", 22333);
       return [2]Socket{Socket("10.1.1.2", 23), Socket()};
-      return [20]Socket{}(); //无意义的语义
+      return [20]Socket(); //无意义的语义
       //return {1,2,3};
     }
   }

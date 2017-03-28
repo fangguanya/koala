@@ -580,7 +580,9 @@ Trailer
   | '[' Expression ']'
   | '(' ExpressionList ')'
   | '(' ')'
-  | '(' ')' '{' FunctionDeclarationList '}' { printf("interface implementation\n");}
+  | '(' ')' '{' FunctionDeclarationList '}' {
+    printf("interface implementation\n");
+  }
   ;
 
 FunctionDeclarationList

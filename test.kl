@@ -1,4 +1,4 @@
-#!/media/psf/Home/Projects/koala/koala
+#!/Users/zgx/Projects/koala/koala
 
 func test() {
   var a = 0;
@@ -120,6 +120,6 @@ func main()
   }
 
   for (var i, j = 0, 100;  i < j; i++) {
-    
+
   }
 }
