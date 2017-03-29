@@ -162,6 +162,11 @@ TypeNameList
   ;
 
 TypeName
+  : BaseType
+  | DIMS BaseType
+  ;
+
+BaseType
   : PrimitiveType {
     //$$ = new_type_info($1, null);
   }
@@ -169,9 +174,6 @@ TypeName
 
   }
   | FunctionType {}
-  | DIMS PrimitiveType {printf(">>>>>>PrimitiveType Array:%d\n", dim_count);}
-  | DIMS ModuleType {printf(">>>>>>ModuleType Array:%d\n", dim_count);}
-  | DIMS FunctionType {printf(">>>>>>FunctionType Array:%d\n", dim_count);}
   ;
 
 PrimitiveType
@@ -242,15 +244,6 @@ FunctionType
 ReturnTypeList
   : TypeName
   | '(' TypeNameList ')'
-  ;
-
-DimExprs
-	: DimExpr
-	| DimExprs DimExpr
-	;
-
-DimExpr
-  : '[' Expression ']'
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -330,8 +323,7 @@ VariableList
   ;
 
 VariableInitializerList
-  : VariableInitializer
-  | VariableInitializerList ',' VariableInitializer
+  : ArrayInitializerList
   ;
 
 VariableInitializer
@@ -427,29 +419,22 @@ AnonymousFunctionDeclaration
 
 /*--------------------------------------------------------------------------*/
 CodeBlock
-  : '{' CodeBlockBody '}' {
+  : '{' LocalVariableDeclarationsAndStatements '}' {
     printf("code block\n");
   }
   | '{' '}'
   ;
 
-/* 变量定义必须在最前面 不允许随处定义变量（可以使用TYPELES变量）*/
-CodeBlockBody
-  : VariableDeclarations Statements
-  | VariableDeclarations
-  |                      Statements
+LocalVariableDeclarationsAndStatements
+  : LocalVariableDeclarationOrStatement
+  | LocalVariableDeclarationsAndStatements LocalVariableDeclarationOrStatement
   ;
 
-VariableDeclarations
+LocalVariableDeclarationOrStatement
   : VariableDeclaration
-  | VariableDeclarations VariableDeclaration
-  ;
-
-Statements
-  : Statement {
+  | Statement {
     printf("----Statement\n");
   }
-  | Statements Statement
   ;
 
 Statement
@@ -544,8 +529,11 @@ Atom
     printf("complex_primary\n");
   }
   | AnonymousFunctionDeclaration {}
-  | DimExprs TypeName {}
-  | DimExprs TypeName '{' ArrayInitializerList '}' {}
+  | DimExprs BaseType {}
+  | DimExprs DIMS BaseType {}
+  | DimExprs BaseType '{' ArrayInitializerList '}' {}
+  | DimExprs DIMS BaseType '{' ArrayInitializerList '}' {}
+  | DIMS BaseType '{' ArrayInitializerList '}' {}
   ;
 
 Literal  //常量允许访问成员变量和成员方法，不允许数组操作
@@ -568,6 +556,15 @@ Literal  //常量允许访问成员变量和成员方法，不允许数组操作
   | TOKEN_FALSE {
     $$ = new_bool_expr(false);
   }
+  ;
+
+DimExprs
+	: DimExpr
+	| DimExprs DimExpr
+	;
+
+DimExpr
+  : '[' Expression ']'
   ;
 
 TrailerList

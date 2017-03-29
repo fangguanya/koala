@@ -17,6 +17,7 @@ typedef unsigned long long  uint64;
 typedef float               float32;
 typedef double              float64;
 typedef int                 bool;
+typedef unsigned char       byte;
 
 #define TYPE_INT8         1
 #define TYPE_INT16        2

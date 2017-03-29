@@ -32,4 +32,14 @@ func main()
   [3][2]Person{{Person("ab"), Person("cd")}, {Person("ef")}}[0][1].GetName().length();
   a, b, c = 100, 200, [2][2]Person;
   ([2]Person)[0] = Person("ab");
+  if (true) {
+    var arr = [3][]int32{{1,2}, {1,2,3}, {1,2,3,4}};
+    arr[0] = [5]int32{1,2,3,4,5};
+    arr[1] = [4]int32;
+    arr[2] = [3]int32;
+    var arr2 []int32 = {1,2,3,4,5,6};
+    var arr3 = {1,2,3,4};
+    //arr4 := {1,2,3};
+    //{1,2,3}[0].String();
+  }
 }
