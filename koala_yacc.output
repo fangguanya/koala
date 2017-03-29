@@ -287,8 +287,8 @@ Grammar
 
   204 Expression: LogicalOrExpression
 
-  205 AssignmentExpression: PostfixExpressionList '=' ExpressionList
-  206                     | PostfixExpression CompoundOperator Expression
+  205 AssignmentExpression: PostfixExpressionList '=' VariableInitializerList
+  206                     | PostfixExpression CompoundOperator VariableInitializer
 
   207 PostfixExpressionList: PostfixExpression
   208                      | PostfixExpressionList ',' PostfixExpression
@@ -448,9 +448,9 @@ VariableDeclaration (112)
 VariableList (113)
     on left: 55 56, on right: 50 51 52 53 54 56
 VariableInitializerList (114)
-    on left: 57, on right: 53 54
+    on left: 57, on right: 53 54 205
 VariableInitializer (115)
-    on left: 58 59, on right: 60 61
+    on left: 58 59, on right: 60 61 206
 ArrayInitializerList (116)
     on left: 60 61, on right: 50 51 57 59 61 145 146 147
 SemiOrEmpty (117)
@@ -507,7 +507,7 @@ ForIncr (141)
 JumpStatement (142)
     on left: 128 129 130 131 132, on right: 109
 ExpressionList (143)
-    on left: 133 134, on right: 132 134 161 205
+    on left: 133 134, on right: 132 134 161
 PrimaryExpression (144)
     on left: 135 136, on right: 166
 Atom (145)
@@ -553,7 +553,7 @@ LogicalOrExpression (163)
     on left: 202 203, on right: 203 204
 Expression (164)
     on left: 204, on right: 58 111 115 116 117 118 119 120 125 133
-    134 140 156 160 206
+    134 140 156 160
 AssignmentExpression (165)
     on left: 205 206, on right: 112
 PostfixExpressionList (166)
@@ -5073,7 +5073,7 @@ State 259
   167 PostfixExpression: PostfixExpression . INC
   168                  | PostfixExpression . DEC
   169 UnaryExpression: PostfixExpression .
-  206 AssignmentExpression: PostfixExpression . CompoundOperator Expression
+  206 AssignmentExpression: PostfixExpression . CompoundOperator VariableInitializer
   207 PostfixExpressionList: PostfixExpression .
 
     TYPELESS_ASSIGN     shift, and go to state 308
@@ -5113,7 +5113,7 @@ State 261
 
 State 262
 
-  205 AssignmentExpression: PostfixExpressionList . '=' ExpressionList
+  205 AssignmentExpression: PostfixExpressionList . '=' VariableInitializerList
   208 PostfixExpressionList: PostfixExpressionList . ',' PostfixExpression
 
     ','  shift, and go to state 320
@@ -5964,7 +5964,7 @@ State 318
 
 State 319
 
-  206 AssignmentExpression: PostfixExpression CompoundOperator . Expression
+  206 AssignmentExpression: PostfixExpression CompoundOperator . VariableInitializer
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -5992,6 +5992,7 @@ State 319
     STRING_LITERAL  shift, and go to state 81
     ID              shift, and go to state 82
     '('             shift, and go to state 83
+    '{'             shift, and go to state 84
     '['             shift, and go to state 85
     '+'             shift, and go to state 86
     '-'             shift, and go to state 87
@@ -5999,6 +6000,7 @@ State 319
     '!'             shift, and go to state 89
 
     PrimitiveType                 go to state 90
+    VariableInitializer           go to state 352
     AnonymousFunctionDeclaration  go to state 94
     PrimaryExpression             go to state 95
     Atom                          go to state 96
@@ -6017,7 +6019,7 @@ State 319
     InclusiveOrExpression         go to state 109
     LogicalAndExpression          go to state 110
     LogicalOrExpression           go to state 111
-    Expression                    go to state 352
+    Expression                    go to state 112
 
 
 State 320
@@ -6062,7 +6064,7 @@ State 320
 
 State 321
 
-  205 AssignmentExpression: PostfixExpressionList '=' . ExpressionList
+  205 AssignmentExpression: PostfixExpressionList '=' . VariableInitializerList
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -6090,6 +6092,7 @@ State 321
     STRING_LITERAL  shift, and go to state 81
     ID              shift, and go to state 82
     '('             shift, and go to state 83
+    '{'             shift, and go to state 84
     '['             shift, and go to state 85
     '+'             shift, and go to state 86
     '-'             shift, and go to state 87
@@ -6097,8 +6100,10 @@ State 321
     '!'             shift, and go to state 89
 
     PrimitiveType                 go to state 90
+    VariableInitializerList       go to state 354
+    VariableInitializer           go to state 92
+    ArrayInitializerList          go to state 93
     AnonymousFunctionDeclaration  go to state 94
-    ExpressionList                go to state 354
     PrimaryExpression             go to state 95
     Atom                          go to state 96
     Literal                       go to state 97
@@ -6116,7 +6121,7 @@ State 321
     InclusiveOrExpression         go to state 109
     LogicalAndExpression          go to state 110
     LogicalOrExpression           go to state 111
-    Expression                    go to state 213
+    Expression                    go to state 112
 
 
 State 322
@@ -6487,7 +6492,7 @@ State 351
 
 State 352
 
-  206 AssignmentExpression: PostfixExpression CompoundOperator Expression .
+  206 AssignmentExpression: PostfixExpression CompoundOperator VariableInitializer .
 
     $default  reduce using rule 206 (AssignmentExpression)
 
@@ -6506,10 +6511,7 @@ State 353
 
 State 354
 
-  134 ExpressionList: ExpressionList . ',' Expression
-  205 AssignmentExpression: PostfixExpressionList '=' ExpressionList .
-
-    ','  shift, and go to state 290
+  205 AssignmentExpression: PostfixExpressionList '=' VariableInitializerList .
 
     $default  reduce using rule 205 (AssignmentExpression)
 

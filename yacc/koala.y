@@ -748,8 +748,8 @@ Expression
 /*--------------------------------------------------------------------------*/
 
 AssignmentExpression
-  : PostfixExpressionList '=' ExpressionList
-  | PostfixExpression CompoundOperator Expression
+  : PostfixExpressionList '=' VariableInitializerList
+  | PostfixExpression CompoundOperator VariableInitializer
   ;
 
 PostfixExpressionList
