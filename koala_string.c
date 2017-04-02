@@ -90,15 +90,15 @@ string new_nstring(char *str, int len)
 
   if (string_cache_exist(&string))
   {
-    printf("found string:%s\n", string.val);
+    //printf("found string:%s\n", string.val);
     return string;
   }
 
-  printf("new string:%s\n", string.val);
+  //printf("new string:%s\n", string.val);
 
   struct string_block *block = get_avail_block();
 
-  printf("block:%p, left:%d\n", block, block->left);
+  //printf("block:%p, left:%d\n", block, block->left);
 
   if (block->left < len + 1)
   {

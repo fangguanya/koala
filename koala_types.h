@@ -32,11 +32,6 @@ typedef unsigned char       byte;
 #define TYPE_BOOL         11
 #define TYPE_STRING       12
 #define TYPE_ROOT_OBJECT  13
-#define TYPE_ARRAY        14
-#define TYPE_STRUCT       15
-#define TYPE_INTF         16
-#define TYPE_FUNC         17
-#define TYPE_DEFINED      18
 
 END_DECLS /* 兼容C++编译宏 */
 

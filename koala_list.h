@@ -86,6 +86,14 @@ typedef struct linked_node
   void *data;
 } linked_node_t;
 
+#define INIT_LINKED_LIST(list)  do {  \
+  INIT_LIST_HEAD((list)->head);       \
+  (list)->count = 0;                  \
+} while (0)
+
+#define LINKED_NODE_GET_DATA(var)  \
+  PARENT_STRUCT(var, linked_node_t, node)->data
+
 linked_list_t *linked_list_new();
 
 void linked_list_free(linked_list_t *list);

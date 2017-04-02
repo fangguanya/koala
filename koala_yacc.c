@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.0.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -73,10 +73,8 @@
 int yyerror(const char *str);
 int yylex(void);
 
-extern int dim_count;
 
-
-#line 80 "koala_yacc.c" /* yacc.c:339  */
+#line 78 "koala_yacc.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -187,27 +185,29 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
+typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 16 "yacc/koala.y" /* yacc.c:355  */
+#line 14 "yacc/koala.y" /* yacc.c:355  */
 
-  string identifier;
-  int type;
-  char *ident;
+  string ident;
+  int primitive_type;
   uint64 ival;
   float64 fval;
-  string str_val;
+  string string_literal;
+  int dims;
+  base_type_t base_type;
+  string string_array_2[2];
+  name_type_t *name_type;
+  type_t type;
   linked_list_t *linked_list;
-  type_info_t *new_type_info;
-  func_proto_type_t *func_proto_type;
-  array_type_t *array_type;
-  expr_t *expression;
+  expr_t *expr;
+  trailer_t *trailer;
+  term_t term;
+  anonymous_function_t anonymous;
 
-#line 208 "koala_yacc.c" /* yacc.c:355  */
+#line 210 "koala_yacc.c" /* yacc.c:355  */
 };
-
-typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -525,29 +525,29 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   151,   151,   154,   160,   161,   165,   166,   170,   173,
-     176,   180,   183,   186,   189,   192,   195,   198,   202,   205,
-     208,   211,   214,   218,   224,   227,   233,   236,   237,   241,
-     245,   246,   251,   252,   253,   254,   255,   256,   257,   261,
-     265,   266,   270,   271,   272,   276,   277,   281,   282,   283,
-     284,   292,   295,   301,   304,   307,   313,   318,   326,   330,
-     331,   335,   336,   342,   343,   347,   348,   349,   353,   354,
-     358,   359,   363,   364,   368,   372,   373,   374,   375,   376,
-     377,   378,   379,   383,   384,   385,   386,   390,   391,   395,
-     396,   400,   401,   407,   408,   409,   410,   414,   415,   416,
-     417,   422,   425,   429,   430,   434,   435,   441,   445,   446,
-     447,   448,   452,   455,   461,   462,   466,   467,   468,   472,
-     476,   477,   478,   482,   483,   484,   488,   489,   493,   497,
-     498,   499,   500,   501,   507,   508,   514,   515,   519,   522,
-     524,   527,   528,   531,   532,   533,   534,   535,   536,   540,
-     544,   547,   550,   553,   556,   562,   563,   567,   571,   572,
-     576,   577,   578,   579,   580,   586,   587,   591,   592,   593,
-     597,   600,   608,   616,   619,   622,   625,   631,   634,   637,
-     640,   646,   649,   652,   658,   661,   664,   670,   673,   676,
-     679,   682,   688,   691,   694,   700,   703,   709,   712,   718,
-     721,   727,   730,   736,   739,   745,   751,   752,   756,   757,
-     761,   762,   763,   764,   765,   766,   767,   768,   769,   770,
-     771
+       0,   169,   169,   172,   178,   182,   189,   192,   198,   201,
+     204,   210,   213,   216,   219,   222,   225,   228,   231,   234,
+     237,   240,   243,   246,   252,   256,   265,   268,   271,   274,
+     280,   284,   291,   292,   293,   294,   295,   296,   297,   301,
+     305,   306,   310,   311,   312,   316,   317,   321,   322,   323,
+     324,   332,   335,   341,   344,   347,   353,   358,   366,   370,
+     371,   375,   376,   382,   383,   387,   388,   389,   393,   394,
+     398,   399,   403,   404,   408,   412,   413,   414,   415,   416,
+     417,   418,   419,   423,   424,   425,   426,   430,   434,   441,
+     442,   446,   447,   453,   454,   455,   456,   460,   463,   466,
+     469,   476,   479,   485,   489,   496,   499,   505,   508,   511,
+     514,   517,   523,   527,   533,   534,   538,   539,   540,   544,
+     548,   549,   550,   554,   555,   556,   560,   561,   565,   569,
+     570,   571,   572,   575,   581,   586,   595,   598,   604,   607,
+     610,   613,   618,   621,   624,   625,   626,   627,   628,   632,
+     635,   638,   641,   644,   647,   653,   654,   658,   662,   666,
+     672,   675,   678,   681,   684,   690,   691,   695,   696,   697,
+     701,   704,   712,   720,   723,   726,   729,   735,   738,   741,
+     744,   750,   753,   756,   762,   765,   768,   774,   777,   780,
+     783,   786,   792,   795,   798,   804,   807,   813,   816,   822,
+     825,   831,   834,   840,   843,   849,   857,   858,   862,   863,
+     867,   868,   869,   870,   871,   872,   873,   874,   875,   876,
+     877
 };
 #endif
 
@@ -581,11 +581,10 @@ static const char *const yytname[] =
   "MethodDeclarationHeader2", "ParameterList",
   "InterfaceFunctionDeclarations", "InterfaceFunctionDeclaration",
   "FunctionDeclaration", "AnonymousFunctionDeclaration", "CodeBlock",
-  "LocalVariableDeclarationsAndStatements",
-  "LocalVariableDeclarationOrStatement", "Statement",
-  "ExpressionStatement", "SelectionStatement", "IfStatement",
+  "LocalVariableDeclsOrStatements", "LocalVariableDeclOrStatement",
+  "Statement", "ExpressionStatement", "SelectionStatement", "IfStatement",
   "SwitchStatement", "IterationStatemnet", "ForInit", "ForExpr", "ForIncr",
-  "JumpStatement", "ExpressionList", "PrimaryExpression", "Atom",
+  "JumpStatement", "ExpressionList", "PrimaryExpression", "Term",
   "Literal", "DimExprs", "DimExpr", "TrailerList", "Trailer",
   "FunctionDeclarationList", "PostfixExpression", "UnaryExpression",
   "MultiplicativeExpression", "AdditiveExpression", "ShiftExpression",
@@ -682,9 +681,9 @@ static const yytype_uint8 yydefact[] =
       19,    20,    21,    22,    23,     0,    25,     0,     0,     0,
        6,     8,     9,    10,     0,     0,     0,     0,     0,     0,
        0,    64,    39,     0,     0,    42,    32,     0,     7,     0,
-      57,     0,     0,     0,     0,   140,   152,   153,   154,   149,
+      57,     0,     0,     0,     0,   139,   152,   153,   154,   149,
      150,   151,   138,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,    61,    58,   143,   167,   136,   139,     0,   155,
+       0,     0,    61,    58,   143,   167,   136,   140,     0,   155,
      170,   177,   181,   184,   187,   192,   195,   197,   199,   201,
      203,   205,    59,     0,    53,     0,     0,     0,     0,     0,
       67,     0,     0,     3,    63,    63,    27,     0,     4,    24,
@@ -695,7 +694,7 @@ static const yytype_uint8 yydefact[] =
        0,     0,     0,    87,     0,     0,    30,     0,    94,     0,
        0,     0,     0,     0,     0,    68,    70,    71,     0,     0,
        0,     0,     0,     0,    89,    51,     0,    43,    44,    26,
-      29,     0,     0,     0,     0,   141,    60,   157,     0,    62,
+      29,     0,     0,     0,     0,   142,    60,   157,     0,    62,
      160,   163,     0,   134,     0,   159,   145,     0,   178,   179,
      180,   182,   183,   185,   186,   191,   190,   188,   189,   193,
      194,   196,   198,   200,   202,   204,    55,     0,     0,     0,
@@ -703,7 +702,7 @@ static const yytype_uint8 yydefact[] =
        0,   103,   106,     0,   108,   114,   115,   109,   110,   170,
      112,   113,     0,    93,     0,    96,     0,     0,     0,     0,
        0,    63,    69,    74,     0,     0,    91,    92,    63,    90,
-      52,    28,     5,     0,    98,     0,     0,   142,     0,   162,
+      52,    28,     5,     0,    98,     0,     0,   141,     0,   162,
        0,   161,     0,     0,    31,     0,     0,     0,     0,     0,
      129,   130,   131,   132,     0,   101,   104,   107,   220,   210,
      211,   212,   213,   214,   215,   216,   217,   218,   219,     0,
@@ -1075,7 +1074,7 @@ static const yytype_uint8 yyr2[] =
        1,     1,     1,     1,     1,     1,     5,     7,     7,     5,
        5,     7,     7,     2,     1,     1,     2,     1,     1,     2,
        2,     2,     2,     3,     1,     3,     1,     2,     1,     1,
-       1,     3,     4,     1,     2,     3,     5,     6,     5,     1,
+       1,     4,     3,     1,     2,     3,     5,     6,     5,     1,
        1,     1,     1,     1,     1,     1,     2,     3,     1,     2,
        2,     3,     3,     2,     5,     1,     2,     1,     2,     2,
        1,     2,     2,     2,     2,     2,     2,     1,     3,     3,
@@ -1760,749 +1759,1005 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 151 "yacc/koala.y" /* yacc.c:1661  */
+#line 169 "yacc/koala.y" /* yacc.c:1646  */
     {
     //$$ = null;
   }
-#line 1768 "koala_yacc.c" /* yacc.c:1661  */
+#line 1767 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 154 "yacc/koala.y" /* yacc.c:1661  */
+#line 172 "yacc/koala.y" /* yacc.c:1646  */
     {
     //$$ = null;
   }
-#line 1776 "koala_yacc.c" /* yacc.c:1661  */
+#line 1775 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 160 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 1782 "koala_yacc.c" /* yacc.c:1661  */
+#line 178 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = linked_list_new();
+    linked_list_add_tail((yyval.linked_list), (yyvsp[0].name_type));
+  }
+#line 1784 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 161 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 1788 "koala_yacc.c" /* yacc.c:1661  */
+#line 182 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_add_tail((yyvsp[-2].linked_list), (yyvsp[0].name_type));
+    (yyval.linked_list) = (yyvsp[-2].linked_list);
+  }
+#line 1793 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 6:
+#line 189 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.name_type) = new_name_type(0, (yyvsp[0].base_type));
+  }
+#line 1801 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 7:
+#line 192 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.name_type) = new_name_type((yyvsp[-1].dims), (yyvsp[0].base_type));
+  }
+#line 1809 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 170 "yacc/koala.y" /* yacc.c:1661  */
+#line 198 "yacc/koala.y" /* yacc.c:1646  */
     {
-    //$$ = new_type_info($1, null);
+    (yyval.base_type) = new_primitive_type((yyvsp[0].primitive_type));
   }
-#line 1796 "koala_yacc.c" /* yacc.c:1661  */
+#line 1817 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 173 "yacc/koala.y" /* yacc.c:1661  */
+#line 201 "yacc/koala.y" /* yacc.c:1646  */
     {
-
+    (yyval.base_type) = new_module_type((yyvsp[0].string_array_2));
   }
-#line 1804 "koala_yacc.c" /* yacc.c:1661  */
+#line 1825 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 176 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 1810 "koala_yacc.c" /* yacc.c:1661  */
+#line 204 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.base_type) = (yyvsp[0].base_type);
+  }
+#line 1833 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 180 "yacc/koala.y" /* yacc.c:1661  */
+#line 210 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_UINT8;
+    (yyval.primitive_type) = TYPE_UINT8;
   }
-#line 1818 "koala_yacc.c" /* yacc.c:1661  */
+#line 1841 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 183 "yacc/koala.y" /* yacc.c:1661  */
+#line 213 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_UINT16;
+    (yyval.primitive_type) = TYPE_UINT16;
   }
-#line 1826 "koala_yacc.c" /* yacc.c:1661  */
+#line 1849 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 186 "yacc/koala.y" /* yacc.c:1661  */
+#line 216 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_UINT32;
+    (yyval.primitive_type) = TYPE_UINT32;
   }
-#line 1834 "koala_yacc.c" /* yacc.c:1661  */
+#line 1857 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 189 "yacc/koala.y" /* yacc.c:1661  */
+#line 219 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_UINT64;
+    (yyval.primitive_type) = TYPE_UINT64;
   }
-#line 1842 "koala_yacc.c" /* yacc.c:1661  */
+#line 1865 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 192 "yacc/koala.y" /* yacc.c:1661  */
+#line 222 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_INT8;
+    (yyval.primitive_type) = TYPE_INT8;
   }
-#line 1850 "koala_yacc.c" /* yacc.c:1661  */
+#line 1873 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 195 "yacc/koala.y" /* yacc.c:1661  */
+#line 225 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_INT16;
+    (yyval.primitive_type) = TYPE_INT16;
   }
-#line 1858 "koala_yacc.c" /* yacc.c:1661  */
+#line 1881 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 198 "yacc/koala.y" /* yacc.c:1661  */
+#line 228 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("int32\n");
-    (yyval.type) = TYPE_INT32;
+    (yyval.primitive_type) = TYPE_INT32;
   }
-#line 1867 "koala_yacc.c" /* yacc.c:1661  */
+#line 1889 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 202 "yacc/koala.y" /* yacc.c:1661  */
+#line 231 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_INT64;
+    (yyval.primitive_type) = TYPE_INT64;
   }
-#line 1875 "koala_yacc.c" /* yacc.c:1661  */
+#line 1897 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 205 "yacc/koala.y" /* yacc.c:1661  */
+#line 234 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_FLOAT32;
+    (yyval.primitive_type) = TYPE_FLOAT32;
   }
-#line 1883 "koala_yacc.c" /* yacc.c:1661  */
+#line 1905 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 208 "yacc/koala.y" /* yacc.c:1661  */
+#line 237 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_FLOAT64;
+    (yyval.primitive_type) = TYPE_FLOAT64;
   }
-#line 1891 "koala_yacc.c" /* yacc.c:1661  */
+#line 1913 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 211 "yacc/koala.y" /* yacc.c:1661  */
+#line 240 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_BOOL;
+    (yyval.primitive_type) = TYPE_BOOL;
   }
-#line 1899 "koala_yacc.c" /* yacc.c:1661  */
+#line 1921 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 214 "yacc/koala.y" /* yacc.c:1661  */
+#line 243 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("string\n");
-    (yyval.type) = TYPE_STRING;
+    (yyval.primitive_type) = TYPE_STRING;
   }
-#line 1908 "koala_yacc.c" /* yacc.c:1661  */
+#line 1929 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 218 "yacc/koala.y" /* yacc.c:1661  */
+#line 246 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.type) = TYPE_ROOT_OBJECT;
+    (yyval.primitive_type) = TYPE_ROOT_OBJECT;
   }
-#line 1916 "koala_yacc.c" /* yacc.c:1661  */
+#line 1937 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 224 "yacc/koala.y" /* yacc.c:1661  */
+#line 252 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("Module:%s, TypeName:%s\n", (yyvsp[-2].identifier).val, (yyvsp[0].identifier).val);
+    printf("Module:%s, TypeName:%s\n", (yyvsp[-2].ident).val, (yyvsp[0].ident).val);
+    (yyval.string_array_2)[0] = (yyvsp[-2].ident); (yyval.string_array_2)[1] = (yyvsp[0].ident);
   }
-#line 1924 "koala_yacc.c" /* yacc.c:1661  */
+#line 1946 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 227 "yacc/koala.y" /* yacc.c:1661  */
+#line 256 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("TypeName:%s\n", (yyvsp[0].identifier).val);
+    printf("TypeName:%s\n", (yyvsp[0].ident).val);
+    (yyval.string_array_2)[0].val = null;
+    (yyval.string_array_2)[0].len = 0;
+    (yyval.string_array_2)[1] = (yyvsp[0].ident);
   }
-#line 1932 "koala_yacc.c" /* yacc.c:1661  */
+#line 1957 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 233 "yacc/koala.y" /* yacc.c:1661  */
+#line 265 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.func_proto_type) = new_func_proto_type(null, null);
+    (yyval.base_type) = new_func_type(null, (yyvsp[0].linked_list));
   }
-#line 1940 "koala_yacc.c" /* yacc.c:1661  */
+#line 1965 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 236 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 1946 "koala_yacc.c" /* yacc.c:1661  */
+#line 268 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.base_type) = new_func_type(null, null);
+  }
+#line 1973 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 237 "yacc/koala.y" /* yacc.c:1661  */
+#line 271 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("FunctionType 3\n");
-    (yyval.func_proto_type) = new_func_proto_type(null, null);
+    (yyval.base_type) = new_func_type((yyvsp[-2].linked_list), (yyvsp[0].linked_list));
   }
-#line 1955 "koala_yacc.c" /* yacc.c:1661  */
+#line 1981 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 241 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 1961 "koala_yacc.c" /* yacc.c:1661  */
+#line 274 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.base_type) = new_func_type((yyvsp[-1].linked_list), null);
+  }
+#line 1989 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 30:
+#line 280 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = linked_list_new();
+    linked_list_add_tail((yyval.linked_list), (yyvsp[0].name_type));
+  }
+#line 1998 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 31:
+#line 284 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = (yyvsp[-1].linked_list);
+  }
+#line 2006 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 292 "yacc/koala.y" /* yacc.c:1661  */
+#line 332 "yacc/koala.y" /* yacc.c:1646  */
     {
 
   }
-#line 1969 "koala_yacc.c" /* yacc.c:1661  */
+#line 2014 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 295 "yacc/koala.y" /* yacc.c:1661  */
+#line 335 "yacc/koala.y" /* yacc.c:1646  */
     {
 
   }
-#line 1977 "koala_yacc.c" /* yacc.c:1661  */
+#line 2022 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 301 "yacc/koala.y" /* yacc.c:1661  */
+#line 341 "yacc/koala.y" /* yacc.c:1646  */
     {
     //new_var_decl($2, $3, null);
   }
-#line 1985 "koala_yacc.c" /* yacc.c:1661  */
+#line 2030 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 304 "yacc/koala.y" /* yacc.c:1661  */
+#line 344 "yacc/koala.y" /* yacc.c:1646  */
     {
 
   }
-#line 1993 "koala_yacc.c" /* yacc.c:1661  */
+#line 2038 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 307 "yacc/koala.y" /* yacc.c:1661  */
+#line 347 "yacc/koala.y" /* yacc.c:1646  */
     {
 
   }
-#line 2001 "koala_yacc.c" /* yacc.c:1661  */
+#line 2046 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 313 "yacc/koala.y" /* yacc.c:1661  */
+#line 353 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("ID: %s\n", (yyvsp[0].identifier).val);
-    (yyval.linked_list) = linked_list_new();
-    linked_list_add_tail((yyval.linked_list), new_simple_var((yyvsp[0].identifier)));
+    printf("ID: %s\n", (yyvsp[0].ident).val);
+    //$$ = linked_list_new();
+    //linked_list_add_tail($$, new_simple_var($1));
   }
-#line 2011 "koala_yacc.c" /* yacc.c:1661  */
+#line 2056 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 318 "yacc/koala.y" /* yacc.c:1661  */
+#line 358 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("ID: %s\n", (yyvsp[0].identifier).val);
-    (yyval.linked_list) = (yyvsp[-2].linked_list);
-    linked_list_add_tail((yyval.linked_list), new_simple_var((yyvsp[0].identifier)));
+    printf("ID: %s\n", (yyvsp[0].ident).val);
+    //$$ = $1;
+    //linked_list_add_tail($$, new_simple_var($3));
   }
-#line 2021 "koala_yacc.c" /* yacc.c:1661  */
+#line 2066 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 87:
+#line 430 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = linked_list_new();
+    linked_list_add_tail((yyval.linked_list), new_variable((yyvsp[-1].ident), (yyvsp[0].name_type)));
+  }
+#line 2075 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 88:
+#line 434 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_add_tail((yyvsp[-3].linked_list), new_variable((yyvsp[-1].ident), (yyvsp[0].name_type)));
+    (yyval.linked_list) = (yyvsp[-3].linked_list);
+  }
+#line 2084 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 97:
+#line 460 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.anonymous) = new_anonymous_func(null, (yyvsp[-1].linked_list), (yyvsp[0].linked_list));
+  }
+#line 2092 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 98:
+#line 463 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.anonymous) = new_anonymous_func(null, null, (yyvsp[0].linked_list));
+  }
+#line 2100 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 99:
+#line 466 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.anonymous) = new_anonymous_func((yyvsp[-3].linked_list), (yyvsp[-1].linked_list), (yyvsp[0].linked_list));
+  }
+#line 2108 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 100:
+#line 469 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.anonymous) = new_anonymous_func((yyvsp[-2].linked_list), null, (yyvsp[0].linked_list));
+  }
+#line 2116 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 422 "yacc/koala.y" /* yacc.c:1661  */
+#line 476 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("code block\n");
+    (yyval.linked_list) = (yyvsp[-1].linked_list);
   }
-#line 2029 "koala_yacc.c" /* yacc.c:1661  */
+#line 2124 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 102:
+#line 479 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = null;
+  }
+#line 2132 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 103:
+#line 485 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = linked_list_new();
+    linked_list_add_tail((yyval.linked_list), (yyvsp[0].expr));
+  }
+#line 2141 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 104:
+#line 489 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_add_tail((yyvsp[-1].linked_list), (yyvsp[0].expr));
+    (yyval.linked_list) = (yyvsp[-1].linked_list);
+  }
+#line 2150 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 105:
+#line 496 "yacc/koala.y" /* yacc.c:1646  */
+    {
+
+  }
+#line 2158 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 435 "yacc/koala.y" /* yacc.c:1661  */
+#line 499 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("----Statement\n");
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2037 "koala_yacc.c" /* yacc.c:1661  */
+#line 2166 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 107:
-#line 441 "yacc/koala.y" /* yacc.c:1661  */
+#line 505 "yacc/koala.y" /* yacc.c:1646  */
     {
-    //expr_tree_print($1);
-    printf("----ExpressionStatement\n");
+    (yyval.expr) = (yyvsp[-1].expr);
   }
-#line 2046 "koala_yacc.c" /* yacc.c:1661  */
+#line 2174 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 108:
+#line 508 "yacc/koala.y" /* yacc.c:1646  */
+    {
+
+  }
+#line 2182 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 109:
+#line 511 "yacc/koala.y" /* yacc.c:1646  */
+    {
+
+  }
+#line 2190 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 110:
+#line 514 "yacc/koala.y" /* yacc.c:1646  */
+    {
+
+  }
+#line 2198 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 111:
+#line 517 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.expr) = new_exp_list((yyvsp[0].linked_list));
+  }
+#line 2206 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 452 "yacc/koala.y" /* yacc.c:1661  */
+#line 523 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("----Expression\n");
+    show_expr((yyvsp[0].expr));
+    printf("----ExpressionStatement----\n");
   }
-#line 2054 "koala_yacc.c" /* yacc.c:1661  */
+#line 2215 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 455 "yacc/koala.y" /* yacc.c:1661  */
+#line 527 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("----AssignmentExpression\n");
+    printf("----AssignmentExpressionStatement----\n");
   }
-#line 2062 "koala_yacc.c" /* yacc.c:1661  */
+#line 2223 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 132:
+#line 572 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    printf("return----\n");
+  }
+#line 2231 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 133:
-#line 501 "yacc/koala.y" /* yacc.c:1661  */
+#line 575 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("-----RETURN\n");
+    printf("return----\n");
   }
-#line 2070 "koala_yacc.c" /* yacc.c:1661  */
+#line 2239 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 134:
+#line 581 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_t *list = linked_list_new();
+    linked_list_add_tail(list, (yyvsp[0].expr));
+    (yyval.expr) = new_exp_list(list);
+  }
+#line 2249 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 135:
+#line 586 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_add_tail((yyvsp[-2].expr)->list, (yyvsp[0].expr));
+    (yyval.expr) = (yyvsp[-2].expr);
+  }
+#line 2258 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 136:
-#line 514 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 2076 "koala_yacc.c" /* yacc.c:1661  */
+#line 595 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.expr) = new_exp_term((yyvsp[0].term));
+  }
+#line 2266 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 137:
-#line 515 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 2082 "koala_yacc.c" /* yacc.c:1661  */
+#line 598 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.expr) = new_exp_term(new_term_trailer((yyvsp[-1].term), (yyvsp[0].linked_list)));
+  }
+#line 2274 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 519 "yacc/koala.y" /* yacc.c:1661  */
+#line 604 "yacc/koala.y" /* yacc.c:1646  */
     {
-
+    (yyval.term) = new_term_id((yyvsp[0].ident));
   }
-#line 2090 "koala_yacc.c" /* yacc.c:1661  */
+#line 2282 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 522 "yacc/koala.y" /* yacc.c:1661  */
+#line 607 "yacc/koala.y" /* yacc.c:1646  */
     {
+    (yyval.term) = new_term_self();
   }
-#line 2097 "koala_yacc.c" /* yacc.c:1661  */
+#line 2290 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 524 "yacc/koala.y" /* yacc.c:1661  */
+#line 610 "yacc/koala.y" /* yacc.c:1646  */
     {
-
+    (yyval.term) = (yyvsp[0].term);
   }
-#line 2105 "koala_yacc.c" /* yacc.c:1661  */
+#line 2298 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 527 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 2111 "koala_yacc.c" /* yacc.c:1661  */
+#line 613 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    printf("literal with type declaration\n");
+    check_primitive_type((yyvsp[-3].primitive_type), (yyvsp[-1].term));
+    (yyval.term) = (yyvsp[-1].term);
+  }
+#line 2308 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 142:
-#line 528 "yacc/koala.y" /* yacc.c:1661  */
+#line 618 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("complex_primary\n");
+    (yyval.term) = new_term_exp((yyvsp[-1].expr));
   }
-#line 2119 "koala_yacc.c" /* yacc.c:1661  */
+#line 2316 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 143:
-#line 531 "yacc/koala.y" /* yacc.c:1661  */
-    {}
-#line 2125 "koala_yacc.c" /* yacc.c:1661  */
+#line 621 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.term) = new_term_anonymous((yyvsp[0].anonymous));
+  }
+#line 2324 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 144:
-#line 532 "yacc/koala.y" /* yacc.c:1661  */
+#line 624 "yacc/koala.y" /* yacc.c:1646  */
     {}
-#line 2131 "koala_yacc.c" /* yacc.c:1661  */
+#line 2330 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 145:
-#line 533 "yacc/koala.y" /* yacc.c:1661  */
+#line 625 "yacc/koala.y" /* yacc.c:1646  */
     {}
-#line 2137 "koala_yacc.c" /* yacc.c:1661  */
+#line 2336 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 146:
-#line 534 "yacc/koala.y" /* yacc.c:1661  */
+#line 626 "yacc/koala.y" /* yacc.c:1646  */
     {}
-#line 2143 "koala_yacc.c" /* yacc.c:1661  */
+#line 2342 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 147:
-#line 535 "yacc/koala.y" /* yacc.c:1661  */
+#line 627 "yacc/koala.y" /* yacc.c:1646  */
     {}
-#line 2149 "koala_yacc.c" /* yacc.c:1661  */
+#line 2348 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 148:
-#line 536 "yacc/koala.y" /* yacc.c:1661  */
+#line 628 "yacc/koala.y" /* yacc.c:1646  */
     {}
-#line 2155 "koala_yacc.c" /* yacc.c:1661  */
+#line 2354 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 149:
-#line 540 "yacc/koala.y" /* yacc.c:1661  */
+#line 632 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("INTEGER: %lld\n", (yyvsp[0].ival));
-    (yyval.expression) = new_uint_expr((yyvsp[0].ival));
+    (yyval.term) = new_term_uint((yyvsp[0].ival));
   }
-#line 2164 "koala_yacc.c" /* yacc.c:1661  */
+#line 2362 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 544 "yacc/koala.y" /* yacc.c:1661  */
+#line 635 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_float_expr((yyvsp[0].fval));
+    (yyval.term) = new_term_float((yyvsp[0].fval));
   }
-#line 2172 "koala_yacc.c" /* yacc.c:1661  */
+#line 2370 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 547 "yacc/koala.y" /* yacc.c:1661  */
+#line 638 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_string_expr((yyvsp[0].str_val));
+    (yyval.term) = new_term_string((yyvsp[0].string_literal));
   }
-#line 2180 "koala_yacc.c" /* yacc.c:1661  */
+#line 2378 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 152:
-#line 550 "yacc/koala.y" /* yacc.c:1661  */
+#line 641 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = null;
+    (yyval.term) = new_term_null();
   }
-#line 2188 "koala_yacc.c" /* yacc.c:1661  */
+#line 2386 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 153:
-#line 553 "yacc/koala.y" /* yacc.c:1661  */
+#line 644 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_bool_expr(true);
+    (yyval.term) = new_term_bool(true);
   }
-#line 2196 "koala_yacc.c" /* yacc.c:1661  */
+#line 2394 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 154:
-#line 556 "yacc/koala.y" /* yacc.c:1661  */
+#line 647 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_bool_expr(false);
+    (yyval.term) = new_term_bool(false);
   }
-#line 2204 "koala_yacc.c" /* yacc.c:1661  */
+#line 2402 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 158:
+#line 662 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.linked_list) = linked_list_new();
+    linked_list_add_tail((yyval.linked_list), (yyvsp[0].trailer));
+  }
+#line 2411 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 159:
+#line 666 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    linked_list_add_tail((yyval.linked_list), (yyvsp[0].trailer));
+  }
+#line 2419 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 160:
+#line 672 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.trailer) = new_trailer_field_access((yyvsp[0].ident));
+  }
+#line 2427 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 161:
+#line 675 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.trailer) = new_trailer_array_access((yyvsp[-1].expr));
+  }
+#line 2435 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 162:
+#line 678 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.trailer) = new_trailer_func_call((yyvsp[-1].expr)->list);
+  }
+#line 2443 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 163:
+#line 681 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.trailer) = new_trailer_func_call(null);
+  }
+#line 2451 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 580 "yacc/koala.y" /* yacc.c:1661  */
+#line 684 "yacc/koala.y" /* yacc.c:1646  */
     {
-    printf("interface implementation\n");
+    (yyval.trailer) = new_trailer_interface_implementation();
   }
-#line 2212 "koala_yacc.c" /* yacc.c:1661  */
+#line 2459 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 597 "yacc/koala.y" /* yacc.c:1661  */
+#line 701 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2220 "koala_yacc.c" /* yacc.c:1661  */
+#line 2467 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 600 "yacc/koala.y" /* yacc.c:1661  */
+#line 704 "yacc/koala.y" /* yacc.c:1646  */
     {
-    if ((yyvsp[0].expression)->kind != EXP_VAR) {
+    if ((yyvsp[0].expr)->kind != EXP_TERM) {
       yyerror("error: rvalue required as increment operand\n");
       exit(-1);
     } else {
-      (yyval.expression) = new_unary_exp(OP_INC_BEFORE, (yyvsp[0].expression));
+      (yyval.expr) = new_exp_unary(OP_INC_BEFORE, (yyvsp[0].expr));
     }
   }
-#line 2233 "koala_yacc.c" /* yacc.c:1661  */
+#line 2480 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 172:
-#line 608 "yacc/koala.y" /* yacc.c:1661  */
+#line 712 "yacc/koala.y" /* yacc.c:1646  */
     {
-    if ((yyvsp[0].expression)->kind != EXP_VAR) {
+    if ((yyvsp[0].expr)->kind != EXP_TERM) {
       yyerror("error: rvalue required as decrement operand\n");
       exit(-1);
     } else {
-      (yyval.expression) = new_unary_exp(OP_DEC_BEFORE, (yyvsp[0].expression));
+      (yyval.expr) = new_exp_unary(OP_DEC_BEFORE, (yyvsp[0].expr));
     }
   }
-#line 2246 "koala_yacc.c" /* yacc.c:1661  */
+#line 2493 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 173:
-#line 616 "yacc/koala.y" /* yacc.c:1661  */
+#line 720 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2254 "koala_yacc.c" /* yacc.c:1661  */
+#line 2501 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 174:
-#line 619 "yacc/koala.y" /* yacc.c:1661  */
+#line 723 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_unary_exp(OP_MINUS, (yyvsp[0].expression));
+    (yyval.expr) = new_exp_unary(OP_MINUS, (yyvsp[0].expr));
   }
-#line 2262 "koala_yacc.c" /* yacc.c:1661  */
+#line 2509 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 175:
-#line 622 "yacc/koala.y" /* yacc.c:1661  */
+#line 726 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_unary_exp(OP_BNOT, (yyvsp[0].expression));
+    (yyval.expr) = new_exp_unary(OP_BNOT, (yyvsp[0].expr));
   }
-#line 2270 "koala_yacc.c" /* yacc.c:1661  */
+#line 2517 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 176:
-#line 625 "yacc/koala.y" /* yacc.c:1661  */
+#line 729 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_unary_exp(OP_LNOT, (yyvsp[0].expression));
+    (yyval.expr) = new_exp_unary(OP_LNOT, (yyvsp[0].expr));
   }
-#line 2278 "koala_yacc.c" /* yacc.c:1661  */
+#line 2525 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 177:
-#line 631 "yacc/koala.y" /* yacc.c:1661  */
+#line 735 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2286 "koala_yacc.c" /* yacc.c:1661  */
+#line 2533 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 178:
-#line 634 "yacc/koala.y" /* yacc.c:1661  */
+#line 738 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_TIMES, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_TIMES, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2294 "koala_yacc.c" /* yacc.c:1661  */
+#line 2541 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 179:
-#line 637 "yacc/koala.y" /* yacc.c:1661  */
+#line 741 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_DIVIDE, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_DIVIDE, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2302 "koala_yacc.c" /* yacc.c:1661  */
+#line 2549 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 180:
-#line 640 "yacc/koala.y" /* yacc.c:1661  */
+#line 744 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_MOD, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_MOD, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2310 "koala_yacc.c" /* yacc.c:1661  */
+#line 2557 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 181:
-#line 646 "yacc/koala.y" /* yacc.c:1661  */
+#line 750 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2318 "koala_yacc.c" /* yacc.c:1661  */
+#line 2565 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 182:
-#line 649 "yacc/koala.y" /* yacc.c:1661  */
+#line 753 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_PLUS, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_PLUS, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2326 "koala_yacc.c" /* yacc.c:1661  */
+#line 2573 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 183:
-#line 652 "yacc/koala.y" /* yacc.c:1661  */
+#line 756 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_MINUS, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_MINUS, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2334 "koala_yacc.c" /* yacc.c:1661  */
+#line 2581 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 184:
-#line 658 "yacc/koala.y" /* yacc.c:1661  */
+#line 762 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2342 "koala_yacc.c" /* yacc.c:1661  */
+#line 2589 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 185:
-#line 661 "yacc/koala.y" /* yacc.c:1661  */
+#line 765 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_LSHIFT, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_LSHIFT, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2350 "koala_yacc.c" /* yacc.c:1661  */
+#line 2597 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 186:
-#line 664 "yacc/koala.y" /* yacc.c:1661  */
+#line 768 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_RSHIFT, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_RSHIFT, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2358 "koala_yacc.c" /* yacc.c:1661  */
+#line 2605 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 187:
-#line 670 "yacc/koala.y" /* yacc.c:1661  */
+#line 774 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2366 "koala_yacc.c" /* yacc.c:1661  */
+#line 2613 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 188:
-#line 673 "yacc/koala.y" /* yacc.c:1661  */
+#line 777 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_LT, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_LT, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2374 "koala_yacc.c" /* yacc.c:1661  */
+#line 2621 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 189:
-#line 676 "yacc/koala.y" /* yacc.c:1661  */
+#line 780 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_GT, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_GT, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2382 "koala_yacc.c" /* yacc.c:1661  */
+#line 2629 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 190:
-#line 679 "yacc/koala.y" /* yacc.c:1661  */
+#line 783 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_LE, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_LE, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2390 "koala_yacc.c" /* yacc.c:1661  */
+#line 2637 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 191:
-#line 682 "yacc/koala.y" /* yacc.c:1661  */
+#line 786 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_GE, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_GE, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2398 "koala_yacc.c" /* yacc.c:1661  */
+#line 2645 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 192:
-#line 688 "yacc/koala.y" /* yacc.c:1661  */
+#line 792 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2406 "koala_yacc.c" /* yacc.c:1661  */
+#line 2653 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 193:
-#line 691 "yacc/koala.y" /* yacc.c:1661  */
+#line 795 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_EQ, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_EQ, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2414 "koala_yacc.c" /* yacc.c:1661  */
+#line 2661 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 194:
-#line 694 "yacc/koala.y" /* yacc.c:1661  */
+#line 798 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_NEQ, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_NEQ, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2422 "koala_yacc.c" /* yacc.c:1661  */
+#line 2669 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 195:
-#line 700 "yacc/koala.y" /* yacc.c:1661  */
+#line 804 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2430 "koala_yacc.c" /* yacc.c:1661  */
+#line 2677 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 196:
-#line 703 "yacc/koala.y" /* yacc.c:1661  */
+#line 807 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_BAND, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_BAND, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2438 "koala_yacc.c" /* yacc.c:1661  */
+#line 2685 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 197:
-#line 709 "yacc/koala.y" /* yacc.c:1661  */
+#line 813 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2446 "koala_yacc.c" /* yacc.c:1661  */
+#line 2693 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 198:
-#line 712 "yacc/koala.y" /* yacc.c:1661  */
+#line 816 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_BXOR, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_BXOR, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2454 "koala_yacc.c" /* yacc.c:1661  */
+#line 2701 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 199:
-#line 718 "yacc/koala.y" /* yacc.c:1661  */
+#line 822 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2462 "koala_yacc.c" /* yacc.c:1661  */
+#line 2709 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 200:
-#line 721 "yacc/koala.y" /* yacc.c:1661  */
+#line 825 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_BOR, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_BOR, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2470 "koala_yacc.c" /* yacc.c:1661  */
+#line 2717 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 201:
-#line 727 "yacc/koala.y" /* yacc.c:1661  */
+#line 831 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2478 "koala_yacc.c" /* yacc.c:1661  */
+#line 2725 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 202:
-#line 730 "yacc/koala.y" /* yacc.c:1661  */
+#line 834 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_LAND, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_LAND, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2486 "koala_yacc.c" /* yacc.c:1661  */
+#line 2733 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 203:
-#line 736 "yacc/koala.y" /* yacc.c:1661  */
+#line 840 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = (yyvsp[0].expression);
+    (yyval.expr) = (yyvsp[0].expr);
   }
-#line 2494 "koala_yacc.c" /* yacc.c:1661  */
+#line 2741 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
   case 204:
-#line 739 "yacc/koala.y" /* yacc.c:1661  */
+#line 843 "yacc/koala.y" /* yacc.c:1646  */
     {
-    (yyval.expression) = new_binary_exp(OP_LOR, (yyvsp[-2].expression), (yyvsp[0].expression));
+    (yyval.expr) = new_exp_binary(OP_LOR, (yyvsp[-2].expr), (yyvsp[0].expr));
   }
-#line 2502 "koala_yacc.c" /* yacc.c:1661  */
+#line 2749 "koala_yacc.c" /* yacc.c:1646  */
+    break;
+
+  case 205:
+#line 849 "yacc/koala.y" /* yacc.c:1646  */
+    {
+    (yyval.expr) = (yyvsp[0].expr);
+  }
+#line 2757 "koala_yacc.c" /* yacc.c:1646  */
     break;
 
 
-#line 2506 "koala_yacc.c" /* yacc.c:1661  */
+#line 2761 "koala_yacc.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2730,5 +2985,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 776 "yacc/koala.y" /* yacc.c:1906  */
+#line 882 "yacc/koala.y" /* yacc.c:1906  */
 

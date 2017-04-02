@@ -9,22 +9,24 @@
 int yyerror(const char *str);
 int yylex(void);
 
-extern int dim_count;
-
 %}
 
 %union {
-  string identifier;
-  int type;
-  char *ident;
+  string ident;
+  int primitive_type;
   uint64 ival;
   float64 fval;
-  string str_val;
+  string string_literal;
+  int dims;
+  base_type_t base_type;
+  string string_array_2[2];
+  name_type_t *name_type;
+  type_t type;
   linked_list_t *linked_list;
-  type_info_t *new_type_info;
-  func_proto_type_t *func_proto_type;
-  array_type_t *array_type;
-  expr_t *expression;
+  expr_t *expr;
+  trailer_t *trailer;
+  term_t term;
+  anonymous_function_t anonymous;
 }
 
 %token ELLIPSIS
@@ -91,7 +93,7 @@ extern int dim_count;
 %token BOOL
 %token STRING
 %token ROOT_OBJECT
-%token DIMS
+%token <dims> DIMS
 
 %token SELF
 %token TOKEN_NIL
@@ -103,8 +105,8 @@ extern int dim_count;
 %token <ival> OCT
 %token <fval> FLOAT
 
-%token <str_val> STRING_LITERAL
-%token <identifier> ID
+%token <string_literal> STRING_LITERAL
+%token <ident> ID
 
 /*--------------------------------------------------------------------------*/
 
@@ -119,29 +121,45 @@ extern int dim_count;
 //%expect 2
 
 /*--------------------------------------------------------------------------*/
-//%type <new_type_info> TypeName
-%type <type> PrimitiveType
-%type <func_proto_type> FunctionType
+%type <primitive_type> PrimitiveType
+%type <string_array_2> ModuleType
+%type <base_type> FunctionType
+%type <base_type> BaseType
+%type <name_type> TypeName
+
 %type <linked_list> TypeNameList
 %type <linked_list> VariableList
+%type <linked_list> TrailerList
+%type <linked_list> ParameterList
+%type <linked_list> ReturnTypeList
+%type <linked_list> CodeBlock
+%type <linked_list> LocalVariableDeclsOrStatements
 
-%type <expression> Expression
-%type <expression> LogicalOrExpression
-%type <expression> LogicalAndExpression
-%type <expression> InclusiveOrExpression
-%type <expression> ExclusiveOrExpression
-%type <expression> AndExpression
-%type <expression> EqualityExpression
-%type <expression> RelationalExpression
-%type <expression> ShiftExpression
-%type <expression> AdditiveExpression
-%type <expression> MultiplicativeExpression
-%type <expression> UnaryExpression
-%type <expression> PostfixExpression
-%type <expression> PrimaryExpression
+%type <expr> LocalVariableDeclOrStatement
+%type <expr> Statement
+%type <expr> ExpressionStatement
 
-%type <expression> Literal
+%type <expr> ExpressionList
+%type <expr> Expression
+%type <expr> LogicalOrExpression
+%type <expr> LogicalAndExpression
+%type <expr> InclusiveOrExpression
+%type <expr> ExclusiveOrExpression
+%type <expr> AndExpression
+%type <expr> EqualityExpression
+%type <expr> RelationalExpression
+%type <expr> ShiftExpression
+%type <expr> AdditiveExpression
+%type <expr> MultiplicativeExpression
+%type <expr> UnaryExpression
+%type <expr> PostfixExpression
+%type <expr> PrimaryExpression
 
+%type <term> Literal
+%type <term> Term
+%type <anonymous> AnonymousFunctionDeclaration
+
+%type <trailer> Trailer
 
 %start Program
 
@@ -157,23 +175,35 @@ ModulePathName
   ;
 
 TypeNameList
-  : TypeName {}
-  | TypeNameList ',' TypeName {}
+  : TypeName {
+    $$ = linked_list_new();
+    linked_list_add_tail($$, $1);
+  }
+  | TypeNameList ',' TypeName {
+    linked_list_add_tail($1, $3);
+    $$ = $1;
+  }
   ;
 
 TypeName
-  : BaseType
-  | DIMS BaseType
+  : BaseType {
+    $$ = new_name_type(0, $1);
+  }
+  | DIMS BaseType {
+    $$ = new_name_type($1, $2);
+  }
   ;
 
 BaseType
   : PrimitiveType {
-    //$$ = new_type_info($1, null);
+    $$ = new_primitive_type($1);
   }
   | ModuleType {
-
+    $$ = new_module_type($1);
   }
-  | FunctionType {}
+  | FunctionType {
+    $$ = $1;
+  }
   ;
 
 PrimitiveType
@@ -196,7 +226,6 @@ PrimitiveType
     $$ = TYPE_INT16;
   }
   | INT32 {
-    printf("int32\n");
     $$ = TYPE_INT32;
   }
   | INT64 {
@@ -212,7 +241,6 @@ PrimitiveType
     $$ = TYPE_BOOL;
   }
   | STRING {
-    printf("string\n");
     $$ = TYPE_STRING;
   }
   | ROOT_OBJECT {
@@ -223,27 +251,39 @@ PrimitiveType
 ModuleType
   : ID '.' ID {
     printf("Module:%s, TypeName:%s\n", $1.val, $3.val);
+    $$[0] = $1; $$[1] = $3;
   }
   | ID {
     printf("TypeName:%s\n", $1.val);
+    $$[0].val = null;
+    $$[0].len = 0;
+    $$[1] = $1;
   }
   ;
 
 FunctionType
   : FUNC '(' ')' ReturnTypeList {
-    $$ = new_func_proto_type(null, null);
+    $$ = new_func_type(null, $4);
   }
-  | FUNC '(' ')' {}
+  | FUNC '(' ')' {
+    $$ = new_func_type(null, null);
+  }
   | FUNC '(' TypeNameList ')' ReturnTypeList {
-    printf("FunctionType 3\n");
-    $$ = new_func_proto_type(null, null);
+    $$ = new_func_type($3, $5);
   }
-  | FUNC '(' TypeNameList ')' {}
+  | FUNC '(' TypeNameList ')' {
+    $$ = new_func_type($3, null);
+  }
   ;
 
 ReturnTypeList
-  : TypeName
-  | '(' TypeNameList ')'
+  : TypeName {
+    $$ = linked_list_new();
+    linked_list_add_tail($$, $1);
+  }
+  | '(' TypeNameList ')' {
+    $$ = $2;
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -312,13 +352,13 @@ VariableDeclaration
 VariableList
   : ID {
     printf("ID: %s\n", $1.val);
-    $$ = linked_list_new();
-    linked_list_add_tail($$, new_simple_var($1));
+    //$$ = linked_list_new();
+    //linked_list_add_tail($$, new_simple_var($1));
   }
   | VariableList ',' ID {
     printf("ID: %s\n", $3.val);
-    $$ = $1;
-    linked_list_add_tail($$, new_simple_var($3));
+    //$$ = $1;
+    //linked_list_add_tail($$, new_simple_var($3));
   }
   ;
 
@@ -387,8 +427,14 @@ MethodDeclarationHeader2
   ;
 
 ParameterList
-  : ID TypeName
-  | ParameterList ',' ID TypeName
+  : ID TypeName {
+    $$ = linked_list_new();
+    linked_list_add_tail($$, new_variable($1, $2));
+  }
+  | ParameterList ',' ID TypeName {
+    linked_list_add_tail($1, new_variable($3, $4));
+    $$ = $1;
+  }
   ;
 
 InterfaceFunctionDeclarations
@@ -411,49 +457,75 @@ FunctionDeclaration
   ;
 
 AnonymousFunctionDeclaration
-  : FUNC '(' ')' ReturnTypeList CodeBlock
-  | FUNC '(' ')' CodeBlock
-  | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock
-  | FUNC '(' ParameterList ')' CodeBlock
+  : FUNC '(' ')' ReturnTypeList CodeBlock {
+    $$ = new_anonymous_func(null, $4, $5);
+  }
+  | FUNC '(' ')' CodeBlock {
+    $$ = new_anonymous_func(null, null, $4);
+  }
+  | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock {
+    $$ = new_anonymous_func($3, $5, $6);
+  }
+  | FUNC '(' ParameterList ')' CodeBlock {
+    $$ = new_anonymous_func($3, null, $5);
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
 CodeBlock
-  : '{' LocalVariableDeclarationsAndStatements '}' {
-    printf("code block\n");
+  : '{' LocalVariableDeclsOrStatements '}' {
+    $$ = $2;
   }
-  | '{' '}'
+  | '{' '}' {
+    $$ = null;
+  }
   ;
 
-LocalVariableDeclarationsAndStatements
-  : LocalVariableDeclarationOrStatement
-  | LocalVariableDeclarationsAndStatements LocalVariableDeclarationOrStatement
+LocalVariableDeclsOrStatements
+  : LocalVariableDeclOrStatement {
+    $$ = linked_list_new();
+    linked_list_add_tail($$, $1);
+  }
+  | LocalVariableDeclsOrStatements LocalVariableDeclOrStatement {
+    linked_list_add_tail($1, $2);
+    $$ = $1;
+  }
   ;
 
-LocalVariableDeclarationOrStatement
-  : VariableDeclaration
+LocalVariableDeclOrStatement
+  : VariableDeclaration {
+
+  }
   | Statement {
-    printf("----Statement\n");
+    $$ = $1;
   }
   ;
 
 Statement
   : ExpressionStatement ';' {
-    //expr_tree_print($1);
-    printf("----ExpressionStatement\n");
+    $$ = $1;
   }
-  | SelectionStatement
-  | IterationStatemnet
-  | JumpStatement
-  | CodeBlock
+  | SelectionStatement {
+
+  }
+  | IterationStatemnet {
+
+  }
+  | JumpStatement {
+
+  }
+  | CodeBlock {
+    $$ = new_exp_list($1);
+  }
   ;
 
 ExpressionStatement
   : Expression {
-    printf("----Expression\n");
+    show_expr($1);
+    printf("----ExpressionStatement----\n");
   }
   | AssignmentExpression {
-    printf("----AssignmentExpression\n");
+    printf("----AssignmentExpressionStatement----\n");
   }
   ;
 
@@ -497,38 +569,58 @@ JumpStatement
   : BREAK ';'
   | FALLTHROUGH ';'
   | CONTINUE ';'
-  | RETURN ';'
+  | RETURN ';' {
+    printf("return----\n");
+  }
   | RETURN ExpressionList ';' {
-    printf("-----RETURN\n");
+    printf("return----\n");
   }
   ;
 
 ExpressionList
-  : Expression
-  | ExpressionList ',' Expression
+  : Expression {
+    linked_list_t *list = linked_list_new();
+    linked_list_add_tail(list, $1);
+    $$ = new_exp_list(list);
+  }
+  | ExpressionList ',' Expression {
+    linked_list_add_tail($1->list, $3);
+    $$ = $1;
+  }
   ;
 
 /*-------------------------------------------------------------------------*/
 
 PrimaryExpression
-  : Atom {}
-  | Atom TrailerList {}
+  : Term {
+    $$ = new_exp_term($1);
+  }
+  | Term TrailerList {
+    $$ = new_exp_term(new_term_trailer($1, $2));
+  }
   ;
 
-Atom
+Term
   : ID {
-
-  }
-  | Literal {
+    $$ = new_term_id($1);
   }
   | SELF {
-
+    $$ = new_term_self();
   }
-  | '(' Expression ')' {}
+  | Literal {
+    $$ = $1;
+  }
   | PrimitiveType '(' Literal ')' {
-    printf("complex_primary\n");
+    printf("literal with type declaration\n");
+    check_primitive_type($1, $3);
+    $$ = $3;
   }
-  | AnonymousFunctionDeclaration {}
+  | '(' Expression ')' {
+    $$ = new_term_exp($2);
+  }
+  | AnonymousFunctionDeclaration {
+    $$ = new_term_anonymous($1);
+  }
   | DimExprs BaseType {}
   | DimExprs DIMS BaseType {}
   | DimExprs BaseType '{' ArrayInitializerList '}' {}
@@ -538,47 +630,59 @@ Atom
 
 Literal  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
-    printf("INTEGER: %lld\n", $1);
-    $$ = new_uint_expr($1);
+    $$ = new_term_uint($1);
   }
   | FLOAT {
-    $$ = new_float_expr($1);
+    $$ = new_term_float($1);
   }
   | STRING_LITERAL {
-    $$ = new_string_expr($1);
+    $$ = new_term_string($1);
   }
   | TOKEN_NIL {
-    $$ = null;
+    $$ = new_term_null();
   }
   | TOKEN_TRUE {
-    $$ = new_bool_expr(true);
+    $$ = new_term_bool(true);
   }
   | TOKEN_FALSE {
-    $$ = new_bool_expr(false);
+    $$ = new_term_bool(false);
   }
   ;
 
 DimExprs
-	: DimExpr
-	| DimExprs DimExpr
-	;
+  : DimExpr
+  | DimExprs DimExpr
+  ;
 
 DimExpr
   : '[' Expression ']'
   ;
 
 TrailerList
-  : Trailer
-  | TrailerList Trailer
+  : Trailer {
+    $$ = linked_list_new();
+    linked_list_add_tail($$, $1);
+  }
+  | TrailerList Trailer {
+    linked_list_add_tail($$, $2);
+  }
   ;
 
 Trailer
-  : '.' ID
-  | '[' Expression ']'
-  | '(' ExpressionList ')'
-  | '(' ')'
+  : '.' ID {
+    $$ = new_trailer_field_access($2);
+  }
+  | '[' Expression ']' {
+    $$ = new_trailer_array_access($2);
+  }
+  | '(' ExpressionList ')' {
+    $$ = new_trailer_func_call($2->list);
+  }
+  | '(' ')' {
+    $$ = new_trailer_func_call(null);
+  }
   | '(' ')' '{' FunctionDeclarationList '}' {
-    printf("interface implementation\n");
+    $$ = new_trailer_interface_implementation();
   }
   ;
 
@@ -598,137 +702,137 @@ UnaryExpression
     $$ = $1;
   }
   | INC UnaryExpression {
-    if ($2->kind != EXP_VAR) {
+    if ($2->kind != EXP_TERM) {
       yyerror("error: rvalue required as increment operand\n");
       exit(-1);
     } else {
-      $$ = new_unary_exp(OP_INC_BEFORE, $2);
+      $$ = new_exp_unary(OP_INC_BEFORE, $2);
     }
   }
   | DEC UnaryExpression {
-    if ($2->kind != EXP_VAR) {
+    if ($2->kind != EXP_TERM) {
       yyerror("error: rvalue required as decrement operand\n");
       exit(-1);
     } else {
-      $$ = new_unary_exp(OP_DEC_BEFORE, $2);
+      $$ = new_exp_unary(OP_DEC_BEFORE, $2);
     }
   }
   | '+' UnaryExpression {
     $$ = $2;
   }
   | '-' UnaryExpression {
-    $$ = new_unary_exp(OP_MINUS, $2);
+    $$ = new_exp_unary(OP_MINUS, $2);
   }
   | '~' UnaryExpression {
-    $$ = new_unary_exp(OP_BNOT, $2);
+    $$ = new_exp_unary(OP_BNOT, $2);
   }
   | '!' UnaryExpression {
-    $$ = new_unary_exp(OP_LNOT, $2);
+    $$ = new_exp_unary(OP_LNOT, $2);
   }
   ;
 
 MultiplicativeExpression
-	: UnaryExpression {
+  : UnaryExpression {
     $$ = $1;
   }
-	| MultiplicativeExpression '*' UnaryExpression {
-    $$ = new_binary_exp(OP_TIMES, $1, $3);
+  | MultiplicativeExpression '*' UnaryExpression {
+    $$ = new_exp_binary(OP_TIMES, $1, $3);
   }
-	| MultiplicativeExpression '/' UnaryExpression {
-    $$ = new_binary_exp(OP_DIVIDE, $1, $3);
+  | MultiplicativeExpression '/' UnaryExpression {
+    $$ = new_exp_binary(OP_DIVIDE, $1, $3);
   }
-	| MultiplicativeExpression '%' UnaryExpression {
-    $$ = new_binary_exp(OP_MOD, $1, $3);
+  | MultiplicativeExpression '%' UnaryExpression {
+    $$ = new_exp_binary(OP_MOD, $1, $3);
   }
-	;
+  ;
 
 AdditiveExpression
-	: MultiplicativeExpression {
+  : MultiplicativeExpression {
     $$ = $1;
   }
-	| AdditiveExpression '+' MultiplicativeExpression {
-    $$ = new_binary_exp(OP_PLUS, $1, $3);
+  | AdditiveExpression '+' MultiplicativeExpression {
+    $$ = new_exp_binary(OP_PLUS, $1, $3);
   }
-	| AdditiveExpression '-' MultiplicativeExpression {
-    $$ = new_binary_exp(OP_MINUS, $1, $3);
+  | AdditiveExpression '-' MultiplicativeExpression {
+    $$ = new_exp_binary(OP_MINUS, $1, $3);
   }
-	;
+  ;
 
 ShiftExpression
-	: AdditiveExpression {
+  : AdditiveExpression {
     $$ = $1;
   }
-	| ShiftExpression SHIFT_LEFT AdditiveExpression {
-    $$ = new_binary_exp(OP_LSHIFT, $1, $3);
+  | ShiftExpression SHIFT_LEFT AdditiveExpression {
+    $$ = new_exp_binary(OP_LSHIFT, $1, $3);
   }
-	| ShiftExpression SHIFT_RIGHT AdditiveExpression {
-    $$ = new_binary_exp(OP_RSHIFT, $1, $3);
+  | ShiftExpression SHIFT_RIGHT AdditiveExpression {
+    $$ = new_exp_binary(OP_RSHIFT, $1, $3);
   }
-	;
+  ;
 
 RelationalExpression
-	: ShiftExpression {
+  : ShiftExpression {
     $$ = $1;
   }
-	| RelationalExpression '<' ShiftExpression {
-    $$ = new_binary_exp(OP_LT, $1, $3);
+  | RelationalExpression '<' ShiftExpression {
+    $$ = new_exp_binary(OP_LT, $1, $3);
   }
-	| RelationalExpression '>' ShiftExpression {
-    $$ = new_binary_exp(OP_GT, $1, $3);
+  | RelationalExpression '>' ShiftExpression {
+    $$ = new_exp_binary(OP_GT, $1, $3);
   }
-	| RelationalExpression LE  ShiftExpression {
-    $$ = new_binary_exp(OP_LE, $1, $3);
+  | RelationalExpression LE  ShiftExpression {
+    $$ = new_exp_binary(OP_LE, $1, $3);
   }
-	| RelationalExpression GE  ShiftExpression {
-    $$ = new_binary_exp(OP_GE, $1, $3);
+  | RelationalExpression GE  ShiftExpression {
+    $$ = new_exp_binary(OP_GE, $1, $3);
   }
-	;
+  ;
 
 EqualityExpression
-	: RelationalExpression {
+  : RelationalExpression {
     $$ = $1;
   }
-	| EqualityExpression EQ RelationalExpression {
-    $$ = new_binary_exp(OP_EQ, $1, $3);
+  | EqualityExpression EQ RelationalExpression {
+    $$ = new_exp_binary(OP_EQ, $1, $3);
   }
-	| EqualityExpression NE RelationalExpression {
-    $$ = new_binary_exp(OP_NEQ, $1, $3);
+  | EqualityExpression NE RelationalExpression {
+    $$ = new_exp_binary(OP_NEQ, $1, $3);
   }
-	;
+  ;
 
 AndExpression
-	: EqualityExpression {
+  : EqualityExpression {
     $$ = $1;
   }
-	| AndExpression '&' EqualityExpression {
-    $$ = new_binary_exp(OP_BAND, $1, $3);
+  | AndExpression '&' EqualityExpression {
+    $$ = new_exp_binary(OP_BAND, $1, $3);
   }
-	;
+  ;
 
 ExclusiveOrExpression
-	: AndExpression {
+  : AndExpression {
     $$ = $1;
   }
-	| ExclusiveOrExpression '^' AndExpression {
-    $$ = new_binary_exp(OP_BXOR, $1, $3);
+  | ExclusiveOrExpression '^' AndExpression {
+    $$ = new_exp_binary(OP_BXOR, $1, $3);
   }
-	;
+  ;
 
 InclusiveOrExpression
-	: ExclusiveOrExpression {
+  : ExclusiveOrExpression {
     $$ = $1;
   }
-	| InclusiveOrExpression '|' ExclusiveOrExpression {
-    $$ = new_binary_exp(OP_BOR, $1, $3);
+  | InclusiveOrExpression '|' ExclusiveOrExpression {
+    $$ = new_exp_binary(OP_BOR, $1, $3);
   }
-	;
+  ;
 
 LogicalAndExpression
   : InclusiveOrExpression {
     $$ = $1;
   }
   | LogicalAndExpression AND InclusiveOrExpression {
-    $$ = new_binary_exp(OP_LAND, $1, $3);
+    $$ = new_exp_binary(OP_LAND, $1, $3);
   }
   ;
 
@@ -737,12 +841,14 @@ LogicalOrExpression
     $$ = $1;
   }
   | LogicalOrExpression OR LogicalAndExpression {
-    $$ = new_binary_exp(OP_LOR, $1, $3);
+    $$ = new_exp_binary(OP_LOR, $1, $3);
   }
   ;
 
 Expression
-  : LogicalOrExpression
+  : LogicalOrExpression {
+    $$ = $1;
+  }
   ;
 
 /*--------------------------------------------------------------------------*/

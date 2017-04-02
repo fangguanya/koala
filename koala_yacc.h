@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -121,27 +121,29 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
+typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 16 "yacc/koala.y" /* yacc.c:1915  */
+#line 14 "yacc/koala.y" /* yacc.c:1909  */
 
-  string identifier;
-  int type;
-  char *ident;
+  string ident;
+  int primitive_type;
   uint64 ival;
   float64 fval;
-  string str_val;
+  string string_literal;
+  int dims;
+  base_type_t base_type;
+  string string_array_2[2];
+  name_type_t *name_type;
+  type_t type;
   linked_list_t *linked_list;
-  type_info_t *new_type_info;
-  func_proto_type_t *func_proto_type;
-  array_type_t *array_type;
-  expr_t *expression;
+  expr_t *expr;
+  trailer_t *trailer;
+  term_t term;
+  anonymous_function_t anonymous;
 
-#line 142 "koala_yacc.h" /* yacc.c:1915  */
+#line 146 "koala_yacc.h" /* yacc.c:1909  */
 };
-
-typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

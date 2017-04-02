@@ -1,0 +1,23 @@
+#!/media/psf/Home/Projects/koala/koala
+
+func main() {
+  p.a.b();
+  "zhuguangxiang".ToUpperCase();
+  func (name string, age [][]uint32) string {
+    return name + age;
+  }("zhuguangxiang", 28);
+
+  Hello() {
+    func SayHello(name string) int32 {
+      return 0;
+    }
+    func SayBye(name string) int32 {
+      return 1;
+    }
+  }.SayHello("zhuguangxiang");
+
+  1+2*3;
+  int32(100);
+  string("100");
+  //[]string{"zhuguangxiang"};
+}

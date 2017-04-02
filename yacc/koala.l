@@ -4,7 +4,6 @@
 #include "koala_includes.h"
 #include "koala_yacc.h"
 static void echo();
-int dim_count = 0;
 
 %}
 
@@ -77,7 +76,7 @@ L   [a-zA-Z_]
 "string"                  {return STRING;}
 "interface{}"             {return ROOT_OBJECT;}
 "[]"+                     {
-                            dim_count = yyleng/2;
+                            yylval.dims = yyleng/2;
                             return DIMS;
                           }
 "self"                    {return SELF;}
@@ -100,14 +99,17 @@ L   [a-zA-Z_]
                           }
 
 (\"(\\.|[^"\\])*\")       {
+                            char tmp = yytext[yyleng - 1];
+                            yytext[yyleng - 1] = 0;
                             echo();
-                            yylval.str_val = new_nstring(yytext+1, yyleng - 2);
+                            yylval.string_literal = new_string(yytext + 1);
+                            yytext[yyleng - 1] = tmp;
                             return STRING_LITERAL;
                           }
 
 {L}({L}|{D})*             {
                             echo();
-                            yylval.identifier = new_string(yytext);
+                            yylval.ident = new_string(yytext);
                             return ID;
                           }
 
