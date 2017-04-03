@@ -60,7 +60,6 @@ L   [a-zA-Z_]
 "package"                 {return PACKAGE;}
 "import"                  {return IMPORT;}
 "as"                      {return AS;}
-"new"                     {return NEW;}
 
 "int8"                    {return INT8;}
 "int16"                   {return INT16;}
@@ -79,6 +78,7 @@ L   [a-zA-Z_]
                             yylval.dims = yyleng/2;
                             return DIMS;
                           }
+
 "self"                    {return SELF;}
 "true"                    {return TOKEN_TRUE;}
 "false"                   {return TOKEN_FALSE;}

@@ -1,0 +1,54 @@
+#!/media/psf/Home/Projects/koala/koala
+
+func calc(data []int32) int32 {
+  return data[0];
+}
+
+func __init__() {
+  student_no = 200;
+}
+
+type Course struct {
+  name  string;
+  score uint8;
+
+  __init__(name string, score uint8) {
+    self.name = name;
+    self.score = score;
+  }
+
+  GetName() string {
+    return self.name;
+  }
+
+  GetScore() uint8 {
+    return score;
+  }
+
+}
+
+var student_no = 100;
+const course_count = 10;
+
+type Student struct {
+  No   uint32;
+  Name string;
+  age  uint8;
+  courses []Course;
+
+  __init__(name string, age uint8) {
+    No = ++student_no;
+    Name = name;
+    self.age = age;
+    //courses = [course_count]Course {Course("语文", 0), Course("Math"， 0)};
+  }
+
+  sayHello(greeting string) string {
+    return "Hi, " + Name + " greeting:" + greeting;
+  }
+}
+
+func test() {
+  var stdt = Student("zhuguangxiang", 30);
+  stdt.sayHello("Good Luck!");
+}

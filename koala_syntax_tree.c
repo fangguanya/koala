@@ -74,7 +74,7 @@ void show_expr_list(linked_list_t *exp_list)
     LIST_FOR_EACH(pos, &exp_list->head) {
       exp = LINKED_NODE_GET_DATA(pos);
       show_expr(exp);
-      outs("\n");
+      //outs("\n");
     }
 
     outs("------------------------------\n");
@@ -118,8 +118,9 @@ variable_t *new_variable(string name, name_type_t *type)
 {
   variable_t *var = malloc(sizeof(*var));
   var->name = name;
-  var->is_const = false;
-  var->type = type;
+  var->extern_visible = IS_UPPER_CASE(name.val[0]);
+  var->is_constant = false;
+  NAME_TYPE_SET(var->type, type);
   var->value = null;
   return var;
 }
@@ -128,10 +129,66 @@ variable_t *new_constant(string name, name_type_t *type)
 {
   variable_t *var = malloc(sizeof(*var));
   var->name = name;
-  var->is_const = true;
-  var->type = type;
+  var->extern_visible = IS_UPPER_CASE(name.val[0]);
+  var->is_constant = true;
+  NAME_TYPE_SET(var->type, type);
   var->value = null;
   return var;
+}
+
+void init_function(function_t *func,
+                   string name,
+                   linked_list_t *parameter_list,
+                   linked_list_t *return_type_list,
+                   expr_t *codes)
+{
+  func->name = name;
+  INIT_LINKED_LIST(&func->parameter_list);
+  INIT_LINKED_LIST(&func->return_type_list);
+  if (parameter_list != null)
+    LINKED_LIST_MERGE_TAIL(&func->parameter_list, parameter_list);
+  if (return_type_list != null)
+    LINKED_LIST_MERGE_TAIL(&func->return_type_list, return_type_list);
+  func->codes = codes;
+}
+
+function_t *new_method(string name,
+                       linked_list_t *parameter_list,
+                       linked_list_t *return_type_list,
+                       expr_t *codes)
+{
+  function_t *func = malloc(sizeof(*func));
+  init_function(func, name, parameter_list, return_type_list, codes);
+  return func;
+}
+
+expr_t *new_exp_type_struct(string name,
+                           linked_list_t *field_list,
+                           linked_list_t *func_list)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TYPE;
+  exp->type.kind = TYPE_STRUCT;
+  exp->type.struct_type.name = name;
+  INIT_LINKED_LIST(&exp->type.struct_type.field_list);
+  INIT_LINKED_LIST(&exp->type.struct_type.func_list);
+  LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.field_list, field_list);
+  LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.func_list, func_list);
+  return exp;
+}
+
+expr_t *new_exp_type_interface();
+expr_t *new_exp_type_redef();
+
+expr_t *new_exp_function(string name,
+                         linked_list_t *parameter_list,
+                         linked_list_t *return_type_list,
+                         expr_t *codes)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_FUNC;
+  init_function(&exp->func, name, parameter_list, return_type_list, codes);
+  return exp;
 }
 
 expr_t *new_exp_var_list(linked_list_t *var_list)
@@ -284,15 +341,13 @@ void show_base_type(base_type_t *base_type)
 
 void show_name_type(name_type_t *name_type)
 {
-  int i;
-
-  if (name_type == null) {
+  if ((name_type == null) || (name_type->base_type.kind == INVALID_TYPE)) {
     outs("type:NO\n");
     return;
   }
 
   outs("type:");
-  for (i = 0; i < name_type->dims; i++) {
+  for (int i = 0; i < name_type->dims; i++) {
     outs("[]");
   }
   show_base_type(&name_type->base_type);
@@ -301,8 +356,9 @@ void show_name_type(name_type_t *name_type)
 void show_variable(variable_t *var)
 {
   outf("name:%s\n", var->name.val);
-  outf("const:%s\n", var->is_const ? "true" : "false");
-  show_name_type(var->type);
+  outf("visible:%s\n", var->extern_visible ? "public" : "private");
+  outf("const:%s\n", var->is_constant ? "true" : "false");
+  show_name_type(&var->type);
 
   if (var->value) {
     outs("value:");
@@ -399,6 +455,11 @@ void show_term(term_t *term)
       show_trailer_list(&term->trailer_list);
       break;
     }
+    case TERM_SELF: {
+      outs("self ");
+      show_trailer_list(&term->trailer_list);
+      break;
+    }
     case TERM_UINT: {
       outf("%llu ", term->uint_num);
       break;
@@ -485,6 +546,16 @@ expr_t *new_exp_compound_assign(compound_op_t op, expr_t *exp, expr_t *value)
   compound_assign->compund_assign_op.exp = exp;
   compound_assign->compund_assign_op.value = value;
   return compound_assign;
+}
+
+expr_t *new_exp_return(linked_list_t *exp_list)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_RETURN;
+  INIT_LINKED_LIST(&exp->seq);
+  if (exp_list)
+    LINKED_LIST_MERGE_TAIL(&exp->seq, exp_list);
+  return exp;
 }
 
 void show_binary(expr_t *exp)
@@ -604,16 +675,37 @@ void show_unaray(expr_t *exp)
   show_expr(exp->unary_op.exp);
 }
 
-void show_var_list_expr(expr_t *exp)
+void show_var_list(linked_list_t *list)
 {
   struct list_head *pos;
   variable_t *var;
 
-  LINKED_LIST_FOREACH(pos, &exp->seq) {
+  LINKED_LIST_FOREACH(pos, list) {
     var = LINKED_NODE_GET_DATA(pos);
     outs("----variable----\n");
     show_variable(var);
     outs("----------------\n");
+  }
+}
+
+void show_function(function_t *func)
+{
+  outs("----function----\n");
+  outf("name:%s\n", func->name.val);
+  show_var_list(&func->parameter_list);
+  show_type_list(&func->return_type_list);
+  show_expr(func->codes);
+  outs("----------------\n");
+}
+
+void show_func_list(linked_list_t *list)
+{
+  struct list_head *pos;
+  function_t *func;
+
+  LINKED_LIST_FOREACH(pos, list) {
+    func = LINKED_NODE_GET_DATA(pos);
+    show_function(func);
   }
 }
 
@@ -660,23 +752,55 @@ void show_compound_op(compound_op_t op)
   }
 }
 
+void show_type_struct(struct_type_t *struct_type)
+{
+  outf("----struct(name:%s)----\n", struct_type->name.val);
+  show_var_list(&struct_type->field_list);
+  show_func_list(&struct_type->func_list);
+  outs("----struct end----------------\n");
+}
+
+void show_type(type_t *type)
+{
+  switch (type->kind) {
+    case TYPE_STRUCT:
+      show_type_struct(&type->struct_type);
+    break;
+    case TYPE_INTF:
+    break;
+    case TYPE_REDEF:
+    break;
+    default:
+      error_outf("Unknown type type:%d\n", type->kind);
+      exit(-1);
+    break;
+  }
+}
+
 void show_expr(expr_t *exp)
 {
   if (exp == null) {
-    outs("ERROR:NO EXP\n");
+    error_outs("NO EXP\n");
     return;
   }
 
   switch (exp->kind) {
+    case EXP_TYPE :
+      show_type(&exp->type);
+    break;
+    case EXP_FUNC :
+      show_function(&exp->func);
+    break;
     case EXP_TERM :
       show_term(&exp->term);
     break;
     case EXP_SEQ :
+    case EXP_RETURN :
       show_expr_list(&exp->seq);
     break;
     case EXP_VAR_LIST :
     case EXP_CONST_LIST :
-      show_var_list_expr(exp);
+      show_var_list(&exp->seq);
     break;
     case EXP_BINARAY :
       show_binary(exp);
@@ -688,14 +812,14 @@ void show_expr(expr_t *exp)
       outs("----assignment-------------------\n");
       show_expr_list(&exp->assign_list_op.expr_list);
       show_expr_list(&exp->assign_list_op.value_list);
-      outs("\n---------------------------------\n");
+      outs("---------------------------------\n");
     break;
     case EXP_COMPOUND_ASSIGN :
       outs("----compound assignment----------\n");
       show_expr(exp->compund_assign_op.exp);
       show_expr(exp->compund_assign_op.value);
       show_compound_op(exp->compund_assign_op.op);
-      outs("\n---------------------------------\n");
+      outs("---------------------------------\n");
     break;
     default:
       outf("unknown expr kind:%d\n", exp->kind);
@@ -722,9 +846,9 @@ void check_primitive_type(int type, term_t term)
 }
 
 expr_t *build_variable_declaration(linked_list_t *var_list,
-                                name_type_t *type,
-                                linked_list_t *init_list,
-                                bool constant)
+                                   name_type_t *type,
+                                   linked_list_t *init_list,
+                                   bool constant)
 {
   struct list_head *pos;
   struct list_head *node;
@@ -739,8 +863,8 @@ expr_t *build_variable_declaration(linked_list_t *var_list,
 
   LINKED_LIST_FOREACH(pos, var_list) {
     var = LINKED_NODE_GET_DATA(pos);
-    var->is_const = constant;
-    var->type = type;
+    var->is_constant = constant;
+    NAME_TYPE_SET(var->type, type);
     var->value = linked_list_pop_first(init_list);
   }
 

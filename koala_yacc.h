@@ -90,32 +90,30 @@ extern int yydebug;
     PACKAGE = 300,
     IMPORT = 301,
     AS = 302,
-    NEW = 303,
-    FUNC_HEADER = 304,
-    INT8 = 305,
-    INT16 = 306,
-    INT32 = 307,
-    INT64 = 308,
-    UINT8 = 309,
-    UINT16 = 310,
-    UINT32 = 311,
-    UINT64 = 312,
-    FLOAT32 = 313,
-    FLOAT64 = 314,
-    BOOL = 315,
-    STRING = 316,
-    ROOT_OBJECT = 317,
-    DIMS = 318,
-    SELF = 319,
-    TOKEN_NIL = 320,
-    TOKEN_TRUE = 321,
-    TOKEN_FALSE = 322,
-    INTEGER = 323,
-    HEX = 324,
-    OCT = 325,
-    FLOAT = 326,
-    STRING_LITERAL = 327,
-    ID = 328
+    INT8 = 303,
+    INT16 = 304,
+    INT32 = 305,
+    INT64 = 306,
+    UINT8 = 307,
+    UINT16 = 308,
+    UINT32 = 309,
+    UINT64 = 310,
+    FLOAT32 = 311,
+    FLOAT64 = 312,
+    BOOL = 313,
+    STRING = 314,
+    ROOT_OBJECT = 315,
+    DIMS = 316,
+    SELF = 317,
+    TOKEN_NIL = 318,
+    TOKEN_TRUE = 319,
+    TOKEN_FALSE = 320,
+    INTEGER = 321,
+    HEX = 322,
+    OCT = 323,
+    FLOAT = 324,
+    STRING_LITERAL = 325,
+    ID = 326
   };
 #endif
 
@@ -143,8 +141,28 @@ union YYSTYPE
   anonymous_function_t *anonymous;
   array_object_t *array_object;
   compound_op_t compound_op;
+  linked_list_t *member_declarations[2];
+  struct {
+    int type;
+    union {
+      variable_t *var;
+      function_t *func;
+    };
+  } member_declaration;
+  variable_t *variable;
+  function_t *function;
+  struct {
+    string name;
+    linked_list_t *parameter_list;
+    linked_list_t *return_type_list;
+  } method_header_1;
+  struct {
+    string name;
+    linked_list_t *parameter_type_list;
+    linked_list_t *return_type_list;
+  } method_header_2;
 
-#line 148 "koala_yacc.h" /* yacc.c:1909  */
+#line 166 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

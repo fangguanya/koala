@@ -32,10 +32,18 @@
 /* Count the number of elements in an array. */
 #define NR_ELTS(arr)  (sizeof(arr) / sizeof((arr)[0]))
 
+#define IS_UPPER_CASE(ch) \
+  ((ch) >= 'A' && (ch) <= 'Z')
+
 #define outs(str) fputs(str, stdout)
 #define outf(fmt, args...)  fprintf(stdout, fmt, ##args)
-#define error_outs(str) fputs("ERROR:"#str, stderr)
-#define error_outf(fmt, args...)  fprintf(stderr, "ERROR:"#fmt, ##args)
+#define error_outs(str) do {    \
+  fputs("error:"#str, stderr);  \
+} while (0)
+
+#define error_outf(fmt, args...) do {     \
+  fprintf(stderr, "error:"#fmt, ##args);  \
+} while (0)
 
 /* Guard C code in headers, while including them from C++ */
 #ifdef  __cplusplus

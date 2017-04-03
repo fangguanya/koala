@@ -73,7 +73,7 @@ struct name_type {
 
 struct struct_type {
   string name;
-  linked_list_t var_list;
+  linked_list_t field_list;
   linked_list_t func_list;
 };
 
@@ -105,10 +105,20 @@ base_type_t func_type(linked_list_t *parameter_type_list,
                       linked_list_t *return_type_list);
 name_type_t *new_name_type(int dims, base_type_t base_type);
 
+#define NAME_TYPE_SET(to_struct, from_ptr) do { \
+  if (from_ptr != null) {                       \
+    to_struct = *(from_ptr);                    \
+  } else {                                      \
+    (to_struct).dims = -1;                      \
+    (to_struct).base_type.kind = INVALID_TYPE;  \
+  }                                             \
+} while (0)
+
 struct variable {
   string name;
-  bool is_const;
-  name_type_t *type;
+  bool extern_visible;
+  bool is_constant;
+  name_type_t type;
   expr_t *value;
 };
 
@@ -120,6 +130,11 @@ struct function {
   linked_list_t return_type_list;
   expr_t *codes;
 };
+
+function_t *new_method(string name,
+                       linked_list_t *parameter_list,
+                       linked_list_t *return_type_list,
+                       expr_t *codes);
 
 struct function_declaration {
   string name;
@@ -209,6 +224,8 @@ struct expr_node {
     EXP_ASSIGN_LIST,
     // multi assignment operation
     EXP_COMPOUND_ASSIGN,
+    // return expression
+    EXP_RETURN,
   } kind;
 
   union {
@@ -239,6 +256,16 @@ struct expr_node {
   //name_type_t exp_type;
 };
 
+expr_t *new_exp_type_struct(string name,
+                           linked_list_t *field_list,
+                           linked_list_t *func_list);
+expr_t *new_exp_type_interface();
+expr_t *new_exp_type_redef();
+expr_t *new_exp_function(string name,
+                         linked_list_t *parameter_list,
+                         linked_list_t *return_type_list,
+                         expr_t *codes);
+
 expr_t *new_exp_var_list(linked_list_t *var_list);
 expr_t *new_exp_cont_list(linked_list_t *const_list);
 expr_t *new_exp_term_id(string id);
@@ -256,6 +283,7 @@ expr_t *new_exp_unary(operator_t op, expr_t *expr);
 expr_t *new_exp_seq(linked_list_t *seq);
 expr_t *new_exp_assign_list(linked_list_t *exp_list, linked_list_t *init_list);
 expr_t *new_exp_compound_assign(compound_op_t op, expr_t *exp, expr_t *value);
+expr_t *new_exp_return(linked_list_t *exp_list);
 
 expr_t *build_variable_declaration(linked_list_t *var_list,
                                    name_type_t *type,

@@ -29,6 +29,26 @@ int yylex(void);
   anonymous_function_t *anonymous;
   array_object_t *array_object;
   compound_op_t compound_op;
+  linked_list_t *member_declarations[2];
+  struct {
+    int type;
+    union {
+      variable_t *var;
+      function_t *func;
+    };
+  } member_declaration;
+  variable_t *variable;
+  function_t *function;
+  struct {
+    string name;
+    linked_list_t *parameter_list;
+    linked_list_t *return_type_list;
+  } method_header_1;
+  struct {
+    string name;
+    linked_list_t *parameter_type_list;
+    linked_list_t *return_type_list;
+  } method_header_2;
 }
 
 %token ELLIPSIS
@@ -80,8 +100,6 @@ int yylex(void);
 %token PACKAGE
 %token IMPORT
 %token AS
-%token NEW
-%token FUNC_HEADER
 
 %token INT8
 %token INT16
@@ -130,23 +148,33 @@ int yylex(void);
 %type <base_type> BaseType
 %type <name_type> TypeName
 
+%type <member_declarations> MemberDeclarations
+%type <member_declaration> MemberDeclaration
+%type <variable> FieldDeclaration
+%type <function> MethodDeclaration
+%type <method_header_1> MethodDeclarationHeader1
+%type <method_header_2> MethodDeclarationHeader2
+
 %type <expr> ConstDeclaration
 %type <expr> VariableDeclaration
+%type <expr> TypeDeclaration
+%type <expr> FunctionDeclaration
+%type <expr> VariableInitializer
 %type <linked_list> VariableInitializerList
 %type <linked_list> ArrayInitializerList
-%type <expr> VariableInitializer
 
-/* expressiont with linked list*/
 %type <linked_list> TypeNameList
 %type <linked_list> VariableList
 %type <linked_list> ParameterList
 %type <linked_list> ReturnTypeList
 %type <linked_list> LocalVariableDeclsOrStatements
+%type <linked_list> FunctionDeclarationList
 
 %type <expr> CodeBlock
 %type <expr> LocalVariableDeclOrStatement
 %type <expr> Statement
 %type <expr> ExpressionStatement
+%type <expr> ReturnStatement
 
 %type <compound_op> CompoundOperator
 %type <linked_list> ExpressionList
@@ -343,8 +371,14 @@ Declaration
     show_expr($1);
     outs("\n");
   }
-  | TypeDeclaration
-  | FunctionDeclaration
+  | TypeDeclaration {
+    show_expr($1);
+    outs("\n");
+  }
+  | FunctionDeclaration {
+    show_expr($1);
+    outs("\n");
+  }
   ;
 
 /*--------------------------------------------------------------------------.
@@ -427,46 +461,136 @@ SemiOrEmpty
   ;
 
 TypeDeclaration
-  : TYPE ID STRUCT '{' MemberDeclarations '}' SemiOrEmpty
-  | TYPE ID INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty
-  | TYPE ID TypeName ';'
+  : TYPE ID STRUCT '{' MemberDeclarations '}' SemiOrEmpty {
+    $$ = new_exp_type_struct($2, $5[0], $5[1]);
+    free_linked_list($5[0]);
+    free_linked_list($5[1]);
+  }
+  | TYPE ID STRUCT '{' error '}' SemiOrEmpty {}
+  | TYPE ID INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty {
+    //$$ = new_exp_type_interface($2, $5[0], $5[1]);
+  }
+  | TYPE ID INTERFACE '{' error '}' SemiOrEmpty {}
+  | TYPE ID TypeName ';' {
+    //$$ = new_exp_type_redef();
+  }
   ;
 
 MemberDeclarations
-  : MemberDeclaration
-  | MemberDeclarations MemberDeclaration
+  : MemberDeclaration {
+    $$[0] = new_linked_list();
+    $$[1] = new_linked_list();
+    if ($1.type == 1) {
+      linked_list_add_tail($$[0], $1.var);
+    } else {
+      linked_list_add_tail($$[1], $1.func);
+    }
+  }
+  | MemberDeclarations MemberDeclaration {
+    if ($2.type == 1) {
+      linked_list_add_tail($1[0], $2.var);
+    } else {
+      linked_list_add_tail($1[1], $2.func);
+    }
+    $$[0] = $1[0];
+    $$[1] = $1[1];
+  }
   ;
 
 MemberDeclaration
-  : FieldDeclaration
-  | MethodDeclaration
+  : FieldDeclaration {
+    $$.type = 1;
+    $$.var = $1;
+  }
+  | MethodDeclaration {
+    $$.type = 2;
+    $$.func = $1;
+  }
   ;
 
 FieldDeclaration
-  : VAR ID TypeName ';'
-  | ID TypeName ';'
+  : VAR ID TypeName ';' {
+    $$ = new_variable($2, $3);
+  }
+  | ID TypeName ';' {
+    $$ = new_variable($1, $2);
+  }
   ;
 
 MethodDeclaration
-  : MethodDeclarationHeader1 CodeBlock
+  : MethodDeclarationHeader1 CodeBlock {
+    $$ = new_method($1.name, $1.parameter_list, $1.return_type_list, $2);
+    if ($1.parameter_list != null)
+      free_linked_list($1.parameter_list);
+    if ($1.return_type_list != null)
+      free_linked_list($1.return_type_list);
+  }
   ;
 
 MethodDeclarationHeader1
-  : FUNC ID '(' ')' ReturnTypeList
-  | FUNC ID '(' ')'
-  | FUNC ID '(' ParameterList ')' ReturnTypeList
-  | FUNC ID '(' ParameterList ')'
-  | ID '(' ')' ReturnTypeList
-  | ID '(' ')'
-  | ID '(' ParameterList ')' ReturnTypeList
-  | ID '(' ParameterList ')'
+  : FUNC ID '(' ')' ReturnTypeList {
+    $$.name = $2;
+    $$.parameter_list = null;
+    $$.return_type_list = $5;
+  }
+  | FUNC ID '(' ')' {
+    $$.name = $2;
+    $$.parameter_list = null;
+    $$.return_type_list = null;
+  }
+  | FUNC ID '(' ParameterList ')' ReturnTypeList {
+    $$.name = $2;
+    $$.parameter_list = $4;
+    $$.return_type_list = $6;
+  }
+  | FUNC ID '(' ParameterList ')' {
+    $$.name = $2;
+    $$.parameter_list = $4;
+    $$.return_type_list = null;
+  }
+  | ID '(' ')' ReturnTypeList {
+    $$.name = $1;
+    $$.parameter_list = null;
+    $$.return_type_list = $4;
+  }
+  | ID '(' ')' {
+    $$.name = $1;
+    $$.parameter_list = null;
+    $$.return_type_list = null;
+  }
+  | ID '(' ParameterList ')' ReturnTypeList {
+    $$.name = $1;
+    $$.parameter_list = $3;
+    $$.return_type_list = $5;
+  }
+  | ID '(' ParameterList ')' {
+    $$.name = $1;
+    $$.parameter_list = $3;
+    $$.return_type_list = null;
+  }
   ;
 
 MethodDeclarationHeader2
-  : FUNC ID '(' TypeNameList ')' ReturnTypeList
-  | FUNC ID '(' TypeNameList ')'
-  | ID '(' TypeNameList ')' ReturnTypeList
-  | ID '(' TypeNameList ')'
+  : FUNC ID '(' TypeNameList ')' ReturnTypeList {
+    $$.name = $2;
+    $$.parameter_type_list = $4;
+    $$.return_type_list = $6;
+  }
+  | FUNC ID '(' TypeNameList ')' {
+    $$.name = $2;
+    $$.parameter_type_list = $4;
+    $$.return_type_list = null;
+  }
+  | ID '(' TypeNameList ')' ReturnTypeList {
+    $$.name = $1;
+    $$.parameter_type_list = $3;
+    $$.return_type_list = $5;
+  }
+  | ID '(' TypeNameList ')' {
+    $$.name = $1;
+    $$.parameter_type_list = $3;
+    $$.return_type_list = null;
+  }
   ;
 
 ParameterList
@@ -493,10 +617,22 @@ InterfaceFunctionDeclaration
 /*--------------------------------------------------------------------------*/
 
 FunctionDeclaration
-  : FUNC ID '(' ')' ReturnTypeList CodeBlock
-  | FUNC ID '(' ')' CodeBlock
-  | FUNC ID '(' ParameterList ')' ReturnTypeList CodeBlock
-  | FUNC ID '(' ParameterList ')' CodeBlock
+  : FUNC ID '(' ')' ReturnTypeList CodeBlock {
+    $$ = new_exp_function($2, null, $5, $6);
+    free_linked_list($5);
+  }
+  | FUNC ID '(' ')' CodeBlock {
+    $$ = new_exp_function($2, null, null, $5);
+  }
+  | FUNC ID '(' ParameterList ')' ReturnTypeList CodeBlock {
+    $$ = new_exp_function($2, $4, $6, $7);
+    free_linked_list($4);
+    free_linked_list($6);
+  }
+  | FUNC ID '(' ParameterList ')' CodeBlock {
+    $$ = new_exp_function($2, $4, null, $6);
+    free_linked_list($4);
+  }
   ;
 
 AnonymousFunctionDeclaration
@@ -543,8 +679,6 @@ LocalVariableDeclsOrStatements
 LocalVariableDeclOrStatement
   : VariableDeclaration {
     $$ = $1;
-    show_expr($1);
-    outs("\n");
   }
   | Statement {
     $$ = $1;
@@ -554,8 +688,6 @@ LocalVariableDeclOrStatement
 Statement
   : ExpressionStatement ';' {
     $$ = $1;
-    show_expr($1);
-    outs("\n");
   }
   | SelectionStatement {
 
@@ -564,7 +696,9 @@ Statement
 
   }
   | JumpStatement {
-
+  }
+  | ReturnStatement {
+    $$ = $1;
   }
   | CodeBlock {
     $$ = $1;
@@ -620,11 +754,15 @@ JumpStatement
   : BREAK ';'
   | FALLTHROUGH ';'
   | CONTINUE ';'
-  | RETURN ';' {
-    outs("return----\n");
+  ;
+
+ReturnStatement
+  : RETURN ';' {
+    $$ = new_exp_return(null);
   }
   | RETURN ExpressionList ';' {
-    outs("return----\n");
+    $$ = new_exp_return($2);
+    free_linked_list($2);
   }
   ;
 
@@ -736,12 +874,19 @@ Trailer
   }
   | '(' ')' '{' FunctionDeclarationList '}' {
     $$ = new_trailer_interface_implementation();
+    free_linked_list($4);
   }
   ;
 
 FunctionDeclarationList
-  : FunctionDeclaration
-  | FunctionDeclarationList FunctionDeclaration
+  : FunctionDeclaration {
+    $$ = new_linked_list();
+    linked_list_add_tail($$, $1);
+  }
+  | FunctionDeclarationList FunctionDeclaration {
+    linked_list_add_tail($1, $2);
+    $$ = $1;
+  }
   ;
 
 PostfixExpression
@@ -762,7 +907,7 @@ UnaryExpression
   }
   | INC UnaryExpression {
     if ($2->kind != EXP_TERM) {
-      yyerror("error: rvalue required as increment operand\n");
+      yyerror("rvalue required as increment operand\n");
       exit(-1);
     } else {
       $$ = new_exp_unary(OP_INC_BEFORE, $2);
@@ -770,7 +915,7 @@ UnaryExpression
   }
   | DEC UnaryExpression {
     if ($2->kind != EXP_TERM) {
-      yyerror("error: rvalue required as decrement operand\n");
+      yyerror("rvalue required as decrement operand\n");
       exit(-1);
     } else {
       $$ = new_exp_unary(OP_DEC_BEFORE, $2);
