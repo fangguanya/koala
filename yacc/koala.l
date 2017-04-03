@@ -26,10 +26,10 @@ L   [a-zA-Z_]
 "++"                      {return INC;}
 "--"                      {return DEC;}
 ":="                      {return TYPELESS_ASSIGN;}
-"+="                      {return ADD_ASSIGN;}
-"-="                      {return SUB_ASSIGN;}
-"*="                      {return MUL_ASSIGN;}
-"/="                      {return DIV_ASSIGN;}
+"+="                      {return PLUS_ASSGIN;}
+"-="                      {return MINUS_ASSIGN;}
+"*="                      {return TIMES_ASSIGN;}
+"/="                      {return DIVIDE_ASSIGN;}
 "%="                      {return MOD_ASSIGN;}
 "&="                      {return AND_ASSIGN;}
 "|="                      {return OR_ASSIGN;}

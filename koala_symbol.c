@@ -105,7 +105,7 @@ int symbol_table_add(symbol_table_t *table, string name, int type)
   if (hnode != null) {
     binder = PARENT_STRUCT(hnode, binder_t, hnode);
     if (binder->scope >= table->current_scope) {
-      printf("duplicated symblol,(%d,%d,%s)\n", table->current_scope,
+      error_outf("duplicated symblol,(%d,%d,%s)\n", table->current_scope,
             binder->scope, name.val);
       return -1;
     }
@@ -116,7 +116,7 @@ int symbol_table_add(symbol_table_t *table, string name, int type)
 
   int res = hash_table_insert(&table->table, &binder->hnode);
   if (res) {
-    printf("insert symbol error: %s\n", name.val);
+    error_outf("insert symbol error: %s\n", name.val);
     free_binder(binder);
     return -1;
   }

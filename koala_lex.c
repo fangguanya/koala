@@ -954,22 +954,22 @@ YY_RULE_SETUP
 case 13:
 YY_RULE_SETUP
 #line 29 "yacc/koala.l"
-{return ADD_ASSIGN;}
+{return PLUS_ASSGIN;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 30 "yacc/koala.l"
-{return SUB_ASSIGN;}
+{return MINUS_ASSIGN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 31 "yacc/koala.l"
-{return MUL_ASSIGN;}
+{return TIMES_ASSIGN;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 32 "yacc/koala.l"
-{return DIV_ASSIGN;}
+{return DIVIDE_ASSIGN;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP

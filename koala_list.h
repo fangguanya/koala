@@ -187,6 +187,27 @@ static inline void linked_list_remove(linked_list_t *list, linked_node_t *node)
   assert(list->count >= 0);
 }
 
+#define LINKED_LIST_FOREACH(pos, list) \
+  LIST_FOR_EACH(pos, &(list)->head)
+
+#define LINKED_LIST_FOREACH_SAFE(pos, n, list) \
+  LIST_FOR_EACH_SAFE(pos, n, &(list)->head)
+
+static inline void *linked_list_pop_first(linked_list_t *list)
+{
+  void *data;
+  linked_node_t *node;
+
+  if (list == null || LINKED_LIST_EMPTY(list))
+    return null;
+
+  node = PARENT_STRUCT(LIST_FIRST(&list->head), linked_node_t, node);
+  data = node->data;
+  linked_list_remove(list, node);
+  free_linked_node(node);
+  return data;
+}
+
 END_DECLS /* 兼容C++编译宏 */
 
 #endif

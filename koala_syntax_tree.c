@@ -63,7 +63,23 @@ anonymous_function_t *new_anonymous_func(linked_list_t *parameter_list,
   return anonymous;
 }
 
-void show_expr_list(linked_list_t *exp_list);
+void show_expr_list(linked_list_t *exp_list)
+{
+  if ((exp_list != null) && !LINKED_LIST_EMPTY(exp_list)) {
+    struct list_head *pos;
+    expr_t *exp;
+
+    outf("----expressions(count:%d)-----\n", exp_list->count);
+
+    LIST_FOR_EACH(pos, &exp_list->head) {
+      exp = LINKED_NODE_GET_DATA(pos);
+      show_expr(exp);
+      outs("\n");
+    }
+
+    outs("------------------------------\n");
+  }
+}
 
 trailer_t *new_trailer_field_access(string id)
 {
@@ -98,23 +114,43 @@ trailer_t *new_trailer_interface_implementation()
   return trailer;
 }
 
-expr_t *new_exp_variable(string name, name_type_t *type, expr_t *value)
+variable_t *new_variable(string name, name_type_t *type)
+{
+  variable_t *var = malloc(sizeof(*var));
+  var->name = name;
+  var->is_const = false;
+  var->type = type;
+  var->value = null;
+  return var;
+}
+
+variable_t *new_constant(string name, name_type_t *type)
+{
+  variable_t *var = malloc(sizeof(*var));
+  var->name = name;
+  var->is_const = true;
+  var->type = type;
+  var->value = null;
+  return var;
+}
+
+expr_t *new_exp_var_list(linked_list_t *var_list)
 {
   expr_t *exp = malloc(sizeof(*exp));
-  exp->kind = EXP_VAR;
-  exp->var.name = name;
-  exp->var.type = type;
-  exp->var.value = value;
+  exp->kind = EXP_VAR_LIST;
+  INIT_LINKED_LIST(&exp->seq);
+  if (var_list)
+    LINKED_LIST_MERGE_TAIL(&exp->seq, var_list);
   return exp;
 }
 
-expr_t *new_exp_constant(string name, name_type_t *type, expr_t *value)
+expr_t *new_exp_cont_list(linked_list_t *const_list)
 {
   expr_t *exp = malloc(sizeof(*exp));
-  exp->kind = EXP_CONST;
-  exp->var.name = name;
-  exp->var.type = type;
-  exp->var.value = value;
+  exp->kind = EXP_CONST_LIST;
+  INIT_LINKED_LIST(&exp->seq);
+  if (const_list)
+    LINKED_LIST_MERGE_TAIL(&exp->seq, const_list);
   return exp;
 }
 
@@ -228,19 +264,20 @@ void show_base_type(base_type_t *base_type)
 {
   switch (base_type->kind) {
     case PRIMITIVE_TYPE:
-      printf("%s\n", type_string_map[base_type->primitive_type]);
+      outf("%s\n", type_string_map[base_type->primitive_type]);
     break;
     case MODULE_TYPE:
       if (base_type->id[0].val != null)
-        printf("%s.%s\n", base_type->id[0].val, base_type->id[1].val);
+        outf("%s.%s\n", base_type->id[0].val, base_type->id[1].val);
       else
-        printf("LOCAL.%s\n", base_type->id[1].val);
+        outf("LOCAL.%s\n", base_type->id[1].val);
     break;
     case FUNCTION_TYPE:
-      printf("FUNCTION_TYPE\n");
+      outf("FUNCTION_TYPE\n");
     break;
     default:
-      fprintf(stderr, "unknown base type:%d\n", base_type->kind);
+      error_outf("unknown base type:%d\n", base_type->kind);
+      exit(-1);
     break;
   }
 }
@@ -248,34 +285,47 @@ void show_base_type(base_type_t *base_type)
 void show_name_type(name_type_t *name_type)
 {
   int i;
-  printf("type:");
+
+  if (name_type == null) {
+    outs("type:NO\n");
+    return;
+  }
+
+  outs("type:");
   for (i = 0; i < name_type->dims; i++) {
-    printf("[]");
+    outs("[]");
   }
   show_base_type(&name_type->base_type);
 }
 
 void show_variable(variable_t *var)
 {
-  printf("----variable--------------\n");
-  printf("name:%s\n", var->name.val);
+  outf("name:%s\n", var->name.val);
+  outf("const:%s\n", var->is_const ? "true" : "false");
   show_name_type(var->type);
-  printf("--------------------------\n");
+
+  if (var->value) {
+    outs("value:");
+    show_expr(var->value);
+    outs("\n");
+  }
 }
 
-void show_variable_list(linked_list_t *variable_list)
+void show_parameter_list(linked_list_t *variable_list)
 {
   if ((variable_list != null) && !LINKED_LIST_EMPTY(variable_list)) {
     struct list_head *pos;
-    expr_t *var;
+    variable_t *var;
 
-    printf("variable count:%d\n", variable_list->count);
+    outf("----parameters(count:%d)----\n", variable_list->count);
 
     LIST_FOR_EACH(pos, &variable_list->head) {
       var = LINKED_NODE_GET_DATA(pos);
-      assert(var->kind == EXP_VAR);
-      show_variable(&var->var);
+      outs("------------------\n");
+      show_variable(var);
     }
+
+    outs("--------------------------\n");
   }
 }
 
@@ -283,24 +333,24 @@ void show_trailer(trailer_t *trailer)
 {
   switch (trailer->kind) {
     case TRAILER_FIELD: {
-      printf(".:%s\n", trailer->id.val);
+      outf(".:%s\n", trailer->id.val);
       break;
     }
     case TRAILER_SUBSCRIPT: {
-      printf("array access\n");
+      outs("array access\n");
       break;
     }
     case TRAILER_FUNCTION_CALL: {
-      printf("():\n");
+      outs("():\n");
       show_expr_list(&trailer->args_list);
       break;
     }
     case TRAILER_INTERFACE_IMPLEMENTATION: {
-      printf("interface implementation\n");
+      outs("interface implementation\n");
       break;
     }
     default: {
-      fprintf(stderr, "unknown trailer type:%d\n", trailer->kind);
+      error_outf("unknown trailer type:%d\n", trailer->kind);
       break;
     }
   }
@@ -312,14 +362,15 @@ void show_type_list(linked_list_t *type_list)
     struct list_head *pos;
     name_type_t *name_type;
 
-    printf("type count:%d\n", type_list->count);
+    outf("----types(count:%d)----\n", type_list->count);
 
     LIST_FOR_EACH(pos, &type_list->head) {
       name_type = LINKED_NODE_GET_DATA(pos);
-      printf("----type--------------\n");
+      outs("------------------\n");
       show_name_type(name_type);
-      printf("----------------------\n");
     }
+
+    outs("-----------------------\n");
   }
 }
 
@@ -329,12 +380,14 @@ void show_trailer_list(linked_list_t *trailer_list)
     struct list_head *pos;
     trailer_t *trailer;
 
-    printf("trailer count:%d\n", trailer_list->count);
+    outf("\n----trailers(count:%d)------\n", trailer_list->count);
 
     LIST_FOR_EACH(pos, &trailer_list->head) {
       trailer = LINKED_NODE_GET_DATA(pos);
       show_trailer(trailer);
     }
+
+    outs("---------------------------\n");
   }
 }
 
@@ -342,55 +395,45 @@ void show_term(term_t *term)
 {
   switch (term->kind) {
     case TERM_ID: {
-      printf("id:%s\n", term->id.val);
+      outf("%s ", term->id.val);
       show_trailer_list(&term->trailer_list);
       break;
     }
     case TERM_UINT: {
-      printf("num:%llu\n", term->uint_num);
+      outf("%llu ", term->uint_num);
       break;
     }
     case TERM_FLOAT: {
-      printf("%.16lf", term->float_num);
+      outf("%.16lf ", term->float_num);
       break;
     }
     case TERM_BOOL: {
-      printf("%s", term->bool_val ? "true" : "false");
+      outf("%s ", term->bool_val ? "true" : "false");
       break;
     }
     case TERM_STRING: {
-      printf("str:%s\n", term->str.val);
+      outf("\"%s\"", term->str.val);
       show_trailer_list(&term->trailer_list);
       break;
     }
     case TERM_EXP: {
-      printf("exp\n");
+      show_expr(term->exp);
       show_trailer_list(&term->trailer_list);
       break;
     }
     case TERM_ANONYMOUS_FUNC: {
-      printf("anonymous function\n");
-      show_variable_list(&term->anonymous_func->parameter_list);
+      outs("anonymous function\n");
+      show_parameter_list(&term->anonymous_func->parameter_list);
       show_type_list(&term->anonymous_func->return_type_list);
       show_trailer_list(&term->trailer_list);
       break;
     }
     default: {
-      fprintf(stderr, "unknown terminal type:%d\n", term->kind);
-      //assert(0);
+      error_outf("unknown terminal type:%d\n", term->kind);
+      exit(-1);
       break;
     }
   }
-}
-
-expr_t *new_exp_seq(linked_list_t *seq)
-{
-  expr_t *exp = malloc(sizeof(*exp));
-  exp->kind = EXP_SEQ;
-  INIT_LINKED_LIST(&exp->exp_seq);
-  if (seq)
-    LINKED_LIST_MERGE_TAIL(&exp->exp_seq, seq);
-  return exp;
 }
 
 expr_t *new_exp_binary(operator_t op, expr_t *left, expr_t *right)
@@ -412,85 +455,117 @@ expr_t *new_exp_unary(operator_t op, expr_t *expr)
   return exp;
 }
 
+expr_t *new_exp_seq(linked_list_t *seq)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_SEQ;
+  INIT_LINKED_LIST(&exp->seq);
+  if (seq)
+    LINKED_LIST_MERGE_TAIL(&exp->seq, seq);
+  return exp;
+}
+
+expr_t *new_exp_assign_list(linked_list_t *exp_list, linked_list_t *init_list)
+{
+  assert(exp_list->count == init_list->count);
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_ASSIGN_LIST;
+  INIT_LINKED_LIST(&exp->assign_list_op.expr_list);
+  INIT_LINKED_LIST(&exp->assign_list_op.value_list);
+  LINKED_LIST_MERGE_TAIL(&exp->assign_list_op.expr_list, exp_list);
+  LINKED_LIST_MERGE_TAIL(&exp->assign_list_op.value_list, init_list);
+  return exp;
+}
+
+expr_t *new_exp_compound_assign(compound_op_t op, expr_t *exp, expr_t *value)
+{
+  expr_t *compound_assign = malloc(sizeof(*compound_assign));
+  compound_assign->kind = EXP_COMPOUND_ASSIGN;
+  compound_assign->compund_assign_op.op = op;
+  compound_assign->compund_assign_op.exp = exp;
+  compound_assign->compund_assign_op.value = value;
+  return compound_assign;
+}
+
 void show_binary(expr_t *exp)
 {
   show_expr(exp->binary_op.left);
   show_expr(exp->binary_op.right);
   switch (exp->binary_op.op) {
     case OP_TIMES:
-      putchar('*');
+      outs("* ");
     break;
 
     case OP_DIVIDE:
-      putchar('/');
+      outs("/ ");
     break;
 
     case OP_MOD:
-      putchar('%');
+      outs("% ");
     break;
 
     case OP_PLUS:
-      putchar('+');
+      outs("+ ");
     break;
 
     case OP_MINUS:
-      putchar('-');
+      outs("- ");
     break;
 
     case OP_LSHIFT:
-      printf("<<");
+      outs("<< ");
     break;
 
     case OP_RSHIFT:
-      printf(">>");
+      outs(">> ");
     break;
 
     case OP_GT:
-      putchar('>');
+      outs("> ");
     break;
 
     case OP_GE:
-      printf(">=");
+      outs(">= ");
     break;
 
     case OP_LT:
-      putchar('<');
+      outs("< ");
     break;
 
     case OP_LE:
-      printf("<=");
+      outs("<= ");
     break;
 
     case OP_EQ:
-      printf("==");
+      outs("== ");
     break;
 
     case OP_NEQ:
-      printf("!=");
+      outs("!= ");
     break;
 
     case OP_BAND:
-      putchar('&');
+      outs("& ");
     break;
 
     case OP_BOR:
-      putchar('|');
+      outs("| ");
     break;
 
     case OP_BXOR:
-      putchar('^');
+      outs("^ ");
     break;
 
     case OP_LAND:
-      printf("&&");
+      outs("&& ");
     break;
 
     case OP_LOR:
-      printf("||");
+      outs("|| ");
     break;
 
     default:
-      printf("unknown binary expr op\n");
+      outf("unknown binary expr op: %d\n", exp->binary_op.op);
       exit(-1);
     break;
   }
@@ -521,7 +596,7 @@ void show_unaray(expr_t *exp)
     break;
 
     default:
-      printf("unknown unaray expr op\n");
+      outf("unknown unaray expr op: %d\n", exp->unary_op.op);
       exit(-1);
     break;
   }
@@ -529,29 +604,79 @@ void show_unaray(expr_t *exp)
   show_expr(exp->unary_op.exp);
 }
 
-void show_expr_list(linked_list_t *exp_list)
+void show_var_list_expr(expr_t *exp)
 {
-  if ((exp_list != null) && !LINKED_LIST_EMPTY(exp_list)) {
-    struct list_head *pos;
-    expr_t *exp;
+  struct list_head *pos;
+  variable_t *var;
 
-    printf("expr list count:%d\n", exp_list->count);
+  LINKED_LIST_FOREACH(pos, &exp->seq) {
+    var = LINKED_NODE_GET_DATA(pos);
+    outs("----variable----\n");
+    show_variable(var);
+    outs("----------------\n");
+  }
+}
 
-    LIST_FOR_EACH(pos, &exp_list->head) {
-      exp = LINKED_NODE_GET_DATA(pos);
-      show_expr(exp);
-    }
+void show_compound_op(compound_op_t op)
+{
+  switch (op) {
+    case OP_PLUS_ASSIGN:
+      outs("+=\n");
+    break;
+    case OP_MINUS_ASSIGN:
+      outs("-=\n");
+    break;
+    case OP_TIMES_ASSIGN:
+      outs("*=\n");
+    break;
+    case OP_DIVIDE_ASSIGN:
+      outs("/=\n");
+    break;
+    case OP_MOD_ASSIGN:
+      outs("%%=\n");
+    break;
+    case OP_AND_ASSIGN:
+      outs("&=\n");
+    break;
+    case OP_OR_ASSIGN:
+      outs("|=\n");
+    break;
+    case OP_XOR_ASSIGN:
+      outs("^=\n");
+    break;
+    case OP_RIGHT_SHIFT_ASSIGN:
+      outs(">>=\n");
+    break;
+    case OP_LEFT_SHIFT_ASSIGN:
+      outs("<<=\n");
+    break;
+    case OP_TYPELESS_ASSIGN:
+      outs(":=\n");
+    break;
+    default:
+      outf("unknown compound op:%d\n", op);
+      exit(-1);
+    break;
   }
 }
 
 void show_expr(expr_t *exp)
 {
+  if (exp == null) {
+    outs("ERROR:NO EXP\n");
+    return;
+  }
+
   switch (exp->kind) {
     case EXP_TERM :
       show_term(&exp->term);
     break;
     case EXP_SEQ :
-      show_expr_list(&exp->exp_seq);
+      show_expr_list(&exp->seq);
+    break;
+    case EXP_VAR_LIST :
+    case EXP_CONST_LIST :
+      show_var_list_expr(exp);
     break;
     case EXP_BINARAY :
       show_binary(exp);
@@ -559,9 +684,22 @@ void show_expr(expr_t *exp)
     case EXP_UNARY :
       show_unaray(exp);
     break;
+    case EXP_ASSIGN_LIST :
+      outs("----assignment-------------------\n");
+      show_expr_list(&exp->assign_list_op.expr_list);
+      show_expr_list(&exp->assign_list_op.value_list);
+      outs("\n---------------------------------\n");
+    break;
+    case EXP_COMPOUND_ASSIGN :
+      outs("----compound assignment----------\n");
+      show_expr(exp->compund_assign_op.exp);
+      show_expr(exp->compund_assign_op.value);
+      show_compound_op(exp->compund_assign_op.op);
+      outs("\n---------------------------------\n");
+    break;
     default:
-      printf("unknown expr kind\n");
-      //exit(-1);
+      outf("unknown expr kind:%d\n", exp->kind);
+      exit(-1);
     break;
   }
 }
@@ -578,7 +716,33 @@ void check_primitive_type(int type, term_t term)
   } else if (type == TYPE_STRING) {
     assert(term.kind == TERM_STRING);
   } else {
-    fprintf(stderr, "ERROR:unknown type\n");
+    error_outf("Unknown type:%d\n", type);
     assert(0);
   }
+}
+
+expr_t *build_variable_declaration(linked_list_t *var_list,
+                                name_type_t *type,
+                                linked_list_t *init_list,
+                                bool constant)
+{
+  struct list_head *pos;
+  struct list_head *node;
+  linked_node_t *linked_node;
+  variable_t *var;
+  expr_t *init_exp;
+
+  assert(var_list != null);
+  if (init_list != null) {
+    assert(var_list->count == init_list->count);
+  }
+
+  LINKED_LIST_FOREACH(pos, var_list) {
+    var = LINKED_NODE_GET_DATA(pos);
+    var->is_const = constant;
+    var->type = type;
+    var->value = linked_list_pop_first(init_list);
+  }
+
+  return new_exp_var_list(var_list);
 }

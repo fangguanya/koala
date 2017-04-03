@@ -1,5 +1,12 @@
 #!/media/psf/Home/Projects/koala/koala
 
+const PI = 3.14;
+
+var u,v,w File;
+var p, q io.Socket;
+var a, b = 100 + p, q * 300;
+var r, s, t int32 = 100, 200, "zhuguangxiang";
+
 func main() {
   p.a.b();
   "zhuguangxiang".ToUpperCase();
@@ -20,4 +27,26 @@ func main() {
   int32(100);
   string("100");
   //[]string{"zhuguangxiang"};
+
+  var p, q io.Socket;
+}
+
+var a1 = {{100, 200}, {300, 400}};
+var a2 []int32 = {100,200,3,4*a1-a2};
+//var a3, a4 [][]int32 = [3][]int32, [4][]int32;
+const PI = 3.14;
+
+func test_compound_assign() {
+  a2 = 0;
+  a3 += 3;
+  a4 -= 4;
+  a5 *= 5;
+  a6 /= 6;
+  a7 %= 7;
+  a8 &= 8;
+  a9 |= 9;
+  a10 ^= 10;
+  a11 >>= 11;
+  a12 <<= 12;
+  a13 := 13;
 }

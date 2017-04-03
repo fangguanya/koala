@@ -47,10 +47,10 @@ extern int yydebug;
   {
     ELLIPSIS = 258,
     TYPELESS_ASSIGN = 259,
-    ADD_ASSIGN = 260,
-    SUB_ASSIGN = 261,
-    MUL_ASSIGN = 262,
-    DIV_ASSIGN = 263,
+    PLUS_ASSGIN = 260,
+    MINUS_ASSIGN = 261,
+    TIMES_ASSIGN = 262,
+    DIVIDE_ASSIGN = 263,
     MOD_ASSIGN = 264,
     AND_ASSIGN = 265,
     OR_ASSIGN = 266,
@@ -142,8 +142,9 @@ union YYSTYPE
   trailer_t *trailer;
   anonymous_function_t *anonymous;
   array_object_t *array_object;
+  compound_op_t compound_op;
 
-#line 147 "koala_yacc.h" /* yacc.c:1909  */
+#line 148 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

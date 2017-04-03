@@ -4,13 +4,13 @@
 
 int yyerror(const char *str)
 {
-  fprintf(stderr, "%s\n", str);
+  error_outf("%s\n", str);
   return 0;
 }
 
 void yyecho(char *str)
 {
-  fprintf(stdout, "%s\n", str);
+  outf("%s\n", str);
 }
 
 struct symbol_table var_sym_tbl;
@@ -39,10 +39,10 @@ int main(int argc, char *argv[])
   extern int yyparse(void);
 
   int i;
-  printf("%d\n", argc);
+  outf("%d\n", argc);
   for (i = 0; i < argc; i++)
   {
-    printf("%s\n", argv[i]);
+    outf("%s\n", argv[i]);
   }
 
   koala_compiler_init();

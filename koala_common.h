@@ -32,6 +32,11 @@
 /* Count the number of elements in an array. */
 #define NR_ELTS(arr)  (sizeof(arr) / sizeof((arr)[0]))
 
+#define outs(str) fputs(str, stdout)
+#define outf(fmt, args...)  fprintf(stdout, fmt, ##args)
+#define error_outs(str) fputs("ERROR:"#str, stderr)
+#define error_outf(fmt, args...)  fprintf(stderr, "ERROR:"#fmt, ##args)
+
 /* Guard C code in headers, while including them from C++ */
 #ifdef  __cplusplus
   #define BEGIN_DECLS  extern "C" {

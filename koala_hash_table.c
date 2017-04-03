@@ -288,13 +288,13 @@ void hash_table_show(struct hash_table *table,
 
     for (i = 0; i < nr_slots; i++)
     {
-        printf("[%d]:\t", i);
+        outf("[%d]:\t", i);
         HLIST_FOR_EACH(var, table->entries + i)
         {
             if (show != null) show(var);
-            else printf("%p\t", var);
+            else outf("%p\t", var);
         }
-        printf("\n");
+        outs("\n");
     }
 }
 

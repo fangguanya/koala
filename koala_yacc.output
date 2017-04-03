@@ -13,7 +13,7 @@ Terminals unused in grammar
 
 Grammar
 
-    0 $accept: Program $end
+    0 $accept: CompileUnit $end
 
     1 ModulePathName: ID
     2               | ModulePathName '.' ID
@@ -53,13 +53,13 @@ Grammar
    29 ReturnTypeList: TypeName
    30               | '(' TypeNameList ')'
 
-   31 Program: PackageDeclaration ImportDeclarations Declarations
-   32        | PackageDeclaration ImportDeclarations
-   33        | PackageDeclaration Declarations
-   34        | ImportDeclarations Declarations
-   35        | PackageDeclaration
-   36        | ImportDeclarations
-   37        | Declarations
+   31 CompileUnit: PackageDeclaration ImportDeclarations Declarations
+   32            | PackageDeclaration ImportDeclarations
+   33            | PackageDeclaration Declarations
+   34            | ImportDeclarations Declarations
+   35            | PackageDeclaration
+   36            | ImportDeclarations
+   37            | Declarations
 
    38 PackageDeclaration: PACKAGE ModulePathName SemiOrEmpty
 
@@ -293,10 +293,10 @@ Grammar
   207 PostfixExpressionList: PostfixExpression
   208                      | PostfixExpressionList ',' PostfixExpression
 
-  209 CompoundOperator: ADD_ASSIGN
-  210                 | SUB_ASSIGN
-  211                 | MUL_ASSIGN
-  212                 | DIV_ASSIGN
+  209 CompoundOperator: PLUS_ASSGIN
+  210                 | MINUS_ASSIGN
+  211                 | TIMES_ASSIGN
+  212                 | DIVIDE_ASSIGN
   213                 | MOD_ASSIGN
   214                 | AND_ASSIGN
   215                 | OR_ASSIGN
@@ -337,10 +337,10 @@ $end (0) 0
 error (256)
 ELLIPSIS (258)
 TYPELESS_ASSIGN (259) 219
-ADD_ASSIGN (260) 209
-SUB_ASSIGN (261) 210
-MUL_ASSIGN (262) 211
-DIV_ASSIGN (263) 212
+PLUS_ASSGIN (260) 209
+MINUS_ASSIGN (261) 210
+TIMES_ASSIGN (262) 211
+DIVIDE_ASSIGN (263) 212
 MOD_ASSIGN (264) 213
 AND_ASSIGN (265) 214
 OR_ASSIGN (266) 215
@@ -429,7 +429,7 @@ FunctionType (103)
     on left: 25 26 27 28, on right: 9
 ReturnTypeList (104)
     on left: 29 30, on right: 25 27 74 76 78 80 82 84 92 94 96 98
-Program (105)
+CompileUnit (105)
     on left: 31 32 33 34 35 36 37, on right: 0
 PackageDeclaration (106)
     on left: 38, on right: 31 32 33 35
@@ -565,7 +565,7 @@ CompoundOperator (167)
 
 State 0
 
-    0 $accept: . Program $end
+    0 $accept: . CompileUnit $end
 
     VAR      shift, and go to state 1
     FUNC     shift, and go to state 2
@@ -574,7 +574,7 @@ State 0
     PACKAGE  shift, and go to state 5
     IMPORT   shift, and go to state 6
 
-    Program              go to state 7
+    CompileUnit          go to state 7
     PackageDeclaration   go to state 8
     ImportDeclarations   go to state 9
     ImportDeclaration    go to state 10
@@ -648,17 +648,17 @@ State 6
 
 State 7
 
-    0 $accept: Program . $end
+    0 $accept: CompileUnit . $end
 
     $end  shift, and go to state 25
 
 
 State 8
 
-   31 Program: PackageDeclaration . ImportDeclarations Declarations
-   32        | PackageDeclaration . ImportDeclarations
-   33        | PackageDeclaration . Declarations
-   35        | PackageDeclaration .
+   31 CompileUnit: PackageDeclaration . ImportDeclarations Declarations
+   32            | PackageDeclaration . ImportDeclarations
+   33            | PackageDeclaration . Declarations
+   35            | PackageDeclaration .
 
     VAR     shift, and go to state 1
     FUNC    shift, and go to state 2
@@ -666,7 +666,7 @@ State 8
     CONST   shift, and go to state 4
     IMPORT  shift, and go to state 6
 
-    $default  reduce using rule 35 (Program)
+    $default  reduce using rule 35 (CompileUnit)
 
     ImportDeclarations   go to state 26
     ImportDeclaration    go to state 10
@@ -680,8 +680,8 @@ State 8
 
 State 9
 
-   34 Program: ImportDeclarations . Declarations
-   36        | ImportDeclarations .
+   34 CompileUnit: ImportDeclarations . Declarations
+   36            | ImportDeclarations .
    40 ImportDeclarations: ImportDeclarations . ImportDeclaration
 
     VAR     shift, and go to state 1
@@ -690,7 +690,7 @@ State 9
     CONST   shift, and go to state 4
     IMPORT  shift, and go to state 6
 
-    $default  reduce using rule 36 (Program)
+    $default  reduce using rule 36 (CompileUnit)
 
     ImportDeclaration    go to state 28
     Declarations         go to state 29
@@ -710,7 +710,7 @@ State 10
 
 State 11
 
-   37 Program: Declarations .
+   37 CompileUnit: Declarations .
    45 Declarations: Declarations . Declaration
 
     VAR    shift, and go to state 1
@@ -718,7 +718,7 @@ State 11
     TYPE   shift, and go to state 3
     CONST  shift, and go to state 4
 
-    $default  reduce using rule 37 (Program)
+    $default  reduce using rule 37 (CompileUnit)
 
     Declaration          go to state 30
     ConstDeclaration     go to state 13
@@ -914,15 +914,15 @@ State 24
 
 State 25
 
-    0 $accept: Program $end .
+    0 $accept: CompileUnit $end .
 
     $default  accept
 
 
 State 26
 
-   31 Program: PackageDeclaration ImportDeclarations . Declarations
-   32        | PackageDeclaration ImportDeclarations .
+   31 CompileUnit: PackageDeclaration ImportDeclarations . Declarations
+   32            | PackageDeclaration ImportDeclarations .
    40 ImportDeclarations: ImportDeclarations . ImportDeclaration
 
     VAR     shift, and go to state 1
@@ -931,7 +931,7 @@ State 26
     CONST   shift, and go to state 4
     IMPORT  shift, and go to state 6
 
-    $default  reduce using rule 32 (Program)
+    $default  reduce using rule 32 (CompileUnit)
 
     ImportDeclaration    go to state 28
     Declarations         go to state 66
@@ -944,7 +944,7 @@ State 26
 
 State 27
 
-   33 Program: PackageDeclaration Declarations .
+   33 CompileUnit: PackageDeclaration Declarations .
    45 Declarations: Declarations . Declaration
 
     VAR    shift, and go to state 1
@@ -952,7 +952,7 @@ State 27
     TYPE   shift, and go to state 3
     CONST  shift, and go to state 4
 
-    $default  reduce using rule 33 (Program)
+    $default  reduce using rule 33 (CompileUnit)
 
     Declaration          go to state 30
     ConstDeclaration     go to state 13
@@ -970,7 +970,7 @@ State 28
 
 State 29
 
-   34 Program: ImportDeclarations Declarations .
+   34 CompileUnit: ImportDeclarations Declarations .
    45 Declarations: Declarations . Declaration
 
     VAR    shift, and go to state 1
@@ -978,7 +978,7 @@ State 29
     TYPE   shift, and go to state 3
     CONST  shift, and go to state 4
 
-    $default  reduce using rule 34 (Program)
+    $default  reduce using rule 34 (CompileUnit)
 
     Declaration          go to state 30
     ConstDeclaration     go to state 13
@@ -1386,7 +1386,7 @@ State 65
 
 State 66
 
-   31 Program: PackageDeclaration ImportDeclarations Declarations .
+   31 CompileUnit: PackageDeclaration ImportDeclarations Declarations .
    45 Declarations: Declarations . Declaration
 
     VAR    shift, and go to state 1
@@ -1394,7 +1394,7 @@ State 66
     TYPE   shift, and go to state 3
     CONST  shift, and go to state 4
 
-    $default  reduce using rule 31 (Program)
+    $default  reduce using rule 31 (CompileUnit)
 
     Declaration          go to state 30
     ConstDeclaration     go to state 13
@@ -5075,10 +5075,10 @@ State 259
   207 PostfixExpressionList: PostfixExpression .
 
     TYPELESS_ASSIGN     shift, and go to state 308
-    ADD_ASSIGN          shift, and go to state 309
-    SUB_ASSIGN          shift, and go to state 310
-    MUL_ASSIGN          shift, and go to state 311
-    DIV_ASSIGN          shift, and go to state 312
+    PLUS_ASSGIN         shift, and go to state 309
+    MINUS_ASSIGN        shift, and go to state 310
+    TIMES_ASSIGN        shift, and go to state 311
+    DIVIDE_ASSIGN       shift, and go to state 312
     MOD_ASSIGN          shift, and go to state 313
     AND_ASSIGN          shift, and go to state 314
     OR_ASSIGN           shift, and go to state 315
@@ -5892,28 +5892,28 @@ State 308
 
 State 309
 
-  209 CompoundOperator: ADD_ASSIGN .
+  209 CompoundOperator: PLUS_ASSGIN .
 
     $default  reduce using rule 209 (CompoundOperator)
 
 
 State 310
 
-  210 CompoundOperator: SUB_ASSIGN .
+  210 CompoundOperator: MINUS_ASSIGN .
 
     $default  reduce using rule 210 (CompoundOperator)
 
 
 State 311
 
-  211 CompoundOperator: MUL_ASSIGN .
+  211 CompoundOperator: TIMES_ASSIGN .
 
     $default  reduce using rule 211 (CompoundOperator)
 
 
 State 312
 
-  212 CompoundOperator: DIV_ASSIGN .
+  212 CompoundOperator: DIVIDE_ASSIGN .
 
     $default  reduce using rule 212 (CompoundOperator)
 

@@ -18,7 +18,7 @@ struct symtab *symbol_lookup(const char *name)
   {
     if (symbol->name && !strcmp(symbol->name, name))
     {
-      printf("found symbol: (%s)\n", symbol->name);
+      outf("found symbol: (%s)\n", symbol->name);
       return symbol;
     }
 
@@ -26,7 +26,7 @@ struct symtab *symbol_lookup(const char *name)
     {
       /* is it free */
       symbol->name = strdup(name);
-      printf("add symbol: (%s)\n", name);
+      outf("add symbol: (%s)\n", name);
       return symbol;
     }
   }

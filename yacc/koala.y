@@ -28,15 +28,17 @@ int yylex(void);
   trailer_t *trailer;
   anonymous_function_t *anonymous;
   array_object_t *array_object;
+  compound_op_t compound_op;
 }
 
 %token ELLIPSIS
 
+/* 算术运算和位运算 */
 %token TYPELESS_ASSIGN
-%token ADD_ASSIGN
-%token SUB_ASSIGN
-%token MUL_ASSIGN
-%token DIV_ASSIGN
+%token PLUS_ASSGIN
+%token MINUS_ASSIGN
+%token TIMES_ASSIGN
+%token DIVIDE_ASSIGN
 %token MOD_ASSIGN
 %token AND_ASSIGN
 %token OR_ASSIGN
@@ -128,6 +130,12 @@ int yylex(void);
 %type <base_type> BaseType
 %type <name_type> TypeName
 
+%type <expr> ConstDeclaration
+%type <expr> VariableDeclaration
+%type <linked_list> VariableInitializerList
+%type <linked_list> ArrayInitializerList
+%type <expr> VariableInitializer
+
 /* expressiont with linked list*/
 %type <linked_list> TypeNameList
 %type <linked_list> VariableList
@@ -140,7 +148,10 @@ int yylex(void);
 %type <expr> Statement
 %type <expr> ExpressionStatement
 
+%type <compound_op> CompoundOperator
 %type <linked_list> ExpressionList
+%type <linked_list> PostfixExpressionList
+%type <expr> AssignmentExpression
 %type <expr> Expression
 %type <expr> LogicalOrExpression
 %type <expr> LogicalAndExpression
@@ -163,7 +174,7 @@ int yylex(void);
 %type <linked_list> TrailerList
 %type <trailer> Trailer
 
-%start Program
+%start CompileUnit
 
 %%
 
@@ -252,11 +263,11 @@ PrimitiveType
 
 ModuleType
   : ID '.' ID {
-    printf("Module:%s, TypeName:%s\n", $1.val, $3.val);
+    //outf("Module:%s, TypeName:%s\n", $1.val, $3.val);
     $$[0] = $1; $$[1] = $3;
   }
   | ID {
-    printf("TypeName:%s\n", $1.val);
+    //outf("TypeName:%s\n", $1.val);
     $$[0].val = null;
     $$[0].len = 0;
     $$[1] = $1;
@@ -293,7 +304,7 @@ ReturnTypeList
   ;
 
 /*--------------------------------------------------------------------------*/
-Program
+CompileUnit
   : PackageDeclaration ImportDeclarations Declarations
   | PackageDeclaration ImportDeclarations
   | PackageDeclaration                    Declarations
@@ -324,8 +335,14 @@ Declarations
   ;
 
 Declaration
-  : ConstDeclaration
-  | VariableDeclaration
+  : ConstDeclaration {
+    show_expr($1);
+    outs("\n");
+  }
+  | VariableDeclaration {
+    show_expr($1);
+    outs("\n");
+  }
   | TypeDeclaration
   | FunctionDeclaration
   ;
@@ -336,50 +353,70 @@ Declaration
 `--------------------------------------------------------------------------*/
 ConstDeclaration
   : CONST VariableList '=' VariableInitializerList ';' {
-
+    $$ = build_variable_declaration($2, null, $4, true);
+    free_linked_list($2);
+    free_linked_list($4);
   }
   | CONST VariableList TypeName '=' VariableInitializerList ';' {
-
+    $$ = build_variable_declaration($2, $3, $5, true);
+    free_linked_list($2);
+    free_linked_list($5);
   }
   ;
 
 VariableDeclaration
   : VAR VariableList TypeName ';' {
-    //new_var_decl($2, $3, null);
+    $$ = build_variable_declaration($2, $3, null, false);
+    free_linked_list($2);
   }
   | VAR VariableList '=' VariableInitializerList ';' {
-
+    $$ = build_variable_declaration($2, null, $4, false);
+    free_linked_list($2);
+    free_linked_list($4);
   }
   | VAR VariableList TypeName '=' VariableInitializerList ';' {
-
+    $$ = build_variable_declaration($2, $3, $5, false);
+    free_linked_list($2);
+    free_linked_list($5);
   }
   ;
 
 VariableList
   : ID {
-    printf("ID: %s\n", $1.val);
-    //$$ = linked_list_new();
-    //linked_list_add_tail($$, new_simple_var($1));
+    $$ = new_linked_list();
+    linked_list_add_tail($$, new_variable($1, null));
   }
   | VariableList ',' ID {
-    printf("ID: %s\n", $3.val);
-    //$$ = $1;
-    //linked_list_add_tail($$, new_simple_var($3));
+    linked_list_add_tail($1, new_variable($3, null));
+    $$ = $1;
   }
   ;
 
 VariableInitializerList
-  : ArrayInitializerList
+  : ArrayInitializerList {
+    $$ = $1;
+  }
   ;
 
 VariableInitializer
-  : Expression
-  | '{' ArrayInitializerList '}'
+  : Expression {
+    $$ = $1;
+  }
+  | '{' ArrayInitializerList '}' {
+    $$ = new_exp_seq($2);
+    free_linked_list($2);
+  }
   ;
 
 ArrayInitializerList
-  : VariableInitializer
-  | ArrayInitializerList ',' VariableInitializer
+  : VariableInitializer {
+    $$ = new_linked_list();
+    linked_list_add_tail($$, $1);
+  }
+  | ArrayInitializerList ',' VariableInitializer {
+    linked_list_add_tail($1, $3);
+    $$ = $1;
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -435,10 +472,10 @@ MethodDeclarationHeader2
 ParameterList
   : ID TypeName {
     $$ = new_linked_list();
-    linked_list_add_tail($$, new_exp_variable($1, $2, null));
+    linked_list_add_tail($$, new_variable($1, $2));
   }
   | ParameterList ',' ID TypeName {
-    linked_list_add_tail($1, new_exp_variable($3, $4, null));
+    linked_list_add_tail($1, new_variable($3, $4));
     $$ = $1;
   }
   ;
@@ -505,7 +542,9 @@ LocalVariableDeclsOrStatements
 
 LocalVariableDeclOrStatement
   : VariableDeclaration {
-
+    $$ = $1;
+    show_expr($1);
+    outs("\n");
   }
   | Statement {
     $$ = $1;
@@ -515,6 +554,8 @@ LocalVariableDeclOrStatement
 Statement
   : ExpressionStatement ';' {
     $$ = $1;
+    show_expr($1);
+    outs("\n");
   }
   | SelectionStatement {
 
@@ -533,11 +574,9 @@ Statement
 ExpressionStatement
   : Expression {
     $$ = $1;
-    show_expr($1);
-    printf("----ExpressionStatement----\n");
   }
   | AssignmentExpression {
-    printf("----AssignmentExpressionStatement----\n");
+    $$ = $1;
   }
   ;
 
@@ -582,10 +621,10 @@ JumpStatement
   | FALLTHROUGH ';'
   | CONTINUE ';'
   | RETURN ';' {
-    printf("return----\n");
+    outs("return----\n");
   }
   | RETURN ExpressionList ';' {
-    printf("return----\n");
+    outs("return----\n");
   }
   ;
 
@@ -624,7 +663,6 @@ Term
     $$ = $1;
   }
   | PrimitiveType '(' Literal ')' {
-    printf("literal with type declaration\n");
     check_primitive_type($1, $3->term);
     $$ = $3;
   }
@@ -707,9 +745,15 @@ FunctionDeclarationList
   ;
 
 PostfixExpression
-  : PrimaryExpression
-  | PostfixExpression INC
-  | PostfixExpression DEC
+  : PrimaryExpression {
+    $$ = $1;
+  }
+  | PostfixExpression INC {
+    $$ = new_exp_unary(OP_INC_AFTER, $1);
+  }
+  | PostfixExpression DEC {
+    $$ = new_exp_unary(OP_DEC_AFTER, $1);
+  }
   ;
 
 UnaryExpression
@@ -869,27 +913,62 @@ Expression
 /*--------------------------------------------------------------------------*/
 
 AssignmentExpression
-  : PostfixExpressionList '=' VariableInitializerList
-  | PostfixExpression CompoundOperator VariableInitializer
+  : PostfixExpressionList '=' VariableInitializerList {
+    $$ = new_exp_assign_list($1, $3);
+    free_linked_list($1);
+    free_linked_list($3);
+  }
+  | PostfixExpression CompoundOperator VariableInitializer {
+    $$ = new_exp_compound_assign($2, $1, $3);
+  }
   ;
 
 PostfixExpressionList
-  : PostfixExpression
-  | PostfixExpressionList ',' PostfixExpression
+  : PostfixExpression {
+    $$ = new_linked_list();
+    linked_list_add_tail($$, $1);
+  }
+  | PostfixExpressionList ',' PostfixExpression {
+    linked_list_add_tail($1, $3);
+    $$ = $1;
+  }
   ;
 
+/* 算术运算和位运算 */
 CompoundOperator
-  : ADD_ASSIGN
-  | SUB_ASSIGN
-  | MUL_ASSIGN
-  | DIV_ASSIGN
-  | MOD_ASSIGN
-  | AND_ASSIGN
-  | OR_ASSIGN
-  | XOR_ASSIGN
-  | RIGHT_SHIFT_ASSIGN
-  | LEFT_SHIFT_ASSIGN
-  | TYPELESS_ASSIGN
+  : PLUS_ASSGIN {
+    $$ = OP_PLUS_ASSIGN;
+  }
+  | MINUS_ASSIGN {
+    $$ = OP_MINUS_ASSIGN;
+  }
+  | TIMES_ASSIGN {
+    $$ = OP_TIMES_ASSIGN;
+  }
+  | DIVIDE_ASSIGN {
+    $$ = OP_DIVIDE_ASSIGN;
+  }
+  | MOD_ASSIGN {
+    $$ = OP_MOD_ASSIGN;
+  }
+  | AND_ASSIGN {
+    $$ = OP_AND_ASSIGN;
+  }
+  | OR_ASSIGN {
+    $$ = OP_OR_ASSIGN;
+  }
+  | XOR_ASSIGN {
+    $$ = OP_XOR_ASSIGN;
+  }
+  | RIGHT_SHIFT_ASSIGN {
+    $$ = OP_RIGHT_SHIFT_ASSIGN;
+  }
+  | LEFT_SHIFT_ASSIGN {
+    $$ = OP_LEFT_SHIFT_ASSIGN;
+  }
+  | TYPELESS_ASSIGN {
+    $$ = OP_TYPELESS_ASSIGN;
+  }
   ;
 
 /*--------------------------------------------------------------------------*/

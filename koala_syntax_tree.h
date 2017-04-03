@@ -24,8 +24,12 @@ typedef enum {
 } operator_t;
 
 typedef enum {
-  plus_assign_op, minus_assign_op, times_assign_op, divide_assign_op,
-} multi_assign_op_t;
+  OP_INVALID_ASSIGN,
+  OP_PLUS_ASSIGN, OP_MINUS_ASSIGN, OP_TIMES_ASSIGN, OP_DIVIDE_ASSIGN,
+  OP_MOD_ASSIGN, OP_AND_ASSIGN, OP_OR_ASSIGN, OP_XOR_ASSIGN,
+  OP_RIGHT_SHIFT_ASSIGN, OP_LEFT_SHIFT_ASSIGN,
+  OP_TYPELESS_ASSIGN,
+} compound_op_t;
 
 typedef struct anonymous_function anonymous_function_t;
 typedef struct function function_t;
@@ -103,9 +107,12 @@ name_type_t *new_name_type(int dims, base_type_t base_type);
 
 struct variable {
   string name;
+  bool is_const;
   name_type_t *type;
   expr_t *value;
 };
+
+variable_t *new_variable(string name, name_type_t *type);
 
 struct function {
   string name;
@@ -185,9 +192,9 @@ struct expr_node {
     //type
     EXP_TYPE,
     //variable
-    EXP_VAR,
+    EXP_VAR_LIST,
     //constant
-    EXP_CONST,
+    EXP_CONST_LIST,
     //function
     EXP_FUNC,
     //terminal symbol
@@ -198,19 +205,17 @@ struct expr_node {
     EXP_BINARAY,
     //unary operation
     EXP_UNARY,
-    // expression sequence
-    //seq_exp,
     // assignment
-    assign_list_exp
+    EXP_ASSIGN_LIST,
     // multi assignment operation
-    //multi_assign_exp,
+    EXP_COMPOUND_ASSIGN,
   } kind;
 
   union {
     type_t type;
-    variable_t var;
     function_t func;
     term_t term;
+    linked_list_t seq;
     struct {
       operator_t op;
       expr_t *left;
@@ -221,22 +226,21 @@ struct expr_node {
       expr_t *exp;
     } unary_op;
     struct {
-      linked_list_t var_list;
-      linked_list_t exp_list;
+      linked_list_t expr_list;
+      linked_list_t value_list;
     } assign_list_op;
-    /*
     struct {
-      multi_assign_op_t op;
-      var_t *var;
+      compound_op_t op;
       expr_t *exp;
-    } multi_assign_op;
-    */
-    linked_list_t exp_seq;
+      expr_t *value;
+    } compund_assign_op;
   };
+
+  //name_type_t exp_type;
 };
 
-expr_t *new_exp_variable(string name, name_type_t *type, expr_t *value);
-expr_t *new_exp_constant(string name, name_type_t *type, expr_t *value);
+expr_t *new_exp_var_list(linked_list_t *var_list);
+expr_t *new_exp_cont_list(linked_list_t *const_list);
 expr_t *new_exp_term_id(string id);
 expr_t *new_exp_term_self();
 expr_t *new_exp_term_null();
@@ -250,6 +254,13 @@ expr_t *new_exp_term_array_object(array_object_t *array_object);
 expr_t *new_exp_binary(operator_t op, expr_t *left, expr_t *right);
 expr_t *new_exp_unary(operator_t op, expr_t *expr);
 expr_t *new_exp_seq(linked_list_t *seq);
+expr_t *new_exp_assign_list(linked_list_t *exp_list, linked_list_t *init_list);
+expr_t *new_exp_compound_assign(compound_op_t op, expr_t *exp, expr_t *value);
+
+expr_t *build_variable_declaration(linked_list_t *var_list,
+                                   name_type_t *type,
+                                   linked_list_t *init_list,
+                                   bool constant);
 
 void show_expr(expr_t *exp);
 void check_primitive_type(int type, term_t term);
