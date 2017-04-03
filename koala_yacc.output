@@ -78,8 +78,8 @@ Grammar
    48            | TypeDeclaration
    49            | FunctionDeclaration
 
-   50 ConstDeclaration: CONST VariableList '=' ArrayInitializerList ';'
-   51                 | CONST VariableList TypeName '=' ArrayInitializerList ';'
+   50 ConstDeclaration: CONST VariableList '=' VariableInitializerList ';'
+   51                 | CONST VariableList TypeName '=' VariableInitializerList ';'
 
    52 VariableDeclaration: VAR VariableList TypeName ';'
    53                    | VAR VariableList '=' VariableInitializerList ';'
@@ -448,11 +448,11 @@ VariableDeclaration (112)
 VariableList (113)
     on left: 55 56, on right: 50 51 52 53 54 56
 VariableInitializerList (114)
-    on left: 57, on right: 53 54 205
+    on left: 57, on right: 50 51 53 54 205
 VariableInitializer (115)
     on left: 58 59, on right: 60 61 206
 ArrayInitializerList (116)
-    on left: 60 61, on right: 50 51 57 59 61 145 146 147
+    on left: 60 61, on right: 57 59 61 145 146 147
 SemiOrEmpty (117)
     on left: 62 63, on right: 38 41 42 43 64 65
 TypeDeclaration (118)
@@ -618,8 +618,8 @@ State 3
 
 State 4
 
-   50 ConstDeclaration: CONST . VariableList '=' ArrayInitializerList ';'
-   51                 | CONST . VariableList TypeName '=' ArrayInitializerList ';'
+   50 ConstDeclaration: CONST . VariableList '=' VariableInitializerList ';'
+   51                 | CONST . VariableList TypeName '=' VariableInitializerList ';'
 
     ID  shift, and go to state 17
 
@@ -846,8 +846,8 @@ State 20
 
 State 21
 
-   50 ConstDeclaration: CONST VariableList . '=' ArrayInitializerList ';'
-   51                 | CONST VariableList . TypeName '=' ArrayInitializerList ';'
+   50 ConstDeclaration: CONST VariableList . '=' VariableInitializerList ';'
+   51                 | CONST VariableList . TypeName '=' VariableInitializerList ';'
    56 VariableList: VariableList . ',' ID
 
     FUNC         shift, and go to state 31
@@ -1273,7 +1273,7 @@ State 57
 
 State 58
 
-   50 ConstDeclaration: CONST VariableList '=' . ArrayInitializerList ';'
+   50 ConstDeclaration: CONST VariableList '=' . VariableInitializerList ';'
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -1309,8 +1309,9 @@ State 58
     '!'             shift, and go to state 89
 
     PrimitiveType                 go to state 90
+    VariableInitializerList       go to state 121
     VariableInitializer           go to state 92
-    ArrayInitializerList          go to state 121
+    ArrayInitializerList          go to state 93
     AnonymousFunctionDeclaration  go to state 94
     PrimaryExpression             go to state 95
     Term                          go to state 96
@@ -1334,7 +1335,7 @@ State 58
 
 State 59
 
-   51 ConstDeclaration: CONST VariableList TypeName . '=' ArrayInitializerList ';'
+   51 ConstDeclaration: CONST VariableList TypeName . '=' VariableInitializerList ';'
 
     '='  shift, and go to state 122
 
@@ -2433,16 +2434,14 @@ State 120
 
 State 121
 
-   50 ConstDeclaration: CONST VariableList '=' ArrayInitializerList . ';'
-   61 ArrayInitializerList: ArrayInitializerList . ',' VariableInitializer
+   50 ConstDeclaration: CONST VariableList '=' VariableInitializerList . ';'
 
-    ','  shift, and go to state 143
     ';'  shift, and go to state 195
 
 
 State 122
 
-   51 ConstDeclaration: CONST VariableList TypeName '=' . ArrayInitializerList ';'
+   51 ConstDeclaration: CONST VariableList TypeName '=' . VariableInitializerList ';'
 
     INC             shift, and go to state 71
     DEC             shift, and go to state 72
@@ -2478,8 +2477,9 @@ State 122
     '!'             shift, and go to state 89
 
     PrimitiveType                 go to state 90
+    VariableInitializerList       go to state 196
     VariableInitializer           go to state 92
-    ArrayInitializerList          go to state 196
+    ArrayInitializerList          go to state 93
     AnonymousFunctionDeclaration  go to state 94
     PrimaryExpression             go to state 95
     Term                          go to state 96
@@ -4213,17 +4213,15 @@ State 194
 
 State 195
 
-   50 ConstDeclaration: CONST VariableList '=' ArrayInitializerList ';' .
+   50 ConstDeclaration: CONST VariableList '=' VariableInitializerList ';' .
 
     $default  reduce using rule 50 (ConstDeclaration)
 
 
 State 196
 
-   51 ConstDeclaration: CONST VariableList TypeName '=' ArrayInitializerList . ';'
-   61 ArrayInitializerList: ArrayInitializerList . ',' VariableInitializer
+   51 ConstDeclaration: CONST VariableList TypeName '=' VariableInitializerList . ';'
 
-    ','  shift, and go to state 143
     ';'  shift, and go to state 280
 
 
@@ -5336,7 +5334,7 @@ State 279
 
 State 280
 
-   51 ConstDeclaration: CONST VariableList TypeName '=' ArrayInitializerList ';' .
+   51 ConstDeclaration: CONST VariableList TypeName '=' VariableInitializerList ';' .
 
     $default  reduce using rule 51 (ConstDeclaration)
 

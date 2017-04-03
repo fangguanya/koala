@@ -24,9 +24,10 @@ int yylex(void);
   type_t type;
   linked_list_t *linked_list;
   expr_t *expr;
-  trailer_t *trailer;
   term_t term;
-  anonymous_function_t anonymous;
+  trailer_t *trailer;
+  anonymous_function_t *anonymous;
+  array_object_t *array_object;
 }
 
 %token ELLIPSIS
@@ -127,19 +128,19 @@ int yylex(void);
 %type <base_type> BaseType
 %type <name_type> TypeName
 
+/* expressiont with linked list*/
 %type <linked_list> TypeNameList
 %type <linked_list> VariableList
-%type <linked_list> TrailerList
 %type <linked_list> ParameterList
 %type <linked_list> ReturnTypeList
-%type <linked_list> CodeBlock
 %type <linked_list> LocalVariableDeclsOrStatements
 
+%type <expr> CodeBlock
 %type <expr> LocalVariableDeclOrStatement
 %type <expr> Statement
 %type <expr> ExpressionStatement
 
-%type <expr> ExpressionList
+%type <linked_list> ExpressionList
 %type <expr> Expression
 %type <expr> LogicalOrExpression
 %type <expr> LogicalAndExpression
@@ -154,11 +155,12 @@ int yylex(void);
 %type <expr> UnaryExpression
 %type <expr> PostfixExpression
 %type <expr> PrimaryExpression
+%type <expr> Term
+%type <expr> Literal
 
-%type <term> Literal
-%type <term> Term
 %type <anonymous> AnonymousFunctionDeclaration
 
+%type <linked_list> TrailerList
 %type <trailer> Trailer
 
 %start Program
@@ -176,7 +178,7 @@ ModulePathName
 
 TypeNameList
   : TypeName {
-    $$ = linked_list_new();
+    $$ = new_linked_list();
     linked_list_add_tail($$, $1);
   }
   | TypeNameList ',' TypeName {
@@ -196,10 +198,10 @@ TypeName
 
 BaseType
   : PrimitiveType {
-    $$ = new_primitive_type($1);
+    $$ = primitive_type($1);
   }
   | ModuleType {
-    $$ = new_module_type($1);
+    $$ = module_type($1);
   }
   | FunctionType {
     $$ = $1;
@@ -263,22 +265,26 @@ ModuleType
 
 FunctionType
   : FUNC '(' ')' ReturnTypeList {
-    $$ = new_func_type(null, $4);
+    $$ = func_type(null, $4);
+    free_linked_list($4);
   }
   | FUNC '(' ')' {
-    $$ = new_func_type(null, null);
+    $$ = func_type(null, null);
   }
   | FUNC '(' TypeNameList ')' ReturnTypeList {
-    $$ = new_func_type($3, $5);
+    $$ = func_type($3, $5);
+    free_linked_list($3);
+    free_linked_list($5);
   }
   | FUNC '(' TypeNameList ')' {
-    $$ = new_func_type($3, null);
+    $$ = func_type($3, null);
+    free_linked_list($3);
   }
   ;
 
 ReturnTypeList
   : TypeName {
-    $$ = linked_list_new();
+    $$ = new_linked_list();
     linked_list_add_tail($$, $1);
   }
   | '(' TypeNameList ')' {
@@ -329,10 +335,10 @@ Declaration
 |                                                     |
 `--------------------------------------------------------------------------*/
 ConstDeclaration
-  : CONST VariableList '=' ArrayInitializerList ';' {
+  : CONST VariableList '=' VariableInitializerList ';' {
 
   }
-  | CONST VariableList TypeName '=' ArrayInitializerList ';' {
+  | CONST VariableList TypeName '=' VariableInitializerList ';' {
 
   }
   ;
@@ -428,11 +434,11 @@ MethodDeclarationHeader2
 
 ParameterList
   : ID TypeName {
-    $$ = linked_list_new();
-    linked_list_add_tail($$, new_variable($1, $2));
+    $$ = new_linked_list();
+    linked_list_add_tail($$, new_exp_variable($1, $2, null));
   }
   | ParameterList ',' ID TypeName {
-    linked_list_add_tail($1, new_variable($3, $4));
+    linked_list_add_tail($1, new_exp_variable($3, $4, null));
     $$ = $1;
   }
   ;
@@ -459,31 +465,36 @@ FunctionDeclaration
 AnonymousFunctionDeclaration
   : FUNC '(' ')' ReturnTypeList CodeBlock {
     $$ = new_anonymous_func(null, $4, $5);
+    free_linked_list($4);
   }
   | FUNC '(' ')' CodeBlock {
     $$ = new_anonymous_func(null, null, $4);
   }
   | FUNC '(' ParameterList ')' ReturnTypeList CodeBlock {
     $$ = new_anonymous_func($3, $5, $6);
+    free_linked_list($3);
+    free_linked_list($5);
   }
   | FUNC '(' ParameterList ')' CodeBlock {
     $$ = new_anonymous_func($3, null, $5);
+    free_linked_list($3);
   }
   ;
 
 /*--------------------------------------------------------------------------*/
 CodeBlock
   : '{' LocalVariableDeclsOrStatements '}' {
-    $$ = $2;
+    $$ = new_exp_seq($2);
+    free_linked_list($2);
   }
   | '{' '}' {
-    $$ = null;
+    $$ = new_exp_seq(null);
   }
   ;
 
 LocalVariableDeclsOrStatements
   : LocalVariableDeclOrStatement {
-    $$ = linked_list_new();
+    $$ = new_linked_list();
     linked_list_add_tail($$, $1);
   }
   | LocalVariableDeclsOrStatements LocalVariableDeclOrStatement {
@@ -515,12 +526,13 @@ Statement
 
   }
   | CodeBlock {
-    $$ = new_exp_list($1);
+    $$ = $1;
   }
   ;
 
 ExpressionStatement
   : Expression {
+    $$ = $1;
     show_expr($1);
     printf("----ExpressionStatement----\n");
   }
@@ -579,12 +591,11 @@ JumpStatement
 
 ExpressionList
   : Expression {
-    linked_list_t *list = linked_list_new();
-    linked_list_add_tail(list, $1);
-    $$ = new_exp_list(list);
+    $$ = new_linked_list();
+    linked_list_add_tail($$, $1);
   }
   | ExpressionList ',' Expression {
-    linked_list_add_tail($1->list, $3);
+    linked_list_add_tail($1, $3);
     $$ = $1;
   }
   ;
@@ -593,33 +604,35 @@ ExpressionList
 
 PrimaryExpression
   : Term {
-    $$ = new_exp_term($1);
+    $$ = $1;
   }
   | Term TrailerList {
-    $$ = new_exp_term(new_term_trailer($1, $2));
+    $$ = $1;
+    LINKED_LIST_MERGE_TAIL(&$$->term.trailer_list, $2);
+    free_linked_list($2);
   }
   ;
 
 Term
   : ID {
-    $$ = new_term_id($1);
+    $$ = new_exp_term_id($1);
   }
   | SELF {
-    $$ = new_term_self();
+    $$ = new_exp_term_self();
   }
   | Literal {
     $$ = $1;
   }
   | PrimitiveType '(' Literal ')' {
     printf("literal with type declaration\n");
-    check_primitive_type($1, $3);
+    check_primitive_type($1, $3->term);
     $$ = $3;
   }
   | '(' Expression ')' {
-    $$ = new_term_exp($2);
+    $$ = new_exp_term_exp($2);
   }
   | AnonymousFunctionDeclaration {
-    $$ = new_term_anonymous($1);
+    $$ = new_exp_term_anonymous($1);
   }
   | DimExprs BaseType {}
   | DimExprs DIMS BaseType {}
@@ -630,22 +643,22 @@ Term
 
 Literal  //常量允许访问成员变量和成员方法，不允许数组操作
   : INTEGER {
-    $$ = new_term_uint($1);
+    $$ = new_exp_term_uint($1);
   }
   | FLOAT {
-    $$ = new_term_float($1);
+    $$ = new_exp_term_float($1);
   }
   | STRING_LITERAL {
-    $$ = new_term_string($1);
+    $$ = new_exp_term_string($1);
   }
   | TOKEN_NIL {
-    $$ = new_term_null();
+    $$ = new_exp_term_null();
   }
   | TOKEN_TRUE {
-    $$ = new_term_bool(true);
+    $$ = new_exp_term_bool(true);
   }
   | TOKEN_FALSE {
-    $$ = new_term_bool(false);
+    $$ = new_exp_term_bool(false);
   }
   ;
 
@@ -660,11 +673,12 @@ DimExpr
 
 TrailerList
   : Trailer {
-    $$ = linked_list_new();
+    $$ = new_linked_list();
     linked_list_add_tail($$, $1);
   }
   | TrailerList Trailer {
-    linked_list_add_tail($$, $2);
+    linked_list_add_tail($1, $2);
+    $$ = $1;
   }
   ;
 
@@ -676,7 +690,8 @@ Trailer
     $$ = new_trailer_array_access($2);
   }
   | '(' ExpressionList ')' {
-    $$ = new_trailer_func_call($2->list);
+    $$ = new_trailer_func_call($2);
+    free_linked_list($2);
   }
   | '(' ')' {
     $$ = new_trailer_func_call(null);

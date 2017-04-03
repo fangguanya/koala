@@ -3,7 +3,7 @@
 func main() {
   p.a.b();
   "zhuguangxiang".ToUpperCase();
-  func (name string, age [][]uint32) string {
+  func (name string, age [][]uint32) (string, []io.Socket) {
     return name + age;
   }("zhuguangxiang", 28);
 

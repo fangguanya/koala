@@ -138,11 +138,12 @@ union YYSTYPE
   type_t type;
   linked_list_t *linked_list;
   expr_t *expr;
-  trailer_t *trailer;
   term_t term;
-  anonymous_function_t anonymous;
+  trailer_t *trailer;
+  anonymous_function_t *anonymous;
+  array_object_t *array_object;
 
-#line 146 "koala_yacc.h" /* yacc.c:1909  */
+#line 147 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

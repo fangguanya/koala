@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "koala_syntax_tree.h"
 
-base_type_t new_primitive_type(int type)
+base_type_t primitive_type(int type)
 {
   base_type_t base_type;
   base_type.kind = PRIMITIVE_TYPE;
@@ -13,7 +13,7 @@ base_type_t new_primitive_type(int type)
   return base_type;
 }
 
-base_type_t new_module_type(string *str)
+base_type_t module_type(string *str)
 {
   base_type_t base_type;
   base_type.kind = MODULE_TYPE;
@@ -22,13 +22,23 @@ base_type_t new_module_type(string *str)
   return base_type;
 }
 
-base_type_t new_func_type(linked_list_t *parameter_type_list,
-                          linked_list_t *return_type_list)
+base_type_t func_type(linked_list_t *parameter_type_list,
+                      linked_list_t *return_type_list)
 {
+  func_type_t *func_type = null;
   base_type_t base_type;
   base_type.kind = FUNCTION_TYPE;
-  base_type.func_type.parameter_type_list = parameter_type_list;
-  base_type.func_type.return_type_list = return_type_list;
+  if ((parameter_type_list != null) || (return_type_list != null))
+  {
+    func_type = malloc(sizeof(*func_type));
+    INIT_LINKED_LIST(&func_type->parameter_type_list);
+    INIT_LINKED_LIST(&func_type->return_type_list);
+    LINKED_LIST_MERGE_TAIL(&func_type->parameter_type_list,
+                           parameter_type_list);
+    LINKED_LIST_MERGE_TAIL(&func_type->return_type_list,
+                           return_type_list);
+  }
+  base_type.func_type = func_type;
   return base_type;
 }
 
@@ -40,21 +50,16 @@ name_type_t *new_name_type(int dims, base_type_t base_type)
   return name_type;
 }
 
-variable_t *new_variable(string name, name_type_t *name_type)
+anonymous_function_t *new_anonymous_func(linked_list_t *parameter_list,
+                                         linked_list_t *return_type_list,
+                                         expr_t *codes)
 {
-  variable_t *variable = malloc(sizeof(*variable));
-  variable->name = name;
-  variable->type = name_type;
-  return variable;
-}
-
-anonymous_function_t new_anonymous_func(linked_list_t *parameter_list,
-  linked_list_t *return_type_list, linked_list_t *stmt_list)
-{
-  anonymous_function_t anonymous;
-  anonymous.parameter_list = parameter_list;
-  anonymous.return_type_list = return_type_list;
-  anonymous.stmt_list = stmt_list;
+  anonymous_function_t *anonymous = malloc(sizeof(*anonymous));
+  INIT_LINKED_LIST(&anonymous->parameter_list);
+  INIT_LINKED_LIST(&anonymous->return_type_list);
+  LINKED_LIST_MERGE_TAIL(&anonymous->parameter_list, parameter_list);
+  LINKED_LIST_MERGE_TAIL(&anonymous->return_type_list, return_type_list);
+  anonymous->codes = codes;
   return anonymous;
 }
 
@@ -80,7 +85,9 @@ trailer_t *new_trailer_func_call(linked_list_t *args)
 {
   trailer_t *trailer = malloc(sizeof(*trailer));
   trailer->kind = TRAILER_FUNCTION_CALL;
-  trailer->args = args;
+  INIT_LINKED_LIST(&trailer->args_list);
+  if (args != null)
+    LINKED_LIST_MERGE_TAIL(&trailer->args_list, args);
   return trailer;
 }
 
@@ -91,88 +98,122 @@ trailer_t *new_trailer_interface_implementation()
   return trailer;
 }
 
-term_t new_term_id(string id)
+expr_t *new_exp_variable(string name, name_type_t *type, expr_t *value)
 {
-  term_t term;
-  term.kind = TERM_ID;
-  term.id = id;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_VAR;
+  exp->var.name = name;
+  exp->var.type = type;
+  exp->var.value = value;
+  return exp;
 }
 
-term_t new_term_self()
+expr_t *new_exp_constant(string name, name_type_t *type, expr_t *value)
 {
-  term_t term;
-  term.kind = TERM_SELF;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_CONST;
+  exp->var.name = name;
+  exp->var.type = type;
+  exp->var.value = value;
+  return exp;
 }
 
-term_t new_term_null()
+expr_t *new_exp_term_id(string id)
 {
-  term_t term;
-  term.kind = TERM_NULL;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_ID;
+  exp->term.id = id;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_uint(uint64 val)
+expr_t *new_exp_term_self()
 {
-  term_t term;
-  term.kind = TERM_UINT;
-  term.uint_num = val;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_SELF;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_float(float64 val)
+expr_t *new_exp_term_null()
 {
-  term_t term;
-  term.kind = TERM_FLOAT;
-  term.float_num = val;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_NULL;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_string(string val)
+expr_t *new_exp_term_uint(uint64 val)
 {
-  term_t term;
-  term.kind = TERM_STRING;
-  term.str = val;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_UINT;
+  exp->term.uint_num = val;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_bool(bool val)
+expr_t *new_exp_term_float(float64 val)
 {
-  term_t term;
-  term.kind = TERM_BOOL;
-  term.bool_val = val;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_FLOAT;
+  exp->term.float_num = val;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_exp(expr_t *exp)
+expr_t *new_exp_term_string(string val)
 {
-  term_t term;
-  term.kind = TERM_EXP;
-  term.exp = exp;
-  term.trailer_list = null;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_STRING;
+  exp->term.str = val;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_trailer(term_t term, linked_list_t *trailer_list)
+expr_t *new_exp_term_bool(bool val)
 {
-  term.trailer_list = trailer_list;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_BOOL;
+  exp->term.bool_val = val;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
-term_t new_term_anonymous(anonymous_function_t anonymous)
+expr_t *new_exp_term_exp(expr_t *e)
 {
-  term_t term;
-  term.kind = TERM_ANONYMOUS_FUNCTION;
-  term.anonymous_function = anonymous;
-  return term;
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_EXP;
+  exp->term.exp = e;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
+}
+
+expr_t *new_exp_term_anonymous(anonymous_function_t *anonymous)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TERM_ANONYMOUS_FUNC;
+  exp->term.anonymous_func = anonymous;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
+}
+
+expr_t *new_exp_term_array_object(array_object_t *array_object)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TERM;
+  exp->term.kind = TEMR_ARRAY_OBJECT;
+  exp->term.array_object = array_object;
+  INIT_LINKED_LIST(&exp->term.trailer_list);
+  return exp;
 }
 
 static char *type_string_map[] = {
@@ -207,7 +248,7 @@ void show_base_type(base_type_t *base_type)
 void show_name_type(name_type_t *name_type)
 {
   int i;
-  printf("varialbe:type:");
+  printf("type:");
   for (i = 0; i < name_type->dims; i++) {
     printf("[]");
   }
@@ -216,22 +257,24 @@ void show_name_type(name_type_t *name_type)
 
 void show_variable(variable_t *var)
 {
-  printf("variable:name:%s\n", var->name.val);
+  printf("----variable--------------\n");
+  printf("name:%s\n", var->name.val);
   show_name_type(var->type);
+  printf("--------------------------\n");
 }
 
 void show_variable_list(linked_list_t *variable_list)
 {
-  if (variable_list != null) {
+  if ((variable_list != null) && !LINKED_LIST_EMPTY(variable_list)) {
     struct list_head *pos;
-    variable_t *var;
+    expr_t *var;
 
-    printf("variable list count:%d\n", variable_list->count);
+    printf("variable count:%d\n", variable_list->count);
 
     LIST_FOR_EACH(pos, &variable_list->head) {
-      var = PARENT_STRUCT(pos, linked_node_t, node)->data;
-      show_variable(var);
-      printf("------------------\n");
+      var = LINKED_NODE_GET_DATA(pos);
+      assert(var->kind == EXP_VAR);
+      show_variable(&var->var);
     }
   }
 }
@@ -249,7 +292,7 @@ void show_trailer(trailer_t *trailer)
     }
     case TRAILER_FUNCTION_CALL: {
       printf("():\n");
-      show_expr_list(trailer->args);
+      show_expr_list(&trailer->args_list);
       break;
     }
     case TRAILER_INTERFACE_IMPLEMENTATION: {
@@ -265,29 +308,31 @@ void show_trailer(trailer_t *trailer)
 
 void show_type_list(linked_list_t *type_list)
 {
-  if (type_list != null) {
+  if ((type_list != null) && !LINKED_LIST_EMPTY(type_list)) {
     struct list_head *pos;
     name_type_t *name_type;
 
-    printf("type list count:%d\n", type_list->count);
+    printf("type count:%d\n", type_list->count);
 
     LIST_FOR_EACH(pos, &type_list->head) {
-      name_type = PARENT_STRUCT(pos, linked_node_t, node)->data;
+      name_type = LINKED_NODE_GET_DATA(pos);
+      printf("----type--------------\n");
       show_name_type(name_type);
+      printf("----------------------\n");
     }
   }
 }
 
 void show_trailer_list(linked_list_t *trailer_list)
 {
-  if (trailer_list != null) {
+  if ((trailer_list != null) && !LINKED_LIST_EMPTY(trailer_list)) {
     struct list_head *pos;
     trailer_t *trailer;
 
-    printf("trailer list count:%d\n", trailer_list->count);
+    printf("trailer count:%d\n", trailer_list->count);
 
     LIST_FOR_EACH(pos, &trailer_list->head) {
-      trailer = PARENT_STRUCT(pos, linked_node_t, node)->data;
+      trailer = LINKED_NODE_GET_DATA(pos);
       show_trailer(trailer);
     }
   }
@@ -298,7 +343,7 @@ void show_term(term_t *term)
   switch (term->kind) {
     case TERM_ID: {
       printf("id:%s\n", term->id.val);
-      show_trailer_list(term->trailer_list);
+      show_trailer_list(&term->trailer_list);
       break;
     }
     case TERM_UINT: {
@@ -315,19 +360,19 @@ void show_term(term_t *term)
     }
     case TERM_STRING: {
       printf("str:%s\n", term->str.val);
-      show_trailer_list(term->trailer_list);
+      show_trailer_list(&term->trailer_list);
       break;
     }
     case TERM_EXP: {
       printf("exp\n");
-      show_trailer_list(term->trailer_list);
+      show_trailer_list(&term->trailer_list);
       break;
     }
-    case TERM_ANONYMOUS_FUNCTION: {
+    case TERM_ANONYMOUS_FUNC: {
       printf("anonymous function\n");
-      show_variable_list(term->anonymous_function.parameter_list);
-      show_type_list(term->anonymous_function.return_type_list);
-      show_trailer_list(term->trailer_list);
+      show_variable_list(&term->anonymous_func->parameter_list);
+      show_type_list(&term->anonymous_func->return_type_list);
+      show_trailer_list(&term->trailer_list);
       break;
     }
     default: {
@@ -338,19 +383,13 @@ void show_term(term_t *term)
   }
 }
 
-expr_t *new_exp_term(term_t term)
+expr_t *new_exp_seq(linked_list_t *seq)
 {
   expr_t *exp = malloc(sizeof(*exp));
-  exp->kind = EXP_TERM;
-  exp->term = term;
-  return exp;
-}
-
-expr_t *new_exp_list(linked_list_t *list)
-{
-  expr_t *exp = malloc(sizeof(*exp));
-  exp->kind = EXP_LIST;
-  exp->list = list;
+  exp->kind = EXP_SEQ;
+  INIT_LINKED_LIST(&exp->exp_seq);
+  if (seq)
+    LINKED_LIST_MERGE_TAIL(&exp->exp_seq, seq);
   return exp;
 }
 
@@ -492,14 +531,14 @@ void show_unaray(expr_t *exp)
 
 void show_expr_list(linked_list_t *exp_list)
 {
-  if (exp_list != null) {
+  if ((exp_list != null) && !LINKED_LIST_EMPTY(exp_list)) {
     struct list_head *pos;
     expr_t *exp;
 
     printf("expr list count:%d\n", exp_list->count);
 
     LIST_FOR_EACH(pos, &exp_list->head) {
-      exp = PARENT_STRUCT(pos, linked_node_t, node)->data;
+      exp = LINKED_NODE_GET_DATA(pos);
       show_expr(exp);
     }
   }
@@ -511,8 +550,8 @@ void show_expr(expr_t *exp)
     case EXP_TERM :
       show_term(&exp->term);
     break;
-    case EXP_LIST :
-      show_expr_list(exp->list);
+    case EXP_SEQ :
+      show_expr_list(&exp->exp_seq);
     break;
     case EXP_BINARAY :
       show_binary(exp);

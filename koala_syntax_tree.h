@@ -31,6 +31,7 @@ typedef struct anonymous_function anonymous_function_t;
 typedef struct function function_t;
 typedef struct function_declaration function_declaration_t;
 
+typedef struct func_type func_type_t;
 typedef struct base_type base_type_t;
 typedef struct name_type name_type_t;
 typedef struct struct_type struct_type_t;
@@ -40,8 +41,14 @@ typedef struct type type_t;
 typedef struct variable variable_t;
 
 typedef struct trailer_node trailer_t;
+typedef struct array_object array_object_t;
 typedef struct term_node term_t;
 typedef struct expr_node expr_t;
+
+struct func_type {
+  linked_list_t parameter_type_list;
+  linked_list_t return_type_list;
+};
 
 struct base_type {
   enum {
@@ -51,10 +58,7 @@ struct base_type {
   union {
     int primitive_type;
     string id[2];
-    struct {
-      linked_list_t *parameter_type_list;
-      linked_list_t *return_type_list;
-    } func_type;
+    func_type_t *func_type;
   };
 };
 
@@ -63,20 +67,15 @@ struct name_type {
   base_type_t base_type;
 };
 
-struct variable {
-  string name;
-  name_type_t *type;
-};
-
 struct struct_type {
   string name;
-  linked_list_t *var_list;
-  linked_list_t *func_list;
+  linked_list_t var_list;
+  linked_list_t func_list;
 };
 
 struct intf_type {
   string name;
-  linked_list_t *func_decl_list;
+  linked_list_t func_decl_list;
 };
 
 struct redef_type {
@@ -96,33 +95,29 @@ struct type {
   };
 };
 
-base_type_t new_primitive_type(int type);
-base_type_t new_module_type(string *str);
-base_type_t new_func_type(linked_list_t *parameter_type_list,
-                          linked_list_t *return_type_list);
+base_type_t primitive_type(int type);
+base_type_t module_type(string *str);
+base_type_t func_type(linked_list_t *parameter_type_list,
+                      linked_list_t *return_type_list);
 name_type_t *new_name_type(int dims, base_type_t base_type);
-variable_t *new_variable(string name, name_type_t *name_type);
 
-struct anonymous_function {
-  linked_list_t *parameter_list;
-  linked_list_t *return_type_list;
-  linked_list_t *stmt_list;
+struct variable {
+  string name;
+  name_type_t *type;
+  expr_t *value;
 };
-
-anonymous_function_t new_anonymous_func(linked_list_t *parameter_list,
-  linked_list_t *return_type_list, linked_list_t *stmt_list);
 
 struct function {
   string name;
-  linked_list_t *parameter_list;
-  linked_list_t *return_type_list;
-  linked_list_t *stmt_list;
+  linked_list_t parameter_list;
+  linked_list_t return_type_list;
+  expr_t *codes;
 };
 
 struct function_declaration {
   string name;
-  linked_list_t *parameter_list;
-  linked_list_t *return_type_list;
+  linked_list_t parameter_list;
+  linked_list_t return_type_list;
 };
 
 struct trailer_node {
@@ -134,8 +129,8 @@ struct trailer_node {
   union {
     string id;
     expr_t *exp;
-    linked_list_t *args;
-    linked_list_t *func_list;
+    linked_list_t args_list;
+    linked_list_t func_list;
   };
 };
 
@@ -144,13 +139,30 @@ trailer_t *new_trailer_array_access(expr_t *exp);
 trailer_t *new_trailer_func_call(linked_list_t *args);
 trailer_t *new_trailer_interface_implementation();
 
+struct anonymous_function {
+  linked_list_t parameter_list;
+  linked_list_t return_type_list;
+  expr_t *codes;
+};
+
+anonymous_function_t *new_anonymous_func(linked_list_t *parameter_list,
+                                         linked_list_t *return_type_list,
+                                         expr_t *codes);
+
+struct array_object {
+  base_type_t base_type;
+  linked_list_t subscript_exp_list;
+};
+
+array_object_t *new_array_object();
+
 struct term_node {
   enum {
     TERM_INVALID, TERM_ID, TERM_SELF,
     TERM_UINT, TERM_FLOAT, TERM_BOOL, TERM_STRING, TERM_NULL,
     TERM_EXP,
-    TERM_ANONYMOUS_FUNCTION,
-    TEMR_ARRAY,
+    TERM_ANONYMOUS_FUNC,
+    TEMR_ARRAY_OBJECT,
   } kind;
 
   union {
@@ -160,34 +172,28 @@ struct term_node {
     bool bool_val;
     string str;
     expr_t *exp;
-    anonymous_function_t anonymous_function;
-    struct {
-      base_type_t base_type;
-      linked_list_t *subscript_list;
-    } array;
+    anonymous_function_t *anonymous_func;
+    array_object_t *array_object;
   };
 
-  linked_list_t *trailer_list;
+  linked_list_t trailer_list;
 };
-
-term_t new_term_id(string id);
-term_t new_term_self();
-term_t new_term_null();
-term_t new_term_uint(uint64 val);
-term_t new_term_float(float64 val);
-term_t new_term_string(string val);
-term_t new_term_bool(bool val);
-term_t new_term_exp(expr_t *exp);
-term_t new_term_trailer(term_t term, linked_list_t *trailer_list);
-term_t new_term_anonymous(anonymous_function_t anonymous);
 
 struct expr_node {
   enum {
     EXP_INVALID,
+    //type
+    EXP_TYPE,
+    //variable
+    EXP_VAR,
+    //constant
+    EXP_CONST,
+    //function
+    EXP_FUNC,
     //terminal symbol
     EXP_TERM,
-    //expression list
-    EXP_LIST,
+    //expression sequence
+    EXP_SEQ,
     //binary operation
     EXP_BINARAY,
     //unary operation
@@ -201,8 +207,10 @@ struct expr_node {
   } kind;
 
   union {
+    type_t type;
+    variable_t var;
+    function_t func;
     term_t term;
-    linked_list_t *list;
     struct {
       operator_t op;
       expr_t *left;
@@ -213,8 +221,8 @@ struct expr_node {
       expr_t *exp;
     } unary_op;
     struct {
-      linked_list_t *var_list;
-      linked_list_t *exp_list;
+      linked_list_t var_list;
+      linked_list_t exp_list;
     } assign_list_op;
     /*
     struct {
@@ -223,13 +231,25 @@ struct expr_node {
       expr_t *exp;
     } multi_assign_op;
     */
+    linked_list_t exp_seq;
   };
 };
 
-expr_t *new_exp_term(term_t term);
-expr_t *new_exp_list(linked_list_t *list);
+expr_t *new_exp_variable(string name, name_type_t *type, expr_t *value);
+expr_t *new_exp_constant(string name, name_type_t *type, expr_t *value);
+expr_t *new_exp_term_id(string id);
+expr_t *new_exp_term_self();
+expr_t *new_exp_term_null();
+expr_t *new_exp_term_uint(uint64 val);
+expr_t *new_exp_term_float(float64 val);
+expr_t *new_exp_term_string(string val);
+expr_t *new_exp_term_bool(bool val);
+expr_t *new_exp_term_exp(expr_t *exp);
+expr_t *new_exp_term_anonymous(anonymous_function_t *anonymous);
+expr_t *new_exp_term_array_object(array_object_t *array_object);
 expr_t *new_exp_binary(operator_t op, expr_t *left, expr_t *right);
 expr_t *new_exp_unary(operator_t op, expr_t *expr);
+expr_t *new_exp_seq(linked_list_t *seq);
 
 void show_expr(expr_t *exp);
 void check_primitive_type(int type, term_t term);
