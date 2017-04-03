@@ -22,21 +22,48 @@ base_type_t module_type(string *str)
   return base_type;
 }
 
+func_type_t *new_func_type(linked_list_t *parameter_type_list,
+                           linked_list_t *return_type_list)
+{
+  func_type_t *func_type = malloc(sizeof(*func_type));
+  INIT_LINKED_LIST(&func_type->parameter_type_list);
+  INIT_LINKED_LIST(&func_type->return_type_list);
+  if (parameter_type_list != null) {
+    LINKED_LIST_MERGE_TAIL(&func_type->parameter_type_list,
+                           parameter_type_list);
+  }
+  if (return_type_list != null) {
+    LINKED_LIST_MERGE_TAIL(&func_type->return_type_list,
+                           return_type_list);
+  }
+  return func_type;
+}
+
+void free_func_type(func_type_t *func_type)
+{
+  if (func_type != null) {
+    void *data = linked_list_pop_first(&func_type->parameter_type_list);
+    while (data != null) {
+      free_name_type(data);
+      data = linked_list_pop_first(&func_type->parameter_type_list);
+    }
+    data = linked_list_pop_first(&func_type->return_type_list);
+    while (data != null) {
+      free_name_type(data);
+      data = linked_list_pop_first(&func_type->return_type_list);
+    }
+    free(func_type);
+  }
+}
+
 base_type_t func_type(linked_list_t *parameter_type_list,
                       linked_list_t *return_type_list)
 {
   func_type_t *func_type = null;
   base_type_t base_type;
   base_type.kind = FUNCTION_TYPE;
-  if ((parameter_type_list != null) || (return_type_list != null))
-  {
-    func_type = malloc(sizeof(*func_type));
-    INIT_LINKED_LIST(&func_type->parameter_type_list);
-    INIT_LINKED_LIST(&func_type->return_type_list);
-    LINKED_LIST_MERGE_TAIL(&func_type->parameter_type_list,
-                           parameter_type_list);
-    LINKED_LIST_MERGE_TAIL(&func_type->return_type_list,
-                           return_type_list);
+  if ((parameter_type_list != null) || (return_type_list != null)) {
+    func_type = new_func_type(parameter_type_list, return_type_list);
   }
   base_type.func_type = func_type;
   return base_type;
@@ -48,6 +75,17 @@ name_type_t *new_name_type(int dims, base_type_t base_type)
   name_type->dims = dims;
   name_type->base_type = base_type;
   return name_type;
+}
+
+void free_name_type(name_type_t *type)
+{
+  if (type == null) return;
+
+  if (type->base_type.kind == FUNCTION_TYPE) {
+    free_func_type(type->base_type.func_type);
+  }
+
+  free(type);
 }
 
 anonymous_function_t *new_anonymous_func(linked_list_t *parameter_list,
@@ -125,6 +163,17 @@ variable_t *new_variable(string name, name_type_t *type)
   return var;
 }
 
+void free_variable(variable_t *var)
+{
+  if (var != null) {
+    if (var->type.base_type.kind == FUNCTION_TYPE) {
+      free_func_type(var->type.base_type.func_type);
+    }
+    assert(var->value == null);
+    free(var);
+  }
+}
+
 variable_t *new_constant(string name, name_type_t *type)
 {
   variable_t *var = malloc(sizeof(*var));
@@ -162,6 +211,34 @@ function_t *new_method(string name,
   return func;
 }
 
+intf_func_proto_t *new_intf_func_proto(string name,
+                                       linked_list_t *parameter_list,
+                                       linked_list_t *parameter_type_list,
+                                       linked_list_t *return_type_list)
+{
+  intf_func_proto_t *proto = malloc(sizeof(*proto));
+  proto->name = name;
+  INIT_LINKED_LIST(&proto->parameter_type_list);
+  INIT_LINKED_LIST(&proto->return_type_list);
+
+  if (parameter_list != null) {
+    name_type_t *type;
+    variable_t *var = linked_list_pop_first(parameter_list);
+    while (var != null) {
+      type = new_name_type(var->type.dims, var->type.base_type);
+      linked_list_add_tail(&proto->parameter_type_list, type);
+      free_variable(var);
+      var = linked_list_pop_first(parameter_list);
+    }
+  }
+
+  if (parameter_type_list != null)
+    LINKED_LIST_MERGE_TAIL(&proto->parameter_type_list, parameter_type_list);
+  if (return_type_list != null)
+    LINKED_LIST_MERGE_TAIL(&proto->return_type_list, return_type_list);
+  return proto;
+}
+
 expr_t *new_exp_type_struct(string name,
                            linked_list_t *field_list,
                            linked_list_t *func_list)
@@ -172,12 +249,27 @@ expr_t *new_exp_type_struct(string name,
   exp->type.struct_type.name = name;
   INIT_LINKED_LIST(&exp->type.struct_type.field_list);
   INIT_LINKED_LIST(&exp->type.struct_type.func_list);
-  LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.field_list, field_list);
-  LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.func_list, func_list);
+  if (field_list != null)
+    LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.field_list, field_list);
+  if (func_list != null)
+    LINKED_LIST_MERGE_TAIL(&exp->type.struct_type.func_list, func_list);
   return exp;
 }
 
-expr_t *new_exp_type_interface();
+expr_t *new_exp_type_interface(string name, linked_list_t *func_proto_list)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TYPE;
+  exp->type.kind = TYPE_INTF;
+  exp->type.intf_type.name = name;
+  INIT_LINKED_LIST(&exp->type.intf_type.func_proto_list);
+  if (func_proto_list != null) {
+    LINKED_LIST_MERGE_TAIL(&exp->type.intf_type.func_proto_list,
+                           func_proto_list);
+  }
+  return exp;
+}
+
 expr_t *new_exp_type_redef();
 
 expr_t *new_exp_function(string name,
@@ -709,6 +801,26 @@ void show_func_list(linked_list_t *list)
   }
 }
 
+void show_intf_func_proto(intf_func_proto_t *proto)
+{
+  outs("----proto----\n");
+  outf("name:%s\n", proto->name.val);
+  show_type_list(&proto->parameter_type_list);
+  show_type_list(&proto->return_type_list);
+  outs("----------------\n");
+}
+
+void show_intf_func_proto_list(linked_list_t *list)
+{
+  struct list_head *pos;
+  intf_func_proto_t *proto;
+
+  LINKED_LIST_FOREACH(pos, list) {
+    proto = LINKED_NODE_GET_DATA(pos);
+    show_intf_func_proto(proto);
+  }
+}
+
 void show_compound_op(compound_op_t op)
 {
   switch (op) {
@@ -760,6 +872,13 @@ void show_type_struct(struct_type_t *struct_type)
   outs("----struct end----------------\n");
 }
 
+void show_type_interface(intf_type_t *intf_type)
+{
+  outf("----interface(name:%s)----\n", intf_type->name.val);
+  show_intf_func_proto_list(&intf_type->func_proto_list);
+  outs("----interface end----------------\n");
+}
+
 void show_type(type_t *type)
 {
   switch (type->kind) {
@@ -767,6 +886,7 @@ void show_type(type_t *type)
       show_type_struct(&type->struct_type);
     break;
     case TYPE_INTF:
+      show_type_interface(&type->intf_type);
     break;
     case TYPE_REDEF:
     break;

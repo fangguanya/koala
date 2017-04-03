@@ -154,15 +154,12 @@ union YYSTYPE
   struct {
     string name;
     linked_list_t *parameter_list;
-    linked_list_t *return_type_list;
-  } method_header_1;
-  struct {
-    string name;
     linked_list_t *parameter_type_list;
     linked_list_t *return_type_list;
-  } method_header_2;
+  } method_header;
+  intf_func_proto_t *intf_func_proto;
 
-#line 166 "koala_yacc.h" /* yacc.c:1909  */
+#line 163 "koala_yacc.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

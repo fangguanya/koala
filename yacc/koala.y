@@ -42,13 +42,10 @@ int yylex(void);
   struct {
     string name;
     linked_list_t *parameter_list;
-    linked_list_t *return_type_list;
-  } method_header_1;
-  struct {
-    string name;
     linked_list_t *parameter_type_list;
     linked_list_t *return_type_list;
-  } method_header_2;
+  } method_header;
+  intf_func_proto_t *intf_func_proto;
 }
 
 %token ELLIPSIS
@@ -152,8 +149,9 @@ int yylex(void);
 %type <member_declaration> MemberDeclaration
 %type <variable> FieldDeclaration
 %type <function> MethodDeclaration
-%type <method_header_1> MethodDeclarationHeader1
-%type <method_header_2> MethodDeclarationHeader2
+%type <method_header> MethodDeclarationHeader1
+%type <method_header> MethodDeclarationHeader2
+%type <intf_func_proto> InterfaceFunctionDeclaration
 
 %type <expr> ConstDeclaration
 %type <expr> VariableDeclaration
@@ -169,6 +167,7 @@ int yylex(void);
 %type <linked_list> ReturnTypeList
 %type <linked_list> LocalVariableDeclsOrStatements
 %type <linked_list> FunctionDeclarationList
+%type <linked_list> InterfaceFunctionDeclarations
 
 %type <expr> CodeBlock
 %type <expr> LocalVariableDeclOrStatement
@@ -376,6 +375,7 @@ Declaration
     outs("\n");
   }
   | FunctionDeclaration {
+    outs("FunctionDeclaration\n");
     show_expr($1);
     outs("\n");
   }
@@ -468,12 +468,15 @@ TypeDeclaration
   }
   | TYPE ID STRUCT '{' error '}' SemiOrEmpty {}
   | TYPE ID INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty {
-    //$$ = new_exp_type_interface($2, $5[0], $5[1]);
+    $$ = new_exp_type_interface($2, $5);
+    free_linked_list($5);
   }
   | TYPE ID INTERFACE '{' error '}' SemiOrEmpty {}
   | TYPE ID TypeName ';' {
     //$$ = new_exp_type_redef();
   }
+  | TYPE ID error {}
+  | TYPE error {}
   ;
 
 MemberDeclarations
@@ -605,13 +608,33 @@ ParameterList
   ;
 
 InterfaceFunctionDeclarations
-  : InterfaceFunctionDeclaration
-  | InterfaceFunctionDeclarations InterfaceFunctionDeclaration
+  : InterfaceFunctionDeclaration {
+    $$ = new_linked_list();
+    linked_list_add_tail($$, $1);
+  }
+  | InterfaceFunctionDeclarations InterfaceFunctionDeclaration {
+    linked_list_add_tail($1, $2);
+    $$ = $1;
+  }
   ;
 
 InterfaceFunctionDeclaration
-  : MethodDeclarationHeader1 ';'
-  | MethodDeclarationHeader2 ';'
+  : MethodDeclarationHeader1 ';' {
+    $$ = new_intf_func_proto($1.name,
+                             $1.parameter_list,
+                             null,
+                             $1.return_type_list);
+    free_linked_list($1.parameter_list);
+    free_linked_list($1.return_type_list);
+  }
+  | MethodDeclarationHeader2 ';' {
+    $$ = new_intf_func_proto($1.name,
+                             null,
+                             $1.parameter_type_list,
+                             $1.return_type_list);
+    free_linked_list($1.parameter_type_list);
+    free_linked_list($1.return_type_list);
+  }
   ;
 
 /*--------------------------------------------------------------------------*/
@@ -633,6 +656,15 @@ FunctionDeclaration
     $$ = new_exp_function($2, $4, null, $6);
     free_linked_list($4);
   }
+  | FUNC ID '(' ParameterList ')' error {
+    outs("FUNC ID '(' ParameterList ')'");
+  }
+  | FUNC ID '(' ')' error {outs("FUNC ID '(' ')' error\n");}
+  | FUNC ID '(' error {outs("FUNC ID '(' error\n");}
+  | FUNC ID error {outs("FUNC ID error\n");}
+  | FUNC error {
+    outs("FUNC error\n");
+  }
   ;
 
 AnonymousFunctionDeclaration
@@ -651,6 +683,9 @@ AnonymousFunctionDeclaration
   | FUNC '(' ParameterList ')' CodeBlock {
     $$ = new_anonymous_func($3, null, $5);
     free_linked_list($3);
+  }
+  | FUNC error {
+    outs("AnonymousFunctionDeclaration error\n");
   }
   ;
 

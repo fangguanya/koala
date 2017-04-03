@@ -33,7 +33,7 @@ typedef enum {
 
 typedef struct anonymous_function anonymous_function_t;
 typedef struct function function_t;
-typedef struct function_declaration function_declaration_t;
+typedef struct intf_func_proto intf_func_proto_t;
 
 typedef struct func_type func_type_t;
 typedef struct base_type base_type_t;
@@ -53,6 +53,10 @@ struct func_type {
   linked_list_t parameter_type_list;
   linked_list_t return_type_list;
 };
+
+func_type_t *new_func_type(linked_list_t *parameter_type_list,
+                           linked_list_t *return_type_list);
+void free_func_type(func_type_t *func_type);
 
 struct base_type {
   enum {
@@ -79,7 +83,7 @@ struct struct_type {
 
 struct intf_type {
   string name;
-  linked_list_t func_decl_list;
+  linked_list_t func_proto_list;
 };
 
 struct redef_type {
@@ -104,6 +108,7 @@ base_type_t module_type(string *str);
 base_type_t func_type(linked_list_t *parameter_type_list,
                       linked_list_t *return_type_list);
 name_type_t *new_name_type(int dims, base_type_t base_type);
+void free_name_type(name_type_t *type);
 
 #define NAME_TYPE_SET(to_struct, from_ptr) do { \
   if (from_ptr != null) {                       \
@@ -123,6 +128,7 @@ struct variable {
 };
 
 variable_t *new_variable(string name, name_type_t *type);
+void free_variable(variable_t *var);
 
 struct function {
   string name;
@@ -136,11 +142,16 @@ function_t *new_method(string name,
                        linked_list_t *return_type_list,
                        expr_t *codes);
 
-struct function_declaration {
+struct intf_func_proto {
   string name;
-  linked_list_t parameter_list;
+  linked_list_t parameter_type_list;
   linked_list_t return_type_list;
 };
+
+intf_func_proto_t *new_intf_func_proto(string name,
+                                       linked_list_t *parameter_list,
+                                       linked_list_t *parameter_type_list,
+                                       linked_list_t *return_type_list);
 
 struct trailer_node {
   enum {
@@ -259,7 +270,7 @@ struct expr_node {
 expr_t *new_exp_type_struct(string name,
                            linked_list_t *field_list,
                            linked_list_t *func_list);
-expr_t *new_exp_type_interface();
+expr_t *new_exp_type_interface(string name, linked_list_t *func_proto_list);
 expr_t *new_exp_type_redef();
 expr_t *new_exp_function(string name,
                          linked_list_t *parameter_list,

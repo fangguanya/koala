@@ -1,5 +1,12 @@
 #!/media/psf/Home/Projects/koala/koala
 
+func abc( {}
+
+type Restfull interface {
+  SendRequest(url string, data JsonObject, timeout uint32) int32;
+  GetRequest(string, uint32) (JsonObject, int32);
+};
+
 func calc(data []int32) int32 {
   return data[0];
 }
