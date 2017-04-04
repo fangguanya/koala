@@ -136,6 +136,8 @@ int yylex(void);
 %precedence ')'
 %precedence '('
 
+%precedence FUNC
+
 //%expect 2
 
 /*--------------------------------------------------------------------------*/
@@ -470,7 +472,7 @@ TypeDeclaration
     $$ = new_exp_type_interface($2, $5);
     free_linked_list($5);
   }
-  | TYPE ID TypeName ';' {
+  | TYPE ID TypeName SemiOrEmpty {
     $$ = new_exp_type_redef($2, $3);
   }
   ;

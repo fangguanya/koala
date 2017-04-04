@@ -1,51 +1,9 @@
 Koala is modern programming language.
 
-00:
-	1. type system
-		only support integer
-	2. arithmetic expression
-		+, -, *, /
-	3. scanner & parser
-		lex & yacc
-01:
-	1. support variable
-
-	2. support ()
-
-02:
-	1. statement ends with ;
-	2. save expression value to '_' var;
-
-03:
-	1. negative support
-04:
-  0. program: pkg-statement [import-statement]* [statement]+
-  1. statements : statement
-    | statements statement
-  2. statement: if-statement | pkg-statement | import-statement | var-statement
-    | function-statement | arithmetic-expression | logic-expression | bit-expression
-    | call-statement | assign-statement | type-define-statement
-
-  3. type-statement : type ID [type-name] {
-    [ID var-type-name;]+
-    }
-
-    type_declaration
-      : type ID type_specifier ';'
-
-    type_specifier
-      : struct '{' struct_declaration_list '}'
-      | interface '{' function_declaration_list '}'
-      | function_declaration
-      | TYPE_ID
-      ;
-
-    struct_declaration_list
-      : ID TYPE_ID ';'
-      | struct_declaration_list ID TYPE_ID ';'
-      ;
-
 QA：
   Q1: 函数调用参数传递，函数栈桢会从上一个函数栈桢中拷贝参数到本地栈桢中吗？
   A1：X86，GCC编译出来的代码是直接使用上一个函数传递过来的参数，没有再拷贝一次；也就是说
   参数是跨栈桢的。X86，GO编译出来的代码也是如此(PLAN9格式)。
+
+GIT:
+  取消跟踪：git rm --cached FILENAME，如果是目录就加上 -r
