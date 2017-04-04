@@ -270,7 +270,15 @@ expr_t *new_exp_type_interface(string name, linked_list_t *func_proto_list)
   return exp;
 }
 
-expr_t *new_exp_type_redef();
+expr_t *new_exp_type_redef(string name, name_type_t *base_type)
+{
+  expr_t *exp = malloc(sizeof(*exp));
+  exp->kind = EXP_TYPE;
+  exp->type.kind = TYPE_REDEF;
+  exp->type.redef_type.name = name;
+  NAME_TYPE_SET(exp->type.redef_type.type, base_type);
+  return exp;
+}
 
 expr_t *new_exp_function(string name,
                          linked_list_t *parameter_list,
@@ -879,6 +887,13 @@ void show_type_interface(intf_type_t *intf_type)
   outs("----interface end----------------\n");
 }
 
+void show_type_redef(redef_type_t *redef_type)
+{
+  outf("----redefined(name:%s)----\n", redef_type->name.val);
+  show_name_type(&redef_type->type);
+  outs("----redefined end----------------\n");
+}
+
 void show_type(type_t *type)
 {
   switch (type->kind) {
@@ -889,6 +904,7 @@ void show_type(type_t *type)
       show_type_interface(&type->intf_type);
     break;
     case TYPE_REDEF:
+      show_type_redef(&type->redef_type);
     break;
     default:
       error_outf("Unknown type type:%d\n", type->kind);

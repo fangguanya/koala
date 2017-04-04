@@ -466,17 +466,13 @@ TypeDeclaration
     free_linked_list($5[0]);
     free_linked_list($5[1]);
   }
-  | TYPE ID STRUCT '{' error '}' SemiOrEmpty {}
   | TYPE ID INTERFACE '{' InterfaceFunctionDeclarations '}' SemiOrEmpty {
     $$ = new_exp_type_interface($2, $5);
     free_linked_list($5);
   }
-  | TYPE ID INTERFACE '{' error '}' SemiOrEmpty {}
   | TYPE ID TypeName ';' {
-    //$$ = new_exp_type_redef();
+    $$ = new_exp_type_redef($2, $3);
   }
-  | TYPE ID error {}
-  | TYPE error {}
   ;
 
 MemberDeclarations
@@ -656,15 +652,6 @@ FunctionDeclaration
     $$ = new_exp_function($2, $4, null, $6);
     free_linked_list($4);
   }
-  | FUNC ID '(' ParameterList ')' error {
-    outs("FUNC ID '(' ParameterList ')'");
-  }
-  | FUNC ID '(' ')' error {outs("FUNC ID '(' ')' error\n");}
-  | FUNC ID '(' error {outs("FUNC ID '(' error\n");}
-  | FUNC ID error {outs("FUNC ID error\n");}
-  | FUNC error {
-    outs("FUNC error\n");
-  }
   ;
 
 AnonymousFunctionDeclaration
@@ -683,9 +670,6 @@ AnonymousFunctionDeclaration
   | FUNC '(' ParameterList ')' CodeBlock {
     $$ = new_anonymous_func($3, null, $5);
     free_linked_list($3);
-  }
-  | FUNC error {
-    outs("AnonymousFunctionDeclaration error\n");
   }
   ;
 

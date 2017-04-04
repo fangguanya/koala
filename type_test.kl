@@ -1,6 +1,6 @@
 #!/media/psf/Home/Projects/koala/koala
 
-func abc( {}
+type int []int32;
 
 type Restfull interface {
   SendRequest(url string, data JsonObject, timeout uint32) int32;

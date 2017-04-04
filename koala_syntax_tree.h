@@ -271,7 +271,7 @@ expr_t *new_exp_type_struct(string name,
                            linked_list_t *field_list,
                            linked_list_t *func_list);
 expr_t *new_exp_type_interface(string name, linked_list_t *func_proto_list);
-expr_t *new_exp_type_redef();
+expr_t *new_exp_type_redef(string name, name_type_t *base_type);
 expr_t *new_exp_function(string name,
                          linked_list_t *parameter_list,
                          linked_list_t *return_type_list,
