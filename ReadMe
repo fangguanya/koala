@@ -6,7 +6,7 @@ QA：
   参数是跨栈桢的。X86，GO编译出来的代码也是如此(PLAN9格式)。
 
 版本：
-  Α α alpha 
+  Α α alpha
   Β β beta
   Γ γ gamma
   Δ δ delta
@@ -36,3 +36,6 @@ GIT:
   新建分支：git branch BRANCH-NAME
   切换分支：git checkout BRANCH-NAME
   新建并切换：git checkout -b BRANCH-NAME
+
+  //删除文件夹下的所有 .Git 文件
+  find . -name ".git" | xargs rm -Rf
