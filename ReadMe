@@ -5,5 +5,34 @@ QA：
   A1：X86，GCC编译出来的代码是直接使用上一个函数传递过来的参数，没有再拷贝一次；也就是说
   参数是跨栈桢的。X86，GO编译出来的代码也是如此(PLAN9格式)。
 
+版本：
+  Α α alpha 
+  Β β beta
+  Γ γ gamma
+  Δ δ delta
+  Ε ε epsilon
+  Ζ ζ zeta
+  Η η eta
+  Θ θ theta
+  Ι ι iota
+  Κ κ kappa
+  ∧ λ lambda
+  Μ μ mu
+  Ν ν nu
+  Ξ ξ xi
+  Ο ο omicron
+  ∏ π pi
+  Ρ ρ rho
+  ∑ σ sigma
+  Τ τ tau
+  Υ υ upsilon
+  Φ φ phi
+  Χ χ chi
+  Ψ ψ psi
+  Ω ω omega
+
 GIT:
   取消跟踪：git rm --cached FILENAME，如果是目录就加上 -r
+  新建分支：git branch BRANCH-NAME
+  切换分支：git checkout BRANCH-NAME
+  新建并切换：git checkout -b BRANCH-NAME
