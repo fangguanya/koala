@@ -4,4 +4,5 @@ koala
 koala_lex.c
 koala_yacc.c
 koala_yacc.h
-#git rm --cached
+.DS_Store
+koala.dSYM/*
